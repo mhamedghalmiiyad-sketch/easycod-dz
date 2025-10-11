@@ -3,7 +3,7 @@ services:
     name: easycod-dz
     env: node
     plan: free
-    buildCommand: npm install && npm run build
+    buildCommand: npm install && npm run setup && npm run build
     startCommand: npm run start
     envVars:
       - key: NODE_ENV
@@ -17,7 +17,9 @@ services:
       - key: SCOPES
         value: read_draft_orders,read_metaobject_definitions,read_metaobjects,read_online_store_pages,read_products,read_orders,write_draft_orders,write_metaobject_definitions,write_metaobjects,write_online_store_pages,write_products,write_orders
       - key: DATABASE_URL
-        sync: false
+        fromDatabase:
+          name: easycod-postgres
+          property: connectionString
       - key: SESSION_SECRET
         generateValue: true
       - key: PORT

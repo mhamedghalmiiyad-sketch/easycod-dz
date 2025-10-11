@@ -1,0 +1,111 @@
+name: Rollback Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      app_name:
+        description: 'Fly.io app name'
+        required: true
+        default: 'easycod-dz'
+        type: string
+      release_number:
+        description: 'Release number to rollback to (optional)'
+        required: false
+        type: string
+
+env:
+  FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+jobs:
+  rollback:
+    name: Rollback Deployment
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Fly.io CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: List available releases
+        run: |
+          echo "📋 Available releases:"
+          flyctl releases list --app ${{ github.event.inputs.app_name }}
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Rollback to previous release
+        if: github.event.inputs.release_number == ''
+        run: |
+          echo "🔄 Rolling back to previous release..."
+          flyctl releases rollback --app ${{ github.event.inputs.app_name }}
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Rollback to specific release
+        if: github.event.inputs.release_number != ''
+        run: |
+          echo "🔄 Rolling back to release ${{ github.event.inputs.release_number }}..."
+          flyctl releases rollback --app ${{ github.event.inputs.app_name }} ${{ github.event.inputs.release_number }}
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Wait for rollback
+        run: sleep 30
+
+      - name: Health check after rollback
+        run: |
+          echo "🔍 Checking app health after rollback..."
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://${{ github.event.inputs.app_name }}.fly.dev/ping)
+          if [ "$response" = "200" ]; then
+            echo "✅ Health check passed after rollback"
+          else
+            echo "❌ Health check failed with status: $response"
+            exit 1
+          fi
+
+      - name: Show app status
+        run: |
+          flyctl status --app ${{ github.event.inputs.app_name }}
+          echo "🔗 App URL: https://${{ github.event.inputs.app_name }}.fly.dev"
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Notify rollback success
+        run: |
+          echo "🎉 Rollback completed successfully!"
+          echo "🔗 App URL: https://${{ github.event.inputs.app_name }}.fly.dev"
+          echo "📊 Status: https://fly.io/dashboard"
+
+      - name: Slack Notification (Rollback Success)
+        if: secrets.SLACK_WEBHOOK_URL
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          channel: '#deployments'
+          text: |
+            🔄 *Rollback Successful*
+            App: ${{ github.event.inputs.app_name }}
+            Release: ${{ github.event.inputs.release_number || 'previous' }}
+            URL: https://${{ github.event.inputs.app_name }}.fly.dev
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Discord Notification (Rollback Success)
+        if: secrets.DISCORD_WEBHOOK_URL
+        run: |
+          curl -H "Content-Type: application/json" \
+               -d '{
+                 "embeds": [{
+                   "title": "🔄 Rollback Successful",
+                   "color": 16776960,
+                   "fields": [
+                     {"name": "App", "value": "${{ github.event.inputs.app_name }}", "inline": true},
+                     {"name": "Release", "value": "${{ github.event.inputs.release_number || 'previous' }}", "inline": true},
+                     {"name": "URL", "value": "https://${{ github.event.inputs.app_name }}.fly.dev", "inline": false}
+                   ],
+                   "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%S.000Z)'"
+                 }]
+               }' \
+               ${{ secrets.DISCORD_WEBHOOK_URL }}

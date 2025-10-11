@@ -1,0 +1,209 @@
+name: Deploy to Fly.io
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+jobs:
+  test:
+    name: Test Application
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Build application
+        run: npm run build
+
+      - name: Run type checking
+        run: npx tsc --noEmit
+
+  deploy:
+    name: Deploy to Fly.io
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Setup Fly.io CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy to Fly.io
+        run: |
+          flyctl deploy \
+            --local-only \
+            --regions iad \
+            --no-postgres \
+            --strategy immediate \
+            --verbose
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Wait for deployment
+        run: sleep 30
+
+      - name: Health check with auto-rollback
+        run: |
+          echo "🔍 Checking production app health..."
+          for i in {1..5}; do
+            response=$(curl -s -o /dev/null -w "%{http_code}" https://easycod-dz.fly.dev/ping)
+            if [ "$response" = "200" ]; then
+              echo "✅ Health check passed on attempt $i"
+              break
+            else
+              echo "❌ Health check failed on attempt $i with status: $response"
+              if [ $i -eq 5 ]; then
+                echo "🚨 All health check attempts failed. Initiating automatic rollback..."
+                flyctl releases rollback --app easycod-dz
+                sleep 30
+                # Check if rollback worked
+                rollback_response=$(curl -s -o /dev/null -w "%{http_code}" https://easycod-dz.fly.dev/ping)
+                if [ "$rollback_response" = "200" ]; then
+                  echo "✅ Automatic rollback successful - app is healthy"
+                else
+                  echo "❌ Automatic rollback failed - app is still unhealthy"
+                  exit 1
+                fi
+              else
+                echo "⏳ Waiting 10 seconds before retry..."
+                sleep 10
+              fi
+            fi
+          done
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Show deployment status
+        run: |
+          flyctl status
+          echo "🔗 App URL: https://easycod-dz.fly.dev"
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+  notify:
+    name: Notify Deployment Status
+    needs: [test, deploy]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Deployment Success
+        if: needs.deploy.result == 'success'
+        run: |
+          echo "🎉 Deployment successful!"
+          echo "🔗 App URL: https://easycod-dz.fly.dev"
+          echo "📊 Status: https://fly.io/dashboard"
+          echo "📝 Commit: ${{ github.sha }}"
+          echo "👤 Author: ${{ github.actor }}"
+
+      - name: Deployment Failed
+        if: needs.deploy.result == 'failure'
+        run: |
+          echo "❌ Deployment failed!"
+          echo "Check the logs above for details."
+          echo "📝 Commit: ${{ github.sha }}"
+          echo "👤 Author: ${{ github.actor }}"
+          echo "🔄 To rollback, run: fly releases rollback"
+          exit 1
+
+      - name: Slack Notification (Success)
+        if: needs.deploy.result == 'success' && secrets.SLACK_WEBHOOK_URL
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          channel: '#deployments'
+          text: |
+            🚀 *Deployment Successful*
+            App: easycod-dz
+            Commit: ${{ github.sha }}
+            Author: ${{ github.actor }}
+            URL: https://easycod-dz.fly.dev
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Slack Notification (Failure)
+        if: needs.deploy.result == 'failure' && secrets.SLACK_WEBHOOK_URL
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          channel: '#deployments'
+          text: |
+            ❌ *Deployment Failed*
+            App: easycod-dz
+            Commit: ${{ github.sha }}
+            Author: ${{ github.actor }}
+            Check logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Discord Notification (Success)
+        if: needs.deploy.result == 'success' && secrets.DISCORD_WEBHOOK_URL
+        run: |
+          curl -H "Content-Type: application/json" \
+               -d '{
+                 "embeds": [{
+                   "title": "🚀 Deployment Successful",
+                   "color": 65280,
+                   "fields": [
+                     {"name": "App", "value": "easycod-dz", "inline": true},
+                     {"name": "Commit", "value": "${{ github.sha }}", "inline": true},
+                     {"name": "Author", "value": "${{ github.actor }}", "inline": true},
+                     {"name": "URL", "value": "https://easycod-dz.fly.dev", "inline": false}
+                   ],
+                   "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%S.000Z)'"
+                 }]
+               }' \
+               ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+      - name: Discord Notification (Failure)
+        if: needs.deploy.result == 'failure' && secrets.DISCORD_WEBHOOK_URL
+        run: |
+          curl -H "Content-Type: application/json" \
+               -d '{
+                 "embeds": [{
+                   "title": "❌ Deployment Failed",
+                   "color": 16711680,
+                   "fields": [
+                     {"name": "App", "value": "easycod-dz", "inline": true},
+                     {"name": "Commit", "value": "${{ github.sha }}", "inline": true},
+                     {"name": "Author", "value": "${{ github.actor }}", "inline": true},
+                     {"name": "Logs", "value": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}", "inline": false}
+                   ],
+                   "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%S.000Z)'"
+                 }]
+               }' \
+               ${{ secrets.DISCORD_WEBHOOK_URL }}

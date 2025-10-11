@@ -1,0 +1,247 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+  workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: 'Force deploy even if tests fail'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+  APP_NAME: easycod-dz-staging
+  APP_URL: https://easycod-dz-staging.fly.dev
+
+jobs:
+  test:
+    name: Test Application
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Build application
+        run: npm run build
+
+      - name: Run type checking
+        run: npx tsc --noEmit
+
+  deploy:
+    name: Deploy to Staging
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop' && (github.event_name != 'pull_request' || github.event.inputs.force_deploy == 'true')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Setup Fly.io CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Create staging app if not exists
+        run: |
+          if ! flyctl apps list | grep -q "$APP_NAME"; then
+            echo "Creating staging app: $APP_NAME"
+            flyctl apps create $APP_NAME
+          else
+            echo "Staging app already exists: $APP_NAME"
+          fi
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Set staging secrets
+        run: |
+          flyctl secrets set \
+            SHOPIFY_API_KEY="${{ secrets.SHOPIFY_API_KEY }}" \
+            SHOPIFY_API_SECRET="${{ secrets.SHOPIFY_API_SECRET }}" \
+            SHOPIFY_APP_URL="$APP_URL" \
+            SESSION_SECRET="${{ secrets.SESSION_SECRET }}" \
+            NODE_ENV="staging" \
+            --app $APP_NAME \
+            --no-restart
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Deploy to Staging
+        run: |
+          flyctl deploy \
+            --app $APP_NAME \
+            --local-only \
+            --regions iad \
+            --no-postgres \
+            --strategy immediate \
+            --verbose
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Wait for deployment
+        run: sleep 30
+
+      - name: Health check with retry
+        run: |
+          echo "🔍 Checking staging app health..."
+          for i in {1..5}; do
+            response=$(curl -s -o /dev/null -w "%{http_code}" $APP_URL/ping)
+            if [ "$response" = "200" ]; then
+              echo "✅ Health check passed on attempt $i"
+              break
+            else
+              echo "❌ Health check failed on attempt $i with status: $response"
+              if [ $i -eq 5 ]; then
+                echo "🚨 All health check attempts failed. Initiating rollback..."
+                flyctl releases rollback --app $APP_NAME
+                sleep 30
+                # Check if rollback worked
+                rollback_response=$(curl -s -o /dev/null -w "%{http_code}" $APP_URL/ping)
+                if [ "$rollback_response" = "200" ]; then
+                  echo "✅ Rollback successful - app is healthy"
+                else
+                  echo "❌ Rollback failed - app is still unhealthy"
+                  exit 1
+                fi
+              else
+                echo "⏳ Waiting 10 seconds before retry..."
+                sleep 10
+              fi
+            fi
+          done
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Show staging status
+        run: |
+          flyctl status --app $APP_NAME
+          echo "🔗 Staging URL: $APP_URL"
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+  notify:
+    name: Notify Staging Deployment Status
+    needs: [test, deploy]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Staging Deployment Success
+        if: needs.deploy.result == 'success'
+        run: |
+          echo "🎉 Staging deployment successful!"
+          echo "🔗 Staging URL: $APP_URL"
+          echo "📝 Commit: ${{ github.sha }}"
+          echo "👤 Author: ${{ github.actor }}"
+          echo "🌿 Branch: develop"
+
+      - name: Staging Deployment Failed
+        if: needs.deploy.result == 'failure'
+        run: |
+          echo "❌ Staging deployment failed!"
+          echo "Check the logs above for details."
+          echo "📝 Commit: ${{ github.sha }}"
+          echo "👤 Author: ${{ github.actor }}"
+          echo "🌿 Branch: develop"
+          echo "🔄 To rollback, run: fly releases rollback --app $APP_NAME"
+          exit 1
+
+      - name: Slack Notification (Staging Success)
+        if: needs.deploy.result == 'success' && secrets.SLACK_WEBHOOK_URL
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          channel: '#deployments'
+          text: |
+            🧪 *Staging Deployment Successful*
+            App: $APP_NAME
+            Commit: ${{ github.sha }}
+            Author: ${{ github.actor }}
+            Branch: develop
+            URL: $APP_URL
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Slack Notification (Staging Failure)
+        if: needs.deploy.result == 'failure' && secrets.SLACK_WEBHOOK_URL
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          channel: '#deployments'
+          text: |
+            ❌ *Staging Deployment Failed*
+            App: $APP_NAME
+            Commit: ${{ github.sha }}
+            Author: ${{ github.actor }}
+            Branch: develop
+            Check logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Discord Notification (Staging Success)
+        if: needs.deploy.result == 'success' && secrets.DISCORD_WEBHOOK_URL
+        run: |
+          curl -H "Content-Type: application/json" \
+               -d '{
+                 "embeds": [{
+                   "title": "🧪 Staging Deployment Successful",
+                   "color": 3447003,
+                   "fields": [
+                     {"name": "App", "value": "$APP_NAME", "inline": true},
+                     {"name": "Commit", "value": "${{ github.sha }}", "inline": true},
+                     {"name": "Author", "value": "${{ github.actor }}", "inline": true},
+                     {"name": "Branch", "value": "develop", "inline": true},
+                     {"name": "URL", "value": "$APP_URL", "inline": false}
+                   ],
+                   "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%S.000Z)'"
+                 }]
+               }' \
+               ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+      - name: Discord Notification (Staging Failure)
+        if: needs.deploy.result == 'failure' && secrets.DISCORD_WEBHOOK_URL
+        run: |
+          curl -H "Content-Type: application/json" \
+               -d '{
+                 "embeds": [{
+                   "title": "❌ Staging Deployment Failed",
+                   "color": 16711680,
+                   "fields": [
+                     {"name": "App", "value": "$APP_NAME", "inline": true},
+                     {"name": "Commit", "value": "${{ github.sha }}", "inline": true},
+                     {"name": "Author", "value": "${{ github.actor }}", "inline": true},
+                     {"name": "Branch", "value": "develop", "inline": true},
+                     {"name": "Logs", "value": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}", "inline": false}
+                   ],
+                   "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%S.000Z)'"
+                 }]
+               }' \
+               ${{ secrets.DISCORD_WEBHOOK_URL }}

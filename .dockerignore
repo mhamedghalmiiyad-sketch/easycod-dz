@@ -1,3 +1,143 @@
-.cache
-build
+# Dependencies
 node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+build
+dist
+.cache
+.next
+.nuxt
+.vuepress/dist
+
+# Development files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.log
+
+# IDE files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Documentation
+README.md
+CHANGELOG.md
+*.md
+
+# Test files
+test
+tests
+__tests__
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+
+# Deployment files
+deploy*.sh
+deploy*.ps1
+fly.toml
+render.yaml
+Dockerfile*
+docker-compose*.yml
+
+# Database files
+*.sqlite
+*.db
+dev.sqlite
+
+# Temporary files
+tmp
+temp
+.tmp
+.temp
+
+# Logs
+logs
+*.log
+
+# Coverage
+coverage
+.nyc_output
+
+# Prisma
+prisma/migrations
+prisma/dev.sqlite
+
+# Extensions (if not needed in production)
+extensions
+
+# Scripts
+scripts
+
+# Duplicate directories
+easycod-dz
+
+# Shopify CLI files
+.shopify
+
+# Vite cache
+.vite
+
+# Prisma engines and binaries
+**/query_engine-*
+**/schema-engine*
+**/libquery-engine*
+**/*.node
+**/*.exe
+**/*.wasm
+
+# Large dependency files
+**/googleapis/build/src/**
+**/typescript/lib/**
+**/esbuild.exe
+**/mkcert.exe
+**/lightningcss*.node
+**/tailwindcss-oxide*.node
+**/rollup*.node
+**/resolver*.node
+
+# Source maps
+**/*.js.map
+**/*.mjs.map
+**/*.d.ts.map
+
+# Bundle files
+**/easycod-form-bundle*.js
+**/material-ui*.js
+**/react-dom*.js
+**/axe.js
+**/babel.js
+**/babel.cjs
+**/cowsay.wasm
+**/runtime.js
+**/fs.js
+**/crypto.js
+**/parser-*.js
+**/parser-*.mjs
+**/dom.umd.js.map
+**/client.js.map
+**/client.mjs.map
+**/binary.js.map
+**/binary.mjs.map
+**/index.js.map
+**/vendor.js
+**/chunk-*.js
+**/chunk-*.js.map
+**/dep-*.js
+**/registry.json

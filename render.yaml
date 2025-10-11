@@ -14,10 +14,7 @@ services:
         value: https://easyood-dz.onrender.com
       - key: SCOPES
         value: "read_draft_orders,read_metaobject_definitions,read_metaobjects,read_online_store_pages,read_orders,read_products,write_draft_orders,write_metaobject_definitions,write_metaobjects,write_online_store_pages,write_orders,write_products"
-      - fromGroup: shopify-secrets
-
-envVarGroups:
-  - name: shopify-secrets
-    envVars:
+      # --- DEBUGGING STEP ---
+      # Temporarily add a placeholder secret here to test env var loading.
       - key: SHOPIFY_API_SECRET
-        sync: false
+        value: "this-is-a-test-not-the-real-secret"

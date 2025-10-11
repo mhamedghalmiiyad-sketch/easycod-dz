@@ -16,8 +16,6 @@ services:
         value: https://easycod-dz.onrender.com
       - key: SCOPES
         value: read_draft_orders,read_metaobject_definitions,read_metaobjects,read_online_store_pages,read_products,read_orders,write_draft_orders,write_metaobject_definitions,write_metaobjects,write_online_store_pages,write_products,write_orders
-      - key: HOST
-        value: https://easycod-dz.onrender.com
       - key: DATABASE_URL
         sync: false
       - key: SESSION_SECRET

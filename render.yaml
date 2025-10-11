@@ -7,7 +7,7 @@ services:
     startCommand: "node ./build/server/index.js"
     envVars:
       - key: NODE_VERSION
-        value: "18.17.1"
+        value: "20.11.0"
       - key: SHOPIFY_API_KEY
         value: 78b3b49e43d2ac2ca7e3aba1308e911d
       - key: SHOPIFY_APP_URL

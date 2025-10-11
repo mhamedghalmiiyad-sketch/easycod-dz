@@ -1,0 +1,59 @@
+{
+  "title": "إعدادات البكسل",
+  "platforms": {
+    "title": "المنصات",
+    "facebook": "فيسبوك",
+    "googleAnalytics": "تحليلات جوجل",
+    "tiktok": "تيك توك",
+    "snapchat": "سناب شات",
+    "pinterest": "بينتيريست",
+    "sharechat": "شار تشات",
+    "taboola": "تابولا",
+    "kwai": "كواي"
+  },
+  "events": {
+    "title": "الأحداث",
+    "initiateCheckout": "بدء الدفع",
+    "purchase": "الشراء",
+    "addToCart": "إضافة للسلة",
+    "addPaymentInfo": "إضافة معلومات الدفع",
+    "placeAnOrder": "وضع طلب",
+    "completePayment": "إتمام الدفع",
+    "checkout": "الدفع",
+    "custom": "حدث مخصص"
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "noPlatformsConfigured": "لا توجد منصات مكونة",
+    "facebookPurchaseEvent": "نوع حدث الشراء في فيسبوك",
+    "facebookPurchaseEventHelp": "اختر كيفية إرسال أحداث الشراء إلى فيسبوك",
+    "sendAddToCartEvents": "إرسال أحداث إضافة للسلة",
+    "sendAddToCartEventsHelp": "تتبع عندما يضيف العملاء عناصر إلى سلة التسوق",
+    "sendAddPaymentInfoEvents": "إرسال أحداث إضافة معلومات الدفع",
+    "sendAddPaymentInfoEventsHelp": "تتبع عندما يدخل العملاء معلومات الدفع",
+    "sendPinterestAddToCart": "إرسال أحداث إضافة للسلة إلى بينتيريست",
+    "sendPinterestAddToCartHelp": "تتبع أحداث إضافة للسلة في بينتيريست",
+    "disableAllTracking": "تعطيل جميع تتبع الأحداث",
+    "disableAllTrackingHelp": "سيؤدي هذا إلى تعطيل جميع أحداث البكسل المرسلة من التطبيق عبر جميع المنصات"
+  },
+  "status": {
+    "active": "نشط",
+    "notSet": "غير محدد"
+  },
+  "helpText": {
+    "facebook": "ابحث عن معرف البكسل في مدير أحداث فيسبوك",
+    "googleAnalytics": "معرف قياس GA4 من تحليلات جوجل",
+    "tiktok": "ابحث عن معرف البكسل في مدير أحداث تيك توك",
+    "snapchat": "معرف بكسل سناب من مدير إعلانات سناب شات",
+    "pinterest": "معرف علامة بينتيريست من أعمال بينتيريست",
+    "sharechat": "معرف بكسل شار تشات من مدير إعلانات شار تشات",
+    "taboola": "معرف بكسل تابولا من إعلانات تابولا",
+    "kwai": "معرف بكسل كواي من مدير إعلانات كواي"
+  },
+  "validation": {
+    "facebook": "يجب أن يكون معرف بكسل فيسبوك 15-16 رقم",
+    "googleAnalytics": "يجب أن يبدأ معرف تحليلات جوجل بـ 'G-' متبوعاً بـ 10 أحرف",
+    "tiktok": "يجب أن يبدأ معرف بكسل تيك توك بـ 'C' متبوعاً بأحرف أبجدية رقمية",
+    "snapchat": "يجب أن يكون معرف بكسل سناب شات بتنسيق UUID"
+  }
+}

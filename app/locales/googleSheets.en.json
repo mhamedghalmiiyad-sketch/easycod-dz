@@ -1,0 +1,16 @@
+{
+  "title": "Google Sheets Integration",
+  "connect": "Connect with Google",
+  "connecting": "Connecting...",
+  "enableImport": "Enable automatic order import",
+  "enableImportHelp": "New orders will be automatically added to your selected Google Sheet",
+  "selectSpreadsheet": "Select spreadsheet",
+  "selectSpreadsheetPlaceholder": "Choose a spreadsheet",
+  "selectSpreadsheetOption": "Select a spreadsheet",
+  "sheetTab": "Sheet tab",
+  "ordersTab": "Orders",
+  "ordersTabHelp": "Orders will be imported to the 'Orders' tab",
+  "multiLineImport": "Multi-line import",
+  "multiLineImportHelp": "Import orders with multiple products as separate rows",
+  "needHelp": "Need help?"
+}

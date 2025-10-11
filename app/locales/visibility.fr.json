@@ -1,0 +1,29 @@
+{
+  "title": "Paramètres de visibilité",
+  "productPages": {
+    "hideAddToCart": "Masquer le bouton Ajouter au panier sur les pages produits",
+    "hideBuyNow": "Masquer le bouton Acheter maintenant sur les pages produits"
+  },
+  "pages": {
+    "disableHomePage": "Désactiver Releasit sur votre page d'accueil",
+    "disableCollectionsPage": "Désactiver Releasit sur vos pages de collections"
+  },
+  "products": {
+    "enableSpecific": "Activer votre formulaire uniquement pour des produits et collections spécifiques",
+    "disableSpecific": "Désactiver votre formulaire pour un ou plusieurs produits et collections"
+  },
+  "countries": {
+    "enableSpecific": "Activer votre formulaire uniquement pour des pays spécifiques"
+  },
+  "amounts": {
+    "minimumAmount": "Montant minimum",
+    "maximumAmount": "Montant maximum",
+    "noLimit": "Aucune limite"
+  },
+  "sampleData": {
+    "productA": "Produit exemple A",
+    "productB": "Produit exemple B",
+    "unitedStates": "États-Unis",
+    "canada": "Canada"
+  }
+}

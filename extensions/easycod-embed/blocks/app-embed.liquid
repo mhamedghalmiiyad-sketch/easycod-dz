@@ -1,0 +1,42 @@
+{% comment %}
+  App Embed Block for EasyCOD Form
+  This block allows the app to be embedded in themes
+{% endcomment %}
+
+{% schema %}
+{
+  "name": "EasyCOD Form",
+  "target": "body",
+  "settings": [
+    {
+      "type": "text",
+      "id": "form_id",
+      "label": "Form ID",
+      "info": "Enter the form ID to display"
+    }
+  ]
+}
+{% endschema %}
+
+{% comment %}
+  Load the EasyCOD form bundle script
+{% endcomment %}
+<script src="{{ 'easycod-form-bundle.js' | asset_url }}?v={{ 'now' | date: '%Y%m%d%H%M%S' }}" defer></script>
+
+{% comment %}
+  Initialize the form if form_id is provided
+{% endcomment %}
+{% if block.settings.form_id %}
+  <div id="easycod-form-{{ block.settings.form_id }}" class="easycod-form-container" data-section-id="{{ block.settings.form_id }}">
+    <p>Loading EasyCOD Form...</p>
+  </div>
+  
+  <script id="easycod-form-config-{{ block.settings.form_id }}" type="application/json">
+    {{ shop.metafields.easycod_dz.form_config }}
+  </script>
+  
+  {% comment %}
+    Form initialization is handled automatically by the form bundle script
+    No additional initialization needed
+  {% endcomment %}
+{% endif %}

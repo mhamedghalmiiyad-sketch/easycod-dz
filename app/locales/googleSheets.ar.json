@@ -1,0 +1,16 @@
+{
+  "title": "تكامل جداول جوجل",
+  "connect": "الاتصال بجوجل",
+  "connecting": "جاري الاتصال...",
+  "enableImport": "تفعيل استيراد الطلبات التلقائي",
+  "enableImportHelp": "سيتم إضافة الطلبات الجديدة تلقائياً إلى جدول جوجل المحدد",
+  "selectSpreadsheet": "اختيار جدول البيانات",
+  "selectSpreadsheetPlaceholder": "اختر جدول بيانات",
+  "selectSpreadsheetOption": "اختر جدول بيانات",
+  "sheetTab": "تبويب الجدول",
+  "ordersTab": "الطلبات",
+  "ordersTabHelp": "سيتم استيراد الطلبات إلى تبويب 'الطلبات'",
+  "multiLineImport": "استيراد متعدد الأسطر",
+  "multiLineImportHelp": "استيراد الطلبات مع منتجات متعددة كصفوف منفصلة",
+  "needHelp": "تحتاج مساعدة؟"
+}

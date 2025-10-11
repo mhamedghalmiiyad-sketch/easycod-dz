@@ -1,0 +1,52 @@
+{
+  "title": "Protection Settings",
+  "noBlockingRules": "No blocking rules active",
+  "noBlockingRulesDescription": "Configure blocking rules below to protect your store from unwanted orders, spam, or abusive customers. All rules work together to provide comprehensive protection.",
+  "orderLimits": {
+    "title": "Order Limits",
+    "description": "Prevent customers from placing multiple orders in a short time period",
+    "hours": "Hours",
+    "quantity": "Quantity",
+    "helpText": "Customers are identified by IP address, email, or phone number combination"
+  },
+  "blockLists": {
+    "title": "Block Lists",
+    "description": "Block specific customers by email, phone, or IP address",
+    "blockedEmails": "Blocked email addresses",
+    "blockedEmailsHelp": "Enter one email per line",
+    "blockedPhones": "Blocked phone numbers",
+    "blockedPhonesHelp": "Enter one number per line",
+    "blockedIPs": "Blocked IP addresses",
+    "blockedIPsHelp": "Enter one IP address per line",
+    "allowedIPs": "Always allowed IP addresses",
+    "allowedIPsHelp": "These IPs can always place orders regardless of other rules"
+  },
+  "blockedMessage": {
+    "title": "Blocked Customer Message",
+    "description": "Message shown to blocked customers"
+  },
+  "riskScoring": {
+    "title": "Risk Scoring",
+    "description": "Automatically calculate risk scores for orders based on various factors",
+    "enableRiskScoring": "Enable automated risk scoring",
+    "highRiskThreshold": "High risk threshold",
+    "highRiskThresholdHelp": "Orders scoring above this will be high risk",
+    "reviewThreshold": "Review threshold",
+    "reviewThresholdHelp": "Orders scoring above this need review",
+    "autoReject": "Automatically reject high-risk orders",
+    "autoRejectHelp": "Automatically block orders that exceed the high risk threshold",
+    "suspiciousDomains": "Suspicious email domains"
+  },
+  "geographicRestrictions": {
+    "title": "Geographic Restrictions",
+    "description": "Control access based on postal codes",
+    "mode": "Geographic restriction mode",
+    "noRestrictions": "No geographic restrictions",
+    "noRestrictionsHelp": "Accept orders from any postal code",
+    "blockSpecific": "Block specific postal codes",
+    "blockSpecificHelp": "Prevent orders from listed postal codes",
+    "allowSpecific": "Allow only specific postal codes",
+    "allowSpecificHelp": "Only accept orders from listed postal codes",
+    "postalCodes": "Postal codes list"
+  }
+}

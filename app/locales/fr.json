@@ -1,0 +1,211 @@
+{
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "discard": "Ignorer",
+    "saving": "Enregistrement...",
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "warning": "Avertissement",
+    "info": "Information",
+    "yes": "Oui",
+    "no": "Non",
+    "confirm": "Confirmer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "add": "Ajouter",
+    "remove": "Supprimer",
+    "close": "Fermer",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "submit": "Soumettre",
+    "reset": "Réinitialiser",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "sort": "Trier",
+    "refresh": "Actualiser",
+    "copy": "Copier",
+    "download": "Télécharger",
+    "upload": "Téléverser",
+    "select": "Sélectionner",
+    "clear": "Effacer",
+    "required": "Requis",
+    "optional": "Optionnel",
+    "enabled": "Activé",
+    "disabled": "Désactivé",
+    "active": "Actif",
+    "inactive": "Inactif",
+    "public": "Public",
+    "private": "Privé",
+    "draft": "Brouillon",
+    "published": "Publié"
+  },
+  "navigation": {
+    "dashboard": "Tableau de bord",
+    "formDesigner": "Concepteur de formulaires",
+    "settings": "Paramètres",
+    "general": "Général",
+    "protection": "Protection",
+    "pixels": "Pixels",
+    "visibility": "Visibilité",
+    "integrations": "Intégrations",
+    "googleSheets": "Google Sheets",
+    "userBlocking": "Blocage d'utilisateurs",
+    "faq": "FAQ"
+  },
+  "dashboard": {
+    "title": "Tableau de bord du gestionnaire Paiement à la livraison",
+    "subtitle": "Gérez vos paramètres de paiement à la livraison et surveillez les performances",
+    "setupProgress": "Progrès de configuration",
+    "setupSteps": {
+      "embedWidget": {
+        "title": "Activer l'intégration de l'application",
+        "description": "Rendez l'application visible dans votre boutique depuis le Personnalisateur de thème. Cela permet aux clients de voir et d'utiliser l'option Paiement à la livraison lors du checkout.",
+        "buttonText": "Activer l'intégration de l'application",
+        "helpText": "Cette étape est requise pour que l'application fonctionne correctement dans votre boutique."
+      },
+      "configureCod": {
+        "title": "Configurer les paramètres Paiement à la livraison",
+        "description": "Configurez tous les paramètres de votre application, y compris le suivi des pixels, les intégrations, les contrôles de visibilité, les règles de protection et les paramètres généraux de Paiement à la livraison comme les frais, les zones de disponibilité et les limites de commande.",
+        "buttonText": "Configurer les paramètres",
+        "helpText": "Vous pouvez toujours revenir et modifier ces paramètres plus tard."
+      },
+      "customizeForm": {
+        "title": "Personnaliser le formulaire Paiement à la livraison",
+        "description": "Personnalisez les champs, l'apparence et les règles de validation de votre formulaire Paiement à la livraison pour correspondre à votre marque.",
+        "buttonText": "Personnaliser le formulaire",
+        "helpText": "La personnalisation aide à construire la confiance avec vos clients et améliore les taux de conversion."
+      }
+    },
+    "support": {
+      "title": "Support et ressources",
+      "liveChat": {
+        "title": "Support par chat en direct",
+        "description": "Obtenez une aide instantanée de notre équipe de support",
+        "buttonText": "Démarrer le chat"
+      },
+      "documentation": {
+        "title": "Documentation",
+        "description": "Guides et tutoriels complets",
+        "buttonText": "Voir la documentation"
+      },
+      "faq": {
+        "title": "Questions fréquemment posées",
+        "description": "Trouvez des réponses aux questions courantes",
+        "buttonText": "Voir les FAQ"
+      }
+    }
+  },
+  "settings": {
+    "general": {
+      "title": "Paramètres généraux",
+      "orderProcessing": {
+        "title": "Traitement des commandes",
+        "description": "Configurez comment les commandes sont créées et traitées.",
+        "badge": "Principal",
+        "orderCreationMethod": {
+          "title": "Méthode de création de commande",
+          "cod": {
+            "label": "Créer des commandes confirmées (Paiement à la livraison)",
+            "helpText": "Idéal pour l'exécution immédiate."
+          },
+          "draft": {
+            "label": "Enregistrer comme brouillons de commande",
+            "helpText": "Nécessite une révision manuelle et une confirmation."
+          }
+        },
+        "saveUtmParameters": {
+          "label": "Enregistrer les paramètres de suivi UTM dans les notes de commande",
+          "helpText": "Capture les données de campagne marketing (ex: utm_source)."
+        },
+        "addOrderTag": {
+          "label": "Ajouter le tag 'releasit_cod_form' aux nouvelles commandes",
+          "helpText": "Utile pour filtrer et automatiser les flux de travail."
+        }
+      },
+      "formBehavior": {
+        "title": "Comportement du formulaire",
+        "description": "Personnalisez comment le formulaire apparaît aux clients.",
+        "disableShopifyDiscounts": {
+          "label": "Désactiver les remises automatiques Shopify sur le formulaire",
+          "helpText": "Empêche l'application de remises automatiques."
+        },
+        "disableAutofill": {
+          "label": "Désactiver la saisie automatique et l'autocomplétion du navigateur",
+          "helpText": "Peut empêcher les informations incorrectes mais ajoute de la friction."
+        },
+        "trimLeadingZeroPhone": {
+          "label": "Supprimer le zéro initial des numéros de téléphone",
+          "helpText": "Standardise les numéros de téléphone (ex: 055... devient 55...)."
+        }
+      },
+      "afterPurchase": {
+        "title": "Expérience post-achat",
+        "description": "Définissez ce qui se passe après que les clients passent une commande.",
+        "postPurchaseRedirect": {
+          "title": "Redirection post-achat",
+          "shopify": {
+            "label": "Page de remerciement Shopify",
+            "helpText": "Page de confirmation de commande par défaut."
+          },
+          "custom": {
+            "label": "URL de redirection personnalisée",
+            "helpText": "Rediriger vers votre propre page de remerciement/vente incitative."
+          },
+          "whatsapp": {
+            "label": "Conversation WhatsApp",
+            "helpText": "Démarrer un chat WhatsApp avec un message pré-rempli."
+          },
+          "message": {
+            "label": "Superposition de message personnalisée",
+            "helpText": "Afficher un message sans quitter la page."
+          }
+        },
+        "customRedirectUrl": {
+          "label": "URL de redirection personnalisée",
+          "placeholder": "https://yourstore.com/pages/thank-you",
+          "helpText": "Doit être une URL valide commençant par https://"
+        },
+        "whatsappPhone": {
+          "label": "Numéro de téléphone WhatsApp",
+          "placeholder": "15551234567",
+          "helpText": "Inclure le code pays sans '+' (ex: 213 pour l'Algérie)."
+        },
+        "whatsappMessage": {
+          "label": "Message WhatsApp",
+          "helpText": "Utilisez {order_id} pour inclure le numéro de commande."
+        },
+        "customThankYouMessage": {
+          "label": "Message de remerciement personnalisé",
+          "helpText": "Ce message est affiché aux clients après leur commande."
+        }
+      },
+      "resetData": {
+        "title": "Réinitialiser toutes les données de l'application",
+        "description": "Cela réinitialisera complètement votre base de données d'application — toutes les commandes, clients, paramètres, analytiques et configurations seront définitivement supprimés. Cela équivaut à une installation fraîche.",
+        "warning": "ATTENTION : Cela supprimera TOUTES vos données d'application définitivement !",
+        "warningDetails": "Cela inclut : commandes, clients, analytiques, journaux, webhooks et tous les paramètres. Cette action ne peut pas être annulée.",
+        "buttonText": "Réinitialiser toutes les données de l'application",
+        "confirmButton": "Oui, tout supprimer"
+      }
+    },
+    "messages": {
+      "settingsSaved": "Paramètres généraux enregistrés avec succès !",
+      "dataReset": "Toutes les données de l'application ont été réinitialisées aux paramètres d'usine. L'application a été complètement réinitialisée.",
+      "validationErrors": "Veuillez corriger les erreurs de validation avant d'enregistrer.",
+      "invalidUrl": "URL de redirection invalide. Doit être une URL http/https valide.",
+      "invalidPhone": "Veuillez entrer un numéro de téléphone valide (7-15 chiffres)",
+      "saveFailed": "Échec de l'enregistrement des paramètres"
+    }
+  },
+  "language": {
+    "selector": {
+      "title": "Langue",
+      "english": "English",
+      "arabic": "العربية",
+      "french": "Français"
+    }
+  }
+}

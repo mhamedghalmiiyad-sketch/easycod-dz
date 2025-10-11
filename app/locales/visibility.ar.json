@@ -1,0 +1,29 @@
+{
+  "title": "إعدادات الرؤية",
+  "productPages": {
+    "hideAddToCart": "إخفاء زر إضافة إلى السلة في صفحات المنتجات",
+    "hideBuyNow": "إخفاء زر الشراء الآن في صفحات المنتجات"
+  },
+  "pages": {
+    "disableHomePage": "تعطيل Releasit في الصفحة الرئيسية",
+    "disableCollectionsPage": "تعطيل Releasit في صفحات المجموعات"
+  },
+  "products": {
+    "enableSpecific": "تفعيل النموذج فقط لمنتجات ومجموعات محددة",
+    "disableSpecific": "تعطيل النموذج لمنتج واحد أو أكثر أو مجموعات"
+  },
+  "countries": {
+    "enableSpecific": "تفعيل النموذج فقط لبلدان محددة"
+  },
+  "amounts": {
+    "minimumAmount": "الحد الأدنى للمبلغ",
+    "maximumAmount": "الحد الأقصى للمبلغ",
+    "noLimit": "لا يوجد حد"
+  },
+  "sampleData": {
+    "productA": "منتج عينة أ",
+    "productB": "منتج عينة ب",
+    "unitedStates": "الولايات المتحدة",
+    "canada": "كندا"
+  }
+}

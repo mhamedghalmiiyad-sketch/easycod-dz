@@ -1,0 +1,43 @@
+{
+  "title": "COD Manager Dashboard",
+  "subtitle": "Manage your Cash on Delivery settings and monitor performance",
+  "setupProgress": "Setup Progress",
+  "setupSteps": {
+    "embedWidget": {
+      "title": "Enable the app embed",
+      "description": "Make the app visible on your store from the Theme Customizer. This allows customers to see and use the COD option during checkout.",
+      "buttonText": "Enable app embed",
+      "helpText": "This step is required for the app to function properly on your storefront."
+    },
+    "configureCod": {
+      "title": "Configure COD settings",
+        "description": "Configure all your app settings including pixels tracking, integrations, visibility controls, protection rules, and general COD settings like fees, availability zones, and order limits.",
+      "buttonText": "Configure Settings",
+      "helpText": "You can always come back and modify these settings later."
+    },
+    "customizeForm": {
+      "title": "Customize the COD Form",
+      "description": "Personalize the fields, appearance, and validation rules of your COD form to match your brand.",
+      "buttonText": "Customize Form",
+      "helpText": "Customization helps build trust with your customers and improves conversion rates."
+    }
+  },
+  "support": {
+    "title": "Support & Resources",
+    "liveChat": {
+      "title": "Live Chat Support",
+      "description": "Get instant help from our support team",
+      "buttonText": "Start Chat"
+    },
+    "documentation": {
+      "title": "Documentation",
+      "description": "Comprehensive guides and tutorials",
+      "buttonText": "View Docs"
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "description": "Find answers to common questions",
+      "buttonText": "View FAQ"
+    }
+  }
+}

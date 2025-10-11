@@ -1,0 +1,40 @@
+{
+  "title": "Form Designer",
+  "subtitle": "Customize the look, layout, and behavior of your form",
+  "back": "Back",
+  "save": "Save",
+  "colors": {
+    "startColor": "Start Color",
+    "endColor": "End Color"
+  },
+  "layout": {
+    "buttonLayout": "Button Layout"
+  },
+  "typography": {
+    "fontWeight": "Font Weight"
+  },
+  "media": {
+    "aspectRatio": "Aspect Ratio",
+    "imageAlignment": "Image Alignment"
+  },
+  "schedule": {
+    "excludeSaturdays": "Exclude Saturdays",
+    "excludeSundays": "Exclude Sundays"
+  },
+  "content": {
+    "titleText": "Title Text",
+    "titlePosition": "Title Position"
+  },
+  "delivery": {
+    "company": "Delivery Company",
+    "manualRates": "Manual Rates",
+    "selectCompanies": "Select delivery companies to show"
+  },
+  "buttons": {
+    "buttonText": "Button Text",
+    "buttonAnimation": "Button Animation"
+  },
+  "currency": {
+    "symbol": "Currency Symbol"
+  }
+}

@@ -1,0 +1,28 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "78b3b49a43d2ac2ca7e3abaf380e011d"
+name = "alma COd"
+application_url = "https://cod-form-builder-dev.myshopify.com"
+embedded = true
+handle = "alma-cod"
+
+[build]
+automatically_update_urls_on_dev = true
+
+[webhooks]
+api_version = "2025-07"
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "read_draft_orders,read_metaobject_definitions,read_metaobjects,read_online_store_pages,read_products,read_orders,write_draft_orders,write_metaobject_definitions,write_metaobjects,write_online_store_pages,write_products,write_orders"
+
+[auth]
+redirect_urls = ["https://cod-form-builder-dev.myshopify.com/auth/callback", "https://cod-form-builder-dev.myshopify.com/auth/shopify/callback", "https://cod-form-builder-dev.myshopify.com/api/auth/callback"]
+
+[app_proxy]
+url = "https://hop-formerly-gained-filme.trycloudflare.com"
+subpath = "proxy"
+prefix = "apps"
+
+[pos]
+embedded = false

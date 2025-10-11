@@ -1,0 +1,14 @@
+{% comment %}
+  This block loads the main JavaScript for the form.
+  It should be enabled once in the Theme Editor > App embeds.
+{% endcomment %}
+
+{{ 'easycod-form-bundle.js' | asset_url | script_tag }}
+
+{% schema %}
+{
+  "name": "EasyCOD Form Script",
+  "target": "body",
+  "@app": true
+}
+{% endschema %}

@@ -1,0 +1,117 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:dev.sqlite"
+}
+
+model Session {
+  id              String        @id
+  shop            String
+  state           String
+  isOnline        Boolean       @default(false)
+  scope           String?
+  expires         DateTime?
+  accessToken     String
+  userId          BigInt?
+  accountOwner    Boolean?
+  collaborator    Boolean?
+  email           String?
+  emailVerified   Boolean?
+  firstName       String?
+  lastName        String?
+  locale          String?
+  ShopSettings    ShopSettings?
+}
+
+model AppProxy {
+  id            Int      @id @default(autoincrement())
+  shopId        String   @unique
+  isEnabled     Boolean  @default(false)
+  configuration String   @default("{}")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model ShopSettings {
+  id                      Int      @id @default(autoincrement())
+  shopId                  String   @unique
+  formFields              String?  @default("[]")
+  formStyle               String?  @default("{}")
+  shippingRates           String?  @default("[]")
+  pixelSettings           String?  @default("{}")
+  visibilityMode          String?  @default("both_cart_product")
+  visibleProducts         String?  @default("[]")
+  hiddenProducts          String?  @default("[]")
+  allowedCountries        String?  @default("[]")
+  hideAddToCart           Boolean  @default(false)
+  hideBuyNow              Boolean  @default(false)
+  disableOnHome           Boolean  @default(false)
+  disableOnCollections    Boolean  @default(false)
+  enableSpecificProducts  Boolean  @default(false)
+  disableSpecificProducts Boolean  @default(false)
+  enableSpecificCountries Boolean  @default(false)
+  minimumAmount           String?  @default("")
+  maximumAmount           String?  @default("")
+  googleAccessToken       String?
+  googleRefreshToken      String?
+  googleUserEmail         String?
+  googleSheetId           String?
+  googleSheetName         String?
+  googleSheetTabName      String?
+  googleSheetImportOrders Boolean  @default(true)
+  googleSheetImportLines  Boolean  @default(false)
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+  generalSettings         String?
+  userBlocking            String?
+  Session                 Session  @relation(fields: [shopId], references: [id], onDelete: Cascade)
+}
+
+model OrderTracking {
+  id                 String   @id @default(cuid())
+  shopId             String
+  draftOrderId       String
+  customerIp         String?
+  customerEmail      String?
+  customerPhone      String?
+  customerPostalCode String?
+  totalQuantity      Int
+  orderTotal         Float
+  currency           String
+  createdAt          DateTime @default(now())
+
+  @@index([shopId])
+  @@index([customerEmail])
+  @@index([customerPhone])
+  @@index([customerIp])
+}
+
+model DeliveryIntegration {
+  id             Int      @id @default(autoincrement())
+  shopId         String
+  provider       String   // 'noest', 'ecotrack', 'manual'
+  apiToken       String?
+  userGuid       String?  // For Noest
+  apiUrl         String?  // For EcoTrack
+  isActive       Boolean  @default(true)
+  deliveryRates  String?  @default("[]") // JSON string for manual rates
+  lastSyncAt     DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([shopId])
+}
+
+model algeria_cities {
+  id                 Int    @id
+  commune_name       String
+  commune_name_ascii String
+  daira_name         String
+  daira_name_ascii   String
+  wilaya_code        String
+  wilaya_name        String
+  wilaya_name_ascii  String
+}

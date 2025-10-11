@@ -1,0 +1,211 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "discard": "Discard",
+    "saving": "Saving...",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Info",
+    "yes": "Yes",
+    "no": "No",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "remove": "Remove",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "reset": "Reset",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "refresh": "Refresh",
+    "copy": "Copy",
+    "download": "Download",
+    "upload": "Upload",
+    "select": "Select",
+    "clear": "Clear",
+    "required": "Required",
+    "optional": "Optional",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "active": "Active",
+    "inactive": "Inactive",
+    "public": "Public",
+    "private": "Private",
+    "draft": "Draft",
+    "published": "Published"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "formDesigner": "Form Designer",
+    "settings": "Settings",
+    "general": "General",
+    "protection": "Protection",
+    "pixels": "Pixels",
+    "visibility": "Visibility",
+    "integrations": "Integrations",
+    "googleSheets": "Google Sheets",
+    "userBlocking": "User Blocking",
+    "faq": "FAQ"
+  },
+  "dashboard": {
+    "title": "COD Manager Dashboard",
+    "subtitle": "Manage your Cash on Delivery settings and monitor performance",
+    "setupProgress": "Setup Progress",
+    "setupSteps": {
+      "embedWidget": {
+        "title": "Enable the app embed",
+        "description": "Make the app visible on your store from the Theme Customizer. This allows customers to see and use the COD option during checkout.",
+        "buttonText": "Enable app embed",
+        "helpText": "This step is required for the app to function properly on your storefront."
+      },
+      "configureCod": {
+        "title": "Configure COD settings",
+        "description": "Configure all your app settings including pixels tracking, integrations, visibility controls, protection rules, and general COD settings like fees, availability zones, and order limits.",
+        "buttonText": "Configure Settings",
+        "helpText": "You can always come back and modify these settings later."
+      },
+      "customizeForm": {
+        "title": "Customize the COD Form",
+        "description": "Personalize the fields, appearance, and validation rules of your COD form to match your brand.",
+        "buttonText": "Customize Form",
+        "helpText": "Customization helps build trust with your customers and improves conversion rates."
+      }
+    },
+    "support": {
+      "title": "Support & Resources",
+      "liveChat": {
+        "title": "Live Chat Support",
+        "description": "Get instant help from our support team",
+        "buttonText": "Start Chat"
+      },
+      "documentation": {
+        "title": "Documentation",
+        "description": "Comprehensive guides and tutorials",
+        "buttonText": "View Docs"
+      },
+      "faq": {
+        "title": "Frequently Asked Questions",
+        "description": "Find answers to common questions",
+        "buttonText": "View FAQ"
+      }
+    }
+  },
+  "settings": {
+    "general": {
+      "title": "General Settings",
+      "orderProcessing": {
+        "title": "Order Processing",
+        "description": "Configure how orders are created and processed.",
+        "badge": "Core",
+        "orderCreationMethod": {
+          "title": "Order Creation Method",
+          "cod": {
+            "label": "Create confirmed orders (Cash on Delivery)",
+            "helpText": "Best for immediate fulfillment."
+          },
+          "draft": {
+            "label": "Save as draft orders",
+            "helpText": "Requires manual review and confirmation."
+          }
+        },
+        "saveUtmParameters": {
+          "label": "Save UTM tracking parameters in order notes",
+          "helpText": "Capture marketing campaign data (e.g., utm_source)."
+        },
+        "addOrderTag": {
+          "label": "Add 'releasit_cod_form' tag to new orders",
+          "helpText": "Useful for filtering and automating workflows."
+        }
+      },
+      "formBehavior": {
+        "title": "Form Behavior",
+        "description": "Customize how the form appears to customers.",
+        "disableShopifyDiscounts": {
+          "label": "Disable Shopify automatic discounts on the form",
+          "helpText": "Prevents automatic discounts from applying."
+        },
+        "disableAutofill": {
+          "label": "Disable browser autofill and autocomplete",
+          "helpText": "Can prevent incorrect information but adds friction."
+        },
+        "trimLeadingZeroPhone": {
+          "label": "Remove leading zero from phone numbers",
+          "helpText": "Standardizes phone numbers (e.g., 055... becomes 55...)."
+        }
+      },
+      "afterPurchase": {
+        "title": "After-Purchase Experience",
+        "description": "Define what happens after customers place an order.",
+        "postPurchaseRedirect": {
+          "title": "Post-purchase redirect",
+          "shopify": {
+            "label": "Shopify thank you page",
+            "helpText": "Default order confirmation page."
+          },
+          "custom": {
+            "label": "Custom redirect URL",
+            "helpText": "Redirect to your own upsell/thank you page."
+          },
+          "whatsapp": {
+            "label": "WhatsApp conversation",
+            "helpText": "Start a WhatsApp chat with a pre-filled message."
+          },
+          "message": {
+            "label": "Custom message overlay",
+            "helpText": "Display a message without leaving the page."
+          }
+        },
+        "customRedirectUrl": {
+          "label": "Custom Redirect URL",
+          "placeholder": "https://yourstore.com/pages/thank-you",
+          "helpText": "Must be a valid URL starting with https://"
+        },
+        "whatsappPhone": {
+          "label": "WhatsApp Phone Number",
+          "placeholder": "15551234567",
+          "helpText": "Include country code without '+' (e.g., 213 for Algeria)."
+        },
+        "whatsappMessage": {
+          "label": "WhatsApp Message",
+          "helpText": "Use {order_id} to include the order number."
+        },
+        "customThankYouMessage": {
+          "label": "Custom Thank You Message",
+          "helpText": "This message is displayed to customers after they order."
+        }
+      },
+      "resetData": {
+        "title": "Reset All App Data",
+        "description": "This will completely reset your entire application database — all orders, customers, settings, and configurations will be permanently deleted. This is equivalent to a fresh installation.",
+        "warning": "WARNING: This will delete ALL your app data permanently!",
+        "warningDetails": "This includes: orders, customers, logs, webhooks, and all settings. This action cannot be undone.",
+        "buttonText": "Reset All App Data",
+        "confirmButton": "Yes, Delete Everything"
+      }
+    },
+    "messages": {
+      "settingsSaved": "General settings saved successfully!",
+      "dataReset": "All app data has been reset to factory defaults. The application has been completely reinitialized.",
+      "validationErrors": "Please fix the validation errors before saving.",
+      "invalidUrl": "Invalid redirect URL. Must be a valid http/https URL.",
+      "invalidPhone": "Please enter a valid phone number (7-15 digits)",
+      "saveFailed": "Failed to save settings"
+    }
+  },
+  "language": {
+    "selector": {
+      "title": "Language",
+      "english": "English",
+      "arabic": "العربية",
+      "french": "Français"
+    }
+  }
+}

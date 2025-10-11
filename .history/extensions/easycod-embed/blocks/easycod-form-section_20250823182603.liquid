@@ -1,0 +1,99 @@
+ {% comment %}
+
+  File: extensions/easycod-embed/sections/easycod-form-section.liquid
+
+{% endcomment %}
+
+
+{% schema %}
+
+{
+
+  "name": "EasyCod Form Section",
+
+  "target": "section",
+
+  "settings": [
+
+    {
+
+      "type": "text",
+
+      "id": "heading_override",
+
+      "label": "Heading Override",
+
+      "info": "Leave blank to use the heading from the form designer."
+
+    },
+
+    {
+
+      "type": "text",
+
+      "id": "button_text_override",
+
+      "label": "Button Text Override",
+
+      "info": "Leave blank to use the button text from the form designer."
+
+    }
+
+  ]
+
+}
+
+{% endschema %}
+
+
+{% comment %}
+
+  1. Use a class and a dynamic ID for the container.
+
+  This allows for multiple form sections on the same page.
+
+{% endcomment %}
+
+<div
+
+  class="easycod-form-container"
+
+  id="easycod-form-root-{{ section.id }}"
+
+  data-section-id="{{ section.id }}"
+
+  data-section-settings='{{ section.settings | json }}'
+
+>
+
+  <p>Loading Form...</p>
+
+</div>
+
+
+{% comment %}
+
+  2. Create the JSON configuration script with a dynamic ID.
+
+  It reads the main config from your app's metafield.
+
+{% endcomment %}
+
+<script id="easycod-form-config-{{ section.id }}" type="application/json">
+
+  {{ shop.metafields.easycod_dz.form_config }}
+
+</script>
+
+
+{% comment %}
+
+  3. The main JS bundle should be loaded by the theme's app embed block,
+
+  or just once on the page. You can remove this script tag from here
+
+  if you have an app embed block enabled that already loads it.
+
+{% endcomment %}
+
+<script src="{{ 'easycod-form-bundle.js' | asset_url }}" defer></script> ? 

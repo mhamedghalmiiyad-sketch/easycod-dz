@@ -1,0 +1,28 @@
+{% comment %}
+  File: extensions/easycod-embed/blocks/easycod-form.liquid
+{% endcomment %}
+
+{% schema %}
+{
+  "name": "EasyCod Form Block",
+  "target": "section",
+  "settings": [ 
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading (Optional)",
+      "default": "Place Your Order"
+    }
+  ]
+}
+{% endschema %}
+
+<div class="easycod-form-block">
+  {% if block.settings.heading != blank %}
+    <h3>{{ block.settings.heading }}</h3>
+  {% endif %}
+  
+  <script src="{{ 'easycod-form-bundle.js' | asset_url }}" defer></script>
+
+  <div id="easycod-form-root"></div>
+</div>

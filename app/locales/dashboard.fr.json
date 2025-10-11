@@ -1,0 +1,43 @@
+{
+  "title": "Tableau de bord du gestionnaire Paiement à la livraison",
+  "subtitle": "Gérez vos paramètres de paiement à la livraison et surveillez les performances",
+  "setupProgress": "Progrès de configuration",
+  "setupSteps": {
+    "embedWidget": {
+      "title": "Activer l'intégration de l'application",
+      "description": "Rendez l'application visible dans votre boutique depuis le Personnalisateur de thème. Cela permet aux clients de voir et d'utiliser l'option Paiement à la livraison lors du checkout.",
+      "buttonText": "Activer l'intégration de l'application",
+      "helpText": "Cette étape est requise pour que l'application fonctionne correctement dans votre boutique."
+    },
+    "configureCod": {
+      "title": "Configurer les paramètres Paiement à la livraison",
+      "description": "Ajustez le fonctionnement du Paiement à la livraison pour vos clients, y compris les frais, les zones de disponibilité et les limites de commande.",
+      "buttonText": "Configurer les paramètres",
+      "helpText": "Vous pouvez toujours revenir et modifier ces paramètres plus tard."
+    },
+    "customizeForm": {
+      "title": "Personnaliser le formulaire Paiement à la livraison",
+      "description": "Personnalisez les champs, l'apparence et les règles de validation de votre formulaire Paiement à la livraison pour correspondre à votre marque.",
+      "buttonText": "Personnaliser le formulaire",
+      "helpText": "La personnalisation aide à construire la confiance avec vos clients et améliore les taux de conversion."
+    }
+  },
+  "support": {
+    "title": "Support et ressources",
+    "liveChat": {
+      "title": "Support par chat en direct",
+      "description": "Obtenez une aide instantanée de notre équipe de support",
+      "buttonText": "Démarrer le chat"
+    },
+    "documentation": {
+      "title": "Documentation",
+      "description": "Guides et tutoriels complets",
+      "buttonText": "Voir la documentation"
+    },
+    "faq": {
+      "title": "Questions fréquemment posées",
+      "description": "Trouvez des réponses aux questions courantes",
+      "buttonText": "Voir les FAQ"
+    }
+  }
+}

@@ -1,0 +1,319 @@
+/* RTL Support for Arabic with logical properties */
+[dir="rtl"] {
+  text-align: right;
+  direction: rtl;
+}
+
+/* Global RTL adjustments */
+[dir="rtl"] * {
+  text-align: inherit;
+}
+
+/* Polaris component RTL overrides */
+[dir="rtl"] .Polaris-ButtonGroup {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .Polaris-InlineStack {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .Polaris-Text--alignmentStart {
+  text-align: right;
+}
+
+[dir="rtl"] .Polaris-Text--alignmentEnd {
+  text-align: left;
+}
+
+/* Layout adjustments using logical properties */
+[dir="rtl"] .Polaris-Layout__Section--oneThird {
+  margin-inline-start: 0;
+  margin-inline-end: 1rem;
+}
+
+/* Form input alignment */
+[dir="rtl"] .Polaris-TextField__Input {
+  text-align: right;
+}
+
+[dir="rtl"] .Polaris-Select__Input {
+  text-align: right;
+}
+
+[dir="rtl"] .Polaris-Textarea__Input {
+  text-align: right;
+}
+
+/* Navigation and menu items */
+[dir="rtl"] .Polaris-Navigation__Item {
+  text-align: right;
+}
+
+[dir="rtl"] .Polaris-Navigation__Item--icon {
+  margin-inline-end: 0;
+  margin-inline-start: 0.5rem;
+}
+
+/* Card and content padding adjustments */
+[dir="rtl"] .Polaris-Card {
+  text-align: right;
+}
+
+[dir="rtl"] .Polaris-Card__Section {
+  padding-inline-start: 1rem;
+  padding-inline-end: 1rem;
+}
+
+/* Button and action alignments */
+[dir="rtl"] .Polaris-ButtonGroup__Item {
+  margin-inline-start: 0.5rem;
+  margin-inline-end: 0;
+}
+
+[dir="rtl"] .Polaris-ButtonGroup__Item:first-child {
+  margin-inline-start: 0;
+}
+
+/* Modal and overlay adjustments */
+[dir="rtl"] .Polaris-Modal__Dialog {
+  text-align: right;
+}
+
+[dir="rtl"] .Polaris-Modal__Header {
+  padding-inline-start: 1.5rem;
+  padding-inline-end: 1.5rem;
+}
+
+/* List and item alignments */
+[dir="rtl"] .Polaris-List__Item {
+  text-align: right;
+}
+
+[dir="rtl"] .Polaris-List__Item::marker {
+  margin-inline-end: 0.5rem;
+  margin-inline-start: 0;
+}
+
+/* Enhanced RTL support for buttons and actions */
+[dir="rtl"] .Polaris-Button {
+  text-align: center;
+}
+
+[dir="rtl"] .Polaris-Button--primary,
+[dir="rtl"] .Polaris-Button--secondary {
+  margin-inline-start: 0.5rem;
+  margin-inline-end: 0;
+}
+
+[dir="rtl"] .Polaris-Button--plain {
+  padding-inline-start: 0.5rem;
+  padding-inline-end: 0.5rem;
+}
+
+/* Form field RTL improvements */
+[dir="rtl"] .Polaris-FormLayout__Item {
+  text-align: right;
+}
+
+[dir="rtl"] .Polaris-FormLayout__Item .Polaris-Label {
+  text-align: right;
+}
+
+[dir="rtl"] .Polaris-FormLayout__Item .Polaris-HelpText {
+  text-align: right;
+}
+
+/* Page and layout RTL adjustments */
+[dir="rtl"] .Polaris-Page {
+  text-align: right;
+}
+
+[dir="rtl"] .Polaris-Page__Header {
+  text-align: right;
+}
+
+[dir="rtl"] .Polaris-Page__Title {
+  text-align: right;
+}
+
+[dir="rtl"] .Polaris-Page__Subtitle {
+  text-align: right;
+}
+
+/* Layout section RTL */
+[dir="rtl"] .Polaris-Layout__Section {
+  text-align: right;
+}
+
+/* Card content RTL */
+[dir="rtl"] .Polaris-Card__Section {
+  text-align: right;
+}
+
+[dir="rtl"] .Polaris-Card__Section .Polaris-Text {
+  text-align: right;
+}
+
+/* Progress bar RTL */
+[dir="rtl"] .Polaris-ProgressBar {
+  direction: ltr; /* Keep progress bar LTR for visual consistency */
+}
+
+/* Badge RTL */
+[dir="rtl"] .Polaris-Badge {
+  margin-inline-start: 0.5rem;
+  margin-inline-end: 0;
+}
+
+/* Icon RTL adjustments */
+[dir="rtl"] .Polaris-Icon {
+  margin-inline-start: 0.5rem;
+  margin-inline-end: 0;
+}
+
+/* Select dropdown RTL */
+[dir="rtl"] .Polaris-Select__Input {
+  text-align: right;
+  padding-inline-start: 2.5rem;
+  padding-inline-end: 0.75rem;
+}
+
+[dir="rtl"] .Polaris-Select__Input::after {
+  left: 0.75rem;
+  right: auto;
+}
+
+/* Collapsible RTL */
+[dir="rtl"] .Polaris-Collapsible {
+  text-align: right;
+}
+
+/* Toast RTL */
+[dir="rtl"] .Polaris-Toast {
+  text-align: right;
+}
+
+/* Modal RTL enhancements */
+[dir="rtl"] .Polaris-Modal__Body {
+  text-align: right;
+}
+
+[dir="rtl"] .Polaris-Modal__Footer {
+  text-align: right;
+}
+
+/* Navigation RTL */
+[dir="rtl"] .Polaris-Navigation {
+  text-align: right;
+}
+
+[dir="rtl"] .Polaris-Navigation__Item {
+  text-align: right;
+  padding-inline-start: 1rem;
+  padding-inline-end: 0.5rem;
+}
+
+/* Tabs RTL */
+[dir="rtl"] .Polaris-Tabs__List {
+  text-align: right;
+}
+
+[dir="rtl"] .Polaris-Tabs__Item {
+  text-align: right;
+}
+
+/* Choice list RTL */
+[dir="rtl"] .Polaris-ChoiceList__Item {
+  text-align: right;
+}
+
+[dir="rtl"] .Polaris-ChoiceList__Item .Polaris-Choice {
+  text-align: right;
+}
+
+/* Checkbox and radio RTL */
+[dir="rtl"] .Polaris-Choice__Control {
+  margin-inline-start: 0.5rem;
+  margin-inline-end: 0;
+}
+
+/* Text field RTL */
+[dir="rtl"] .Polaris-TextField__Input {
+  text-align: right;
+  padding-inline-start: 0.75rem;
+  padding-inline-end: 0.75rem;
+}
+
+/* Textarea RTL */
+[dir="rtl"] .Polaris-Textarea__Input {
+  text-align: right;
+  padding-inline-start: 0.75rem;
+  padding-inline-end: 0.75rem;
+}
+
+/* BlockStack and InlineStack RTL */
+[dir="rtl"] .Polaris-BlockStack {
+  text-align: right;
+}
+
+[dir="rtl"] .Polaris-InlineStack {
+  text-align: right;
+}
+
+/* Box RTL */
+[dir="rtl"] .Polaris-Box {
+  text-align: right;
+}
+
+/* Divider RTL */
+[dir="rtl"] .Polaris-Divider {
+  margin-inline-start: 0;
+  margin-inline-end: 0;
+}
+
+/* Banner RTL */
+[dir="rtl"] .Polaris-Banner {
+  text-align: right;
+}
+
+[dir="rtl"] .Polaris-Banner__Content {
+  text-align: right;
+}
+
+/* CalloutCard RTL */
+[dir="rtl"] .Polaris-CalloutCard {
+  text-align: right;
+}
+
+[dir="rtl"] .Polaris-CalloutCard__Content {
+  text-align: right;
+}
+
+/* EmptyState RTL */
+[dir="rtl"] .Polaris-EmptyState {
+  text-align: center; /* Keep centered for visual balance */
+}
+
+/* Frame RTL */
+[dir="rtl"] .Polaris-Frame {
+  direction: rtl;
+}
+
+/* TopBar RTL */
+[dir="rtl"] .Polaris-TopBar {
+  text-align: right;
+}
+
+[dir="rtl"] .Polaris-TopBar__Contents {
+  text-align: right;
+}
+
+/* ContextualSaveBar RTL */
+[dir="rtl"] .Polaris-ContextualSaveBar {
+  text-align: right;
+}
+
+[dir="rtl"] .Polaris-ContextualSaveBar__Contents {
+  text-align: right;
+}

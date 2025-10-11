@@ -1,0 +1,23 @@
+{% schema %}
+{
+  "name": "EasyCod Form Section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Contact us"
+    }
+  ]
+}
+{% endschema %}
+
+<section class="easycod-form-section">
+  <h2>{{ section.settings.heading }}</h2>
+
+  <!-- Load your form bundle -->
+  {{ 'easycod-form-bundle.js' | asset_url | script_tag }}
+
+  <div id="easycod-form"></div>
+</section>
+ 

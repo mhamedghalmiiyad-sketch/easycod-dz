@@ -1,0 +1,21 @@
+api_version = "2024-07"
+
+[[extensions]]
+
+uid = "32b518ce-f6ec-09b5-f812-7e62903de2e08f444fae"
+
+type = "theme"
+name = "EasyCOD Form"
+handle = "easycod-embed"
+
+[extensions.settings]
+
+[[extensions.settings.blocks]]
+type = "easycod-form-section"
+name = "EasyCOD Form Section"
+target = "section"
+
+[[extensions.settings.blocks]]
+type = "app_embed"
+name = "EasyCOD Form"
+target = "body"

@@ -1,0 +1,35 @@
+# shopify.app.toml
+
+client_id = "ab91c9e93dee6993ba54ade00aa0b3eb"
+name = "easycod-dz"
+handle = "easycod-dz"
+application_url = "https://cross-bureau-consists-malpractice.trycloudflare.com"
+embedded = true
+
+[build]
+include_config_on_deploy = true
+automatically_update_urls_on_dev = true
+
+[webhooks]
+api_version = "2024-07"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/uninstalled" ]
+  uri = "/webhooks/app/uninstalled"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/scopes_update" ]
+  uri = "/webhooks/app/scopes_update"
+
+# ✅ FIX: Using the correct, modern scopes for managing metafield definitions.
+[access_scopes]
+scopes = "read_products,write_products,read_draft_orders,write_draft_orders,read_metaobject_definitions,write_metaobject_definitions,read_metaobjects,write_metaobjects,write_online_store_pages,read_online_store_pages"[auth]
+redirect_urls = ["https://cross-bureau-consists-malpractice.trycloudflare.com/auth/callback", "https://cross-bureau-consists-malpractice.trycloudflare.com/auth/shopify/callback", "https://cross-bureau-consists-malpractice.trycloudflare.com/api/auth/callback"]
+
+[pos]
+embedded = false
+
+[app_proxy]
+url = "https://cross-bureau-consists-malpractice.trycloudflare.com"
+subpath = "codform"
+prefix = "apps"

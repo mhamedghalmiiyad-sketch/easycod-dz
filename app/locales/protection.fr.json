@@ -1,0 +1,52 @@
+{
+  "title": "Paramètres de protection",
+  "noBlockingRules": "Aucune règle de blocage active",
+  "noBlockingRulesDescription": "Configurez les règles de blocage ci-dessous pour protéger votre boutique des commandes indésirables, du spam ou des clients abusifs. Toutes les règles fonctionnent ensemble pour fournir une protection complète.",
+  "orderLimits": {
+    "title": "Limites de commande",
+    "description": "Empêcher les clients de passer plusieurs commandes dans un court laps de temps",
+    "hours": "Heures",
+    "quantity": "Quantité",
+    "helpText": "Les clients sont identifiés par adresse IP, email ou numéro de téléphone"
+  },
+  "blockLists": {
+    "title": "Listes de blocage",
+    "description": "Bloquer des clients spécifiques par email, téléphone ou adresse IP",
+    "blockedEmails": "Adresses email bloquées",
+    "blockedEmailsHelp": "Entrez un email par ligne",
+    "blockedPhones": "Numéros de téléphone bloqués",
+    "blockedPhonesHelp": "Entrez un numéro par ligne",
+    "blockedIPs": "Adresses IP bloquées",
+    "blockedIPsHelp": "Entrez une adresse IP par ligne",
+    "allowedIPs": "Adresses IP toujours autorisées",
+    "allowedIPsHelp": "Ces IP peuvent toujours passer des commandes indépendamment des autres règles"
+  },
+  "blockedMessage": {
+    "title": "Message client bloqué",
+    "description": "Message affiché aux clients bloqués"
+  },
+  "riskScoring": {
+    "title": "Évaluation des risques",
+    "description": "Calculer automatiquement les scores de risque pour les commandes basés sur divers facteurs",
+    "enableRiskScoring": "Activer l'évaluation automatique des risques",
+    "highRiskThreshold": "Seuil de risque élevé",
+    "highRiskThresholdHelp": "Les commandes dépassant ce seuil seront à haut risque",
+    "reviewThreshold": "Seuil de révision",
+    "reviewThresholdHelp": "Les commandes dépassant ce seuil nécessitent une révision",
+    "autoReject": "Rejeter automatiquement les commandes à haut risque",
+    "autoRejectHelp": "Bloquer automatiquement les commandes qui dépassent le seuil de risque élevé",
+    "suspiciousDomains": "Domaines email suspects"
+  },
+  "geographicRestrictions": {
+    "title": "Restrictions géographiques",
+    "description": "Contrôler l'accès basé sur les codes postaux",
+    "mode": "Mode de restriction géographique",
+    "noRestrictions": "Aucune restriction géographique",
+    "noRestrictionsHelp": "Accepter les commandes de n'importe quel code postal",
+    "blockSpecific": "Bloquer des codes postaux spécifiques",
+    "blockSpecificHelp": "Empêcher les commandes des codes postaux listés",
+    "allowSpecific": "Autoriser uniquement des codes postaux spécifiques",
+    "allowSpecificHelp": "Accepter uniquement les commandes des codes postaux listés",
+    "postalCodes": "Liste des codes postaux"
+  }
+}

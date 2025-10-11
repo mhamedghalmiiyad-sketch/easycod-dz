@@ -1,0 +1,39 @@
+# shopify.app.toml
+
+client_id = "ab91c9e93dee6993ba54ade00aa0b3eb"
+name = "easycod-dz"
+handle = "easycod-dz"
+application_url = "https://demonstration-acids-muslim-folks.trycloudflare.com"
+embedded = true
+
+[build]
+include_config_on_deploy = true
+automatically_update_urls_on_dev = true
+
+# CORRECTED: Use a stable, recent API version
+[webhooks]
+api_version = "2024-07"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/uninstalled" ]
+  uri = "/webhooks/app/uninstalled"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/scopes_update" ]
+  uri = "/webhooks/app/scopes_update"
+
+# CRITICAL FIX: Added scopes for reading products and creating draft orders
+[access_scopes]
+scopes = "write_products,read_products,write_draft_orders,read_draft_orders"
+
+[auth]
+redirect_urls = ["https://demonstration-acids-muslim-folks.trycloudflare.com/auth/callback", "https://demonstration-acids-muslim-folks.trycloudflare.com/auth/shopify/callback", "https://demonstration-acids-muslim-folks.trycloudflare.com/api/auth/callback"]
+
+[pos]
+embedded = false
+
+# CORRECTED: Removed the invalid port from the URL
+[app_proxy]
+url = "https://demonstration-acids-muslim-folks.trycloudflare.com/proxy"
+subpath = "codform"
+prefix = "apps"

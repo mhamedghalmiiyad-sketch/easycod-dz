@@ -1,0 +1,10 @@
+diff --git a/node_modules/@shopify/shopify-app-remix/react/components/PolarisProvider.tsx b/node_modules/@shopify/shopify-app-remix/react/components/PolarisProvider.tsx
+index 1234567..abcdef0 100644
+--- a/node_modules/@shopify/shopify-app-remix/react/components/PolarisProvider.tsx
++++ b/node_modules/@shopify/shopify-app-remix/react/components/PolarisProvider.tsx
+@@ -1,6 +1,6 @@
+ import React from 'react';
+-import translations from '@shopify/polaris/locales/en.json';
++import translations from '@shopify/polaris/locales/en.json' with { type: 'json' };
+ import {AppProvider as PolarisAppProvider} from '@shopify/polaris';
+ import {useAppBridge} from '@shopify/app-bridge-react';

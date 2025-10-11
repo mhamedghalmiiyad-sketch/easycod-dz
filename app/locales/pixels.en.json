@@ -1,0 +1,59 @@
+{
+  "title": "Pixels Settings",
+  "platforms": {
+    "title": "Platforms",
+    "facebook": "Facebook",
+    "googleAnalytics": "Google Analytics",
+    "tiktok": "TikTok",
+    "snapchat": "Snapchat",
+    "pinterest": "Pinterest",
+    "sharechat": "ShareChat",
+    "taboola": "Taboola",
+    "kwai": "Kwai"
+  },
+  "events": {
+    "title": "Events",
+    "initiateCheckout": "InitiateCheckout",
+    "purchase": "Purchase",
+    "addToCart": "AddToCart",
+    "addPaymentInfo": "AddPaymentInfo",
+    "placeAnOrder": "PlaceAnOrder",
+    "completePayment": "CompletePayment",
+    "checkout": "Checkout",
+    "custom": "Custom Event"
+  },
+  "settings": {
+    "title": "Settings",
+    "noPlatformsConfigured": "No platforms configured",
+    "facebookPurchaseEvent": "Facebook Purchase Event Type",
+    "facebookPurchaseEventHelp": "Choose how purchase events are sent to Facebook",
+    "sendAddToCartEvents": "Send AddToCart events",
+    "sendAddToCartEventsHelp": "Track when customers add items to their cart",
+    "sendAddPaymentInfoEvents": "Send AddPaymentInfo events",
+    "sendAddPaymentInfoEventsHelp": "Track when customers enter payment information",
+    "sendPinterestAddToCart": "Send AddToCart events to Pinterest",
+    "sendPinterestAddToCartHelp": "Track Pinterest add-to-cart events",
+    "disableAllTracking": "Disable all event tracking",
+    "disableAllTrackingHelp": "This will disable all pixel events sent by the app across all platforms"
+  },
+  "status": {
+    "active": "Active",
+    "notSet": "Not set"
+  },
+  "helpText": {
+    "facebook": "Find your Pixel ID in Facebook Events Manager",
+    "googleAnalytics": "Your GA4 Measurement ID from Google Analytics",
+    "tiktok": "Find your Pixel ID in TikTok Events Manager",
+    "snapchat": "Your Snap Pixel ID from Snapchat Ads Manager",
+    "pinterest": "Your Pinterest Tag ID from Pinterest Business",
+    "sharechat": "Your ShareChat Pixel ID from ShareChat Ads Manager",
+    "taboola": "Your Taboola Pixel ID from Taboola Ads",
+    "kwai": "Your Kwai Pixel ID from Kwai Ads Manager"
+  },
+  "validation": {
+    "facebook": "Facebook Pixel ID should be 15-16 digits",
+    "googleAnalytics": "Google Analytics ID should start with 'G-' followed by 10 characters",
+    "tiktok": "TikTok Pixel ID should start with 'C' followed by alphanumeric characters",
+    "snapchat": "Snapchat Pixel ID should be in UUID format"
+  }
+}

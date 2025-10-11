@@ -1,0 +1,40 @@
+{
+  "title": "Concepteur de formulaires",
+  "subtitle": "Personnalisez l'apparence, la mise en page et le comportement de votre formulaire",
+  "back": "Retour",
+  "save": "Enregistrer",
+  "colors": {
+    "startColor": "Couleur de début",
+    "endColor": "Couleur de fin"
+  },
+  "layout": {
+    "buttonLayout": "Mise en page des boutons"
+  },
+  "typography": {
+    "fontWeight": "Poids de la police"
+  },
+  "media": {
+    "aspectRatio": "Ratio d'aspect",
+    "imageAlignment": "Alignement de l'image"
+  },
+  "schedule": {
+    "excludeSaturdays": "Exclure les samedis",
+    "excludeSundays": "Exclure les dimanches"
+  },
+  "content": {
+    "titleText": "Texte du titre",
+    "titlePosition": "Position du titre"
+  },
+  "delivery": {
+    "company": "Compagnie de livraison",
+    "manualRates": "Tarifs manuels",
+    "selectCompanies": "Sélectionner les compagnies de livraison à afficher"
+  },
+  "buttons": {
+    "buttonText": "Texte du bouton",
+    "buttonAnimation": "Animation du bouton"
+  },
+  "currency": {
+    "symbol": "Symbole de devise"
+  }
+}

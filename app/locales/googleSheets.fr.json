@@ -1,0 +1,16 @@
+{
+  "title": "Intégration Google Sheets",
+  "connect": "Se connecter avec Google",
+  "connecting": "Connexion...",
+  "enableImport": "Activer l'importation automatique des commandes",
+  "enableImportHelp": "Les nouvelles commandes seront automatiquement ajoutées à votre Google Sheet sélectionné",
+  "selectSpreadsheet": "Sélectionner une feuille de calcul",
+  "selectSpreadsheetPlaceholder": "Choisir une feuille de calcul",
+  "selectSpreadsheetOption": "Sélectionner une feuille de calcul",
+  "sheetTab": "Onglet de la feuille",
+  "ordersTab": "Commandes",
+  "ordersTabHelp": "Les commandes seront importées dans l'onglet 'Commandes'",
+  "multiLineImport": "Importation multi-lignes",
+  "multiLineImportHelp": "Importer les commandes avec plusieurs produits comme des lignes séparées",
+  "needHelp": "Besoin d'aide ?"
+}

@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Fix emoji alignment in language selector */
+.Polaris-Select__Input {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.Polaris-Select__Input option {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Improve emoji alignment in select options */
+.Polaris-Select__Input::before {
+  content: '';
+  display: inline-block;
+  vertical-align: middle;
+  height: 1em;
+}
+
+/* Ensure proper alignment for flag emojis */
+.Polaris-Select__Input {
+  line-height: 1.2;
+  vertical-align: middle;
+}
+
+/* Improve alignment in language selector container */
+.language-selector-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.language-selector-container .Polaris-Select {
+  display: flex;
+  align-items: center;
+}
+
+/* Fix emoji spacing in select options */
+.Polaris-Select__Input option {
+  padding: 0.25rem 0;
+}
+
+/* Fix emoji spacing in language selector - reduce gap between flag and text */
+.Polaris-Select__Prefix {
+  margin-right: 4px !important;
+}
+
+/* Additional fix for emoji alignment in select button */
+.Polaris-Select__Input {
+  display: flex;
+  align-items: center;
+}
+
+.Polaris-Select__Input .Polaris-Select__Prefix {
+  margin-right: 4px !important;
+}
+
+/* Fix language selector spacing - target the InlineStack inside language-selector-container */
+.language-selector-container .Polaris-InlineStack {
+  gap: 0.5rem !important;
+}
+
+/* Alternative fix - target any InlineStack with gap="200" */
+.Polaris-InlineStack[style*="gap: var(--p-space-200)"] {
+  gap: 0.5rem !important;
+}
+
+/* More aggressive fix - target all InlineStacks in the language selector area */
+.language-selector-container * {
+  gap: 0.5rem !important;
+}
+
+/* Nuclear option - force all gaps to be minimal in language selector */
+.language-selector-container .Polaris-InlineStack,
+.language-selector-container .Polaris-InlineStack * {
+  gap: 0.25rem !important;
+  margin-right: 0.25rem !important;
+}
+
+/* Force tight spacing for Reset All App Data section */
+.Polaris-Card .Polaris-Text--headingMd {
+  margin-left: 0.25rem !important;
+}
+
+/* Additional fix for any remaining InlineStack gaps */
+.Polaris-InlineStack[style*="gap: var(--p-space-200)"] {
+  gap: 0.25rem !important;
+}
+
+/* Improve icon alignment with text */
+.Polaris-Icon {
+  vertical-align: middle !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+/* Ensure text and icons are perfectly aligned */
+.Polaris-Text {
+  vertical-align: middle !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}

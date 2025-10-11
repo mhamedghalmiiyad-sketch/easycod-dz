@@ -1,0 +1,93 @@
+{% comment %}
+  File: extensions/easycod-embed/sections/easycod-form-section.liquid
+{% endcomment %}
+
+<div
+  class="easycod-form-container"
+  id="easycod-form-root-{{ section.id }}"
+  data-section-id="{{ section.id }}"
+  data-section-settings='{{ section.settings | json }}'
+>
+  <p>Loading Form...</p>
+</div>
+
+<script id="easycod-form-config-{{ section.id }}" type="application/json">
+  {{ shop.metafields.easycod_dz.form_config }}
+</script>
+
+{% comment %}
+  The JS bundle is loaded here directly for compatibility.
+{% endcomment %}
+<script src="{{ 'easycod-form-bundle.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "EasyCod Form Section",
+  "target": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading_override",
+      "label": "Heading Override",
+      "info": "Leave blank to use the heading from the form designer."
+    },
+    {
+      "type": "text",
+      "id": "button_text_override",
+      "label": "Button Text Override",
+      "info": "Leave blank to use the button text from the form designer."
+    }
+  ]
+}
+{% endschema %}
+
+---
+
+### ## The Final, Full Configuration (`shopify.app.alma-cod.toml`)
+
+Now, here is the complete and correct version of your `shopify.app.alma-cod.toml` file. It includes your app settings, the app proxy, and the simplified theme extension configuration that just registers your section.
+
+Replace the entire content of `shopify.app.alma-cod.toml` with this:
+
+```toml
+# Main Application Configuration
+client_id = "78b3b49a43d2ac2ca7e3abaf380e011d"
+name = "alma COd"
+handle = "alma-cod"
+application_url = "[https://organizational-aqua-blades-plymouth.trycloudflare.com](https://organizational-aqua-blades-plymouth.trycloudflare.com)"
+embedded = true
+
+[build]
+include_config_on_deploy = true
+automatically_update_urls_on_dev = true
+
+[webhooks]
+api_version = "2025-07"
+
+[access_scopes]
+scopes = "read_draft_orders,read_metaobject_definitions,read_metaobjects,read_online_store_pages,read_products,write_draft_orders,write_metaobject_definitions,write_metaobjects,write_online_store_pages,write_products"
+
+[auth]
+redirect_urls = [
+  "[https://organizational-aqua-blades-plymouth.trycloudflare.com/auth/callback](https://organizational-aqua-blades-plymouth.trycloudflare.com/auth/callback)",
+  "[https://organizational-aqua-blades-plymouth.trycloudflare.com/auth/shopify/callback](https://organizational-aqua-blades-plymouth.trycloudflare.com/auth/shopify/callback)",
+  "[https://organizational-aqua-blades-plymouth.trycloudflare.com/api/auth/callback](https://organizational-aqua-blades-plymouth.trycloudflare.com/api/auth/callback)"
+]
+
+[pos]
+embedded = false
+
+[app_proxy]
+url = "[https://organizational-aqua-blades-plymouth.trycloudflare.com](https://organizational-aqua-blades-plymouth.trycloudflare.com)"
+subpath = "codform"
+prefix = "apps"
+
+# Theme Extension Configuration
+[[extensions]]
+type = "theme"
+name = "EasyCOD Form Section" # Renamed for clarity
+handle = "easycod-embed"
+
+  # This registers your section, making it available in the theme editor
+  [[extensions.sections]]
+  file = "easycod-form-section.liquid"

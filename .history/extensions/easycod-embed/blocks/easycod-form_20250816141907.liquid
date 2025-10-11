@@ -1,0 +1,16 @@
+{% comment %}
+  This file creates the root element for our React app
+  and loads the compiled JavaScript bundle.
+{% endcomment %}
+
+<div id="easycod-form-root"></div>
+
+<script src="{{ 'form-renderer.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "EasyCOD Form",
+  "target": "body",
+  "settings": []
+}
+{% endschema %}

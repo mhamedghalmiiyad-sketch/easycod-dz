@@ -1,0 +1,59 @@
+{
+  "title": "Paramètres des pixels",
+  "platforms": {
+    "title": "Plateformes",
+    "facebook": "Facebook",
+    "googleAnalytics": "Google Analytics",
+    "tiktok": "TikTok",
+    "snapchat": "Snapchat",
+    "pinterest": "Pinterest",
+    "sharechat": "ShareChat",
+    "taboola": "Taboola",
+    "kwai": "Kwai"
+  },
+  "events": {
+    "title": "Événements",
+    "initiateCheckout": "Initier le checkout",
+    "purchase": "Achat",
+    "addToCart": "Ajouter au panier",
+    "addPaymentInfo": "Ajouter les informations de paiement",
+    "placeAnOrder": "Passer une commande",
+    "completePayment": "Finaliser le paiement",
+    "checkout": "Checkout",
+    "custom": "Événement personnalisé"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "noPlatformsConfigured": "Aucune plateforme configurée",
+    "facebookPurchaseEvent": "Type d'événement d'achat Facebook",
+    "facebookPurchaseEventHelp": "Choisissez comment les événements d'achat sont envoyés à Facebook",
+    "sendAddToCartEvents": "Envoyer les événements Ajouter au panier",
+    "sendAddToCartEventsHelp": "Suivre quand les clients ajoutent des articles à leur panier",
+    "sendAddPaymentInfoEvents": "Envoyer les événements Ajouter les informations de paiement",
+    "sendAddPaymentInfoEventsHelp": "Suivre quand les clients entrent les informations de paiement",
+    "sendPinterestAddToCart": "Envoyer les événements Ajouter au panier à Pinterest",
+    "sendPinterestAddToCartHelp": "Suivre les événements d'ajout au panier Pinterest",
+    "disableAllTracking": "Désactiver tout le suivi d'événements",
+    "disableAllTrackingHelp": "Cela désactivera tous les événements de pixel envoyés par l'application sur toutes les plateformes"
+  },
+  "status": {
+    "active": "Actif",
+    "notSet": "Non défini"
+  },
+  "helpText": {
+    "facebook": "Trouvez votre ID de Pixel dans le Gestionnaire d'événements Facebook",
+    "googleAnalytics": "Votre ID de mesure GA4 de Google Analytics",
+    "tiktok": "Trouvez votre ID de Pixel dans le Gestionnaire d'événements TikTok",
+    "snapchat": "Votre ID de Snap Pixel depuis le Gestionnaire d'annonces Snapchat",
+    "pinterest": "Votre ID de Tag Pinterest depuis Pinterest Business",
+    "sharechat": "Votre ID de Pixel ShareChat depuis le Gestionnaire d'annonces ShareChat",
+    "taboola": "Votre ID de Pixel Taboola depuis Taboola Ads",
+    "kwai": "Votre ID de Pixel Kwai depuis le Gestionnaire d'annonces Kwai"
+  },
+  "validation": {
+    "facebook": "L'ID de Pixel Facebook doit contenir 15-16 chiffres",
+    "googleAnalytics": "L'ID Google Analytics doit commencer par 'G-' suivi de 10 caractères",
+    "tiktok": "L'ID de Pixel TikTok doit commencer par 'C' suivi de caractères alphanumériques",
+    "snapchat": "L'ID de Pixel Snapchat doit être au format UUID"
+  }
+}

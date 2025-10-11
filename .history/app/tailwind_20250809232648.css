@@ -1,0 +1,7 @@
+/* app/tailwind.css */
+@import "@shopify/polaris/build/esm/styles.css";
+/* Temporarily removed Tailwind directives */
+/* @tailwind base; */
+/* @tailwind components; */
+/* @tailwind utilities; */
+/* You can add your own custom CSS rules below this line if needed */

@@ -1,0 +1,11 @@
+api_version = "2024-07"
+
+[[extensions]]
+type = "theme"
+name = "EasyCOD Form"
+handle = "easycod-embed"
+
+[extensions.settings]
+[[extensions.settings.blocks]]
+type = "easycod-form"
+name = "EasyCOD Form Block"

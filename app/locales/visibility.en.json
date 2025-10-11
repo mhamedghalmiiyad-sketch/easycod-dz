@@ -1,0 +1,29 @@
+{
+  "title": "Visibility Settings",
+  "productPages": {
+    "hideAddToCart": "Hide the Add to Cart button on product pages",
+    "hideBuyNow": "Hide the Buy Now button on product pages"
+  },
+  "pages": {
+    "disableHomePage": "Disable Releasit on your home page",
+    "disableCollectionsPage": "Disable Releasit on your collections pages"
+  },
+  "products": {
+    "enableSpecific": "Enable your form only for specific products and collections",
+    "disableSpecific": "Disable your form for one or more products and collections"
+  },
+  "countries": {
+    "enableSpecific": "Enable your form only for specific countries"
+  },
+  "amounts": {
+    "minimumAmount": "Minimum Amount",
+    "maximumAmount": "Maximum Amount",
+    "noLimit": "No limit"
+  },
+  "sampleData": {
+    "productA": "Sample Product A",
+    "productB": "Sample Product B",
+    "unitedStates": "United States",
+    "canada": "Canada"
+  }
+}

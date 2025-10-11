@@ -1,0 +1,40 @@
+{
+  "title": "مصمم النماذج",
+  "subtitle": "خصص مظهر وتخطيط وسلوك النموذج الخاص بك",
+  "back": "رجوع",
+  "save": "حفظ",
+  "colors": {
+    "startColor": "لون البداية",
+    "endColor": "لون النهاية"
+  },
+  "layout": {
+    "buttonLayout": "تخطيط الزر"
+  },
+  "typography": {
+    "fontWeight": "سمك الخط"
+  },
+  "media": {
+    "aspectRatio": "نسبة العرض إلى الارتفاع",
+    "imageAlignment": "محاذاة الصورة"
+  },
+  "schedule": {
+    "excludeSaturdays": "استبعاد أيام السبت",
+    "excludeSundays": "استبعاد أيام الأحد"
+  },
+  "content": {
+    "titleText": "نص العنوان",
+    "titlePosition": "موضع العنوان"
+  },
+  "delivery": {
+    "company": "شركة التوصيل",
+    "manualRates": "الأسعار اليدوية",
+    "selectCompanies": "اختر شركات التوصيل للعرض"
+  },
+  "buttons": {
+    "buttonText": "نص الزر",
+    "buttonAnimation": "رسوم متحركة للزر"
+  },
+  "currency": {
+    "symbol": "رمز العملة"
+  }
+}

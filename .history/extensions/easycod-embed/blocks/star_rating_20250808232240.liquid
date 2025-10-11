@@ -1,0 +1,27 @@
+{% comment %}
+  NOTE: This block is now an App Embed. It won't have access to a specific product context
+  automatically. You will need to use JavaScript to detect the current product on the page
+  and then fetch its rating. This liquid code is a placeholder.
+{% endcomment %}
+
+<div id="star-rating-app-embed" data-product-id="{{ product.id }}">
+  <!-- Your JavaScript will target this div to inject the star rating -->
+  <span style="color:{{ block.settings.colour }}">
+    Loading Rating...
+  </span>
+</div>
+
+{% schema %}
+{
+  "name": "Star Rating",
+  "target": "body",
+  "settings": [
+    {
+      "type": "color",
+      "id": "colour",
+      "label": "Star Colour",
+      "default": "#ff0000"
+    }
+  ]
+}
+{% endschema %}

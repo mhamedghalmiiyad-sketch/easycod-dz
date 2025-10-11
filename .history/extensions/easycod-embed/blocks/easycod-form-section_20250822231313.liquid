@@ -1,0 +1,64 @@
+{% comment %}
+  File: extensions/easycod-embed/sections/easycod-form-section.liquid
+{% endcomment %}
+
+<div
+  class="easycod-form-container"
+  id="easycod-form-root-{{ section.id }}"
+  data-section-id="{{ section.id }}"
+  data-section-settings='{{ section.settings | json }}'
+>
+  <p>Loading Form...</p>
+</div>
+
+{% comment %}
+  Improved JSON configuration script with better error handling
+{% endcomment %}
+<script id="easycod-form-config-{{ section.id }}" type="application/json">
+  {%- liquid
+    assign config_string = shop.metafields.easycod_dz.form_config
+    assign config = null
+    
+    if config_string != blank
+      assign config = config_string | json_parse
+    endif
+    
+    capture submit_url
+      echo 'https://'
+      echo shop.permanent_domain
+      echo '/apps/proxy'
+    endcapture
+    
+    if config != blank
+      assign url_object = '{"submitUrl": "' | append: submit_url | append: '"}' | json_parse
+      assign config_with_url = config | merge: url_object
+      echo config_with_url | json
+    else
+      assign fallback_config = '{"submitUrl": "' | append: submit_url | append: '", "error": "No form configuration found"}' | json_parse
+      echo fallback_config | json
+    endif
+  -%}
+</script>
+
+<script src="{{ 'easycod-form-bundle.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "EasyCod Form Section",
+  "target": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading_override",
+      "label": "Heading Override",
+      "info": "Leave blank to use the heading from the form designer."
+    },
+    {
+      "type": "text",
+      "id": "button_text_override",
+      "label": "Button Text Override",
+      "info": "Leave blank to use the button text from the form designer."
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,52 @@
+{% comment %}
+  File: extensions/easycod-embed/blocks/easycod-form.liquid
+{% endcomment %}
+
+{% comment %}
+  This div is the mounting point for your React app.
+  Your JS looks for this ID: "easycod-form-root".
+{% endcomment %}
+<div id="easycod-form-root"></div>
+
+{% comment %}
+  FIX #1: This script provides the necessary configuration data.
+  Your JS looks for this ID: "__EASYCOD_FORM_CONFIG__".
+{% endcomment %}
+<script
+  id="__EASYCOD_FORM_CONFIG__"
+  type="application/json"
+>
+  {
+    "formFields": {{ block.settings.form_fields | default: "[]" }},
+    "formStyle": {{ block.settings.form_style | default: "{}" }},
+    "submitUrl": "/apps/proxy/submit",
+    "redirectUrl": "/checkout",
+    "pixelSettings": {{ shop.metafields.easycod.pixel_settings | default: "{}" }},
+    "visibilitySettings": {{ shop.metafields.easycod.visibility_settings | default: "{}" }},
+    "customerData": {
+      "firstName": {{ customer.first_name | json }},
+      "lastName": {{ customer.last_name | json }},
+      "email": {{ customer.email | json }},
+      "phone": {{ customer.phone | json }},
+      "defaultAddress": {{ customer.default_address | json }}
+    }
+  }
+</script>
+
+{% comment %}
+  FIX #2: This loads the correct JavaScript bundle that you are building.
+  The filename is "easycod-form-bundle.js".
+{% endcomment %}
+<script src="{{ 'easycod-form-bundle.js' | asset_url }}" defer></script>
+
+{% comment %}
+  This schema allows merchants to configure the form in the theme editor.
+  You will need to add settings here later.
+{% endcomment %}
+{% schema %}
+{
+  "name": "EasyCOD Form",
+  "target": "section",
+  "settings": []
+}
+{% endschema %}

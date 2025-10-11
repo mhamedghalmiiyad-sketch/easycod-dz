@@ -2,7 +2,7 @@ services:
   - type: web
     name: easyood-dz
     env: node
-    nodeVersion: "20"
+    nodeVersion: "18"
     plan: free
     buildCommand: "npm install && npm run build"
     startCommand: "node ./build/server/index.js"

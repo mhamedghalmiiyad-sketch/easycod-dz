@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: easycod-dz
+    name: easyood-dz
     env: node
     plan: free
     buildCommand: "npm install && npm run build"
@@ -9,15 +9,12 @@ services:
       - key: SHOPIFY_API_KEY
         value: 78b3b49e43d2ac2ca7e3aba1308e911d
       - key: SHOPIFY_APP_URL
-        value: https://easycod-dz.onrender.com
+        value: https://easyood-dz.onrender.com
       - key: SCOPES
         value: "read_draft_orders,read_metaobject_definitions,read_metaobjects,read_online_store_pages,read_orders,read_products,write_draft_orders,write_metaobject_definitions,write_metaobjects,write_online_store_pages,write_orders,write_products"
-      - key: SHOPIFY_API_SECRET 
-        value: cf24bd7dc35faadf8b645cdee12803f3
+      # This line correctly loads the secret from your secret group
       - fromGroup: shopify-secrets
 
-# Secret Group for your API Secret
-# This keeps your secret out of the repository
 envVarGroups:
   - name: shopify-secrets
     envVars:

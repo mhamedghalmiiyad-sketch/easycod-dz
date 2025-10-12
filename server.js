@@ -57,7 +57,8 @@ const requiredEnvVars = [
   'SHOPIFY_API_KEY',
   'SHOPIFY_API_SECRET', 
   'SHOPIFY_APP_URL',
-  'SCOPES'
+  'SCOPES',
+  'DATABASE_URL'
 ];
 
 console.log('=== Environment Variable Validation ===');
@@ -104,6 +105,37 @@ if (!global.process.env) {
 Object.keys(process.env).forEach(key => {
   global.process.env[key] = process.env[key];
 });
+
+// CRITICAL: Quick database connection test before importing the built app
+console.log('🔧 Testing database connection...');
+try {
+  // Import Prisma client to test database connection
+  const { PrismaClient } = await import("@prisma/client");
+  const prisma = new PrismaClient();
+  
+  // Test database connection
+  await prisma.$connect();
+  console.log('✅ Database connection established');
+  
+  // Quick check if session table exists
+  try {
+    await prisma.$queryRaw`SELECT 1 FROM "Session" LIMIT 1`;
+    console.log('✅ Session table exists');
+  } catch (error) {
+    console.error('❌ Session table not found!');
+    console.error('🔧 Database setup may have failed during build. Please check:');
+    console.error('1. DATABASE_URL is set correctly');
+    console.error('2. Database is accessible');
+    console.error('3. Build process completed successfully');
+    process.exit(1);
+  }
+  
+  await prisma.$disconnect();
+} catch (dbError) {
+  console.error('❌ Database connection failed:', dbError.message);
+  console.error('🔧 Make sure DATABASE_URL is set correctly in your environment variables');
+  process.exit(1);
+}
 
 // Import the built server
 const build = await import("./build/server/index.js");

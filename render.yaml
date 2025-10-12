@@ -3,7 +3,7 @@ services:
     name: easycod-dz
     env: node
     plan: free
-    buildCommand: "npm install && npx prisma generate && npm run build && npm run setup-db"
+    buildCommand: "npm install && npx prisma generate && npm run build"
     startCommand: "node server.js"
     # Environment variables should be set in the Render dashboard
     # DO NOT hardcode sensitive values in this file

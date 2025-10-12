@@ -122,12 +122,29 @@ try {
     await prisma.$queryRaw`SELECT 1 FROM "Session" LIMIT 1`;
     console.log('✅ Session table exists');
   } catch (error) {
-    console.error('❌ Session table not found!');
-    console.error('🔧 Database setup may have failed during build. Please check:');
-    console.error('1. DATABASE_URL is set correctly');
-    console.error('2. Database is accessible');
-    console.error('3. Build process completed successfully');
-    process.exit(1);
+    console.log('⚠️ Session table not found, running migrations...');
+    
+    try {
+      // Run Prisma migrations
+      console.log('📦 Running Prisma migrations...');
+      const { execSync } = await import('child_process');
+      execSync('npx prisma migrate deploy', { 
+        stdio: 'inherit',
+        env: { ...process.env }
+      });
+      console.log('✅ Database migrations completed');
+      
+      // Verify session table exists after migrations
+      await prisma.$queryRaw`SELECT 1 FROM "Session" LIMIT 1`;
+      console.log('✅ Session table verified after migrations');
+    } catch (migrationError) {
+      console.error('❌ Database migration failed:', migrationError.message);
+      console.error('🔧 Database setup failed. Please check:');
+      console.error('1. DATABASE_URL is set correctly');
+      console.error('2. Database is accessible');
+      console.error('3. Database user has proper permissions');
+      process.exit(1);
+    }
   }
   
   await prisma.$disconnect();

@@ -9,39 +9,48 @@ import { db } from "./db.server";  // ✅ fixed import
 
 // --- START: EXPLICIT CONFIGURATION WITH DEBUGGING ---
 
-// Manually construct the configuration object from environment variables
-const shopifyConfig = {
-  apiKey: process.env.SHOPIFY_API_KEY,
-  apiSecretKey: process.env.SHOPIFY_API_SECRET || "",
-  apiVersion: ApiVersion.January25,
-  scopes: process.env.SCOPES?.split(","),
-  appUrl: process.env.SHOPIFY_APP_URL || "",
-  authPathPrefix: "/auth",
-  sessionStorage: new PrismaSessionStorage(db),  // ✅ fixed here
-  distribution: AppDistribution.AppStore,
-  future: {
-    unstable_newEmbeddedAuthStrategy: true,
-    removeRest: true,
-  },
-  ...(process.env.SHOP_CUSTOM_DOMAIN
-    ? { customShopDomains: [process.env.SHOP_CUSTOM_DOMAIN] }
-    : {}),
-};
+// Function to get environment variables (lazy evaluation)
+function getShopifyConfig() {
+  // CRITICAL: Log environment variables at runtime, not build time
+  console.log("--- Initializing Shopify App with Config ---");
+  console.log("Raw environment variables:");
+  console.log(`process.env.SHOPIFY_API_KEY: ${process.env.SHOPIFY_API_KEY}`);
+  console.log(`process.env.SHOPIFY_API_SECRET: ${process.env.SHOPIFY_API_SECRET}`);
+  console.log(`process.env.SHOPIFY_APP_URL: ${process.env.SHOPIFY_APP_URL}`);
+  console.log(`process.env.SCOPES: ${process.env.SCOPES}`);
+  
+  // Manually construct the configuration object from environment variables
+  const shopifyConfig = {
+    apiKey: process.env.SHOPIFY_API_KEY,
+    apiSecretKey: process.env.SHOPIFY_API_SECRET || "",
+    apiVersion: ApiVersion.January25,
+    scopes: process.env.SCOPES?.split(","),
+    appUrl: process.env.SHOPIFY_APP_URL || "",
+    authPathPrefix: "/auth",
+    sessionStorage: new PrismaSessionStorage(db),  // ✅ fixed here
+    distribution: AppDistribution.AppStore,
+    future: {
+      unstable_newEmbeddedAuthStrategy: true,
+      removeRest: true,
+    },
+    ...(process.env.SHOP_CUSTOM_DOMAIN
+      ? { customShopDomains: [process.env.SHOP_CUSTOM_DOMAIN] }
+      : {}),
+  };
+  
+  console.log("Processed config:");
+  console.log(`API Key: ${shopifyConfig.apiKey}`);
+  console.log(`API Secret Key: ${shopifyConfig.apiSecretKey ? '[PRESENT]' : '[MISSING]'}`);
+  console.log(`App URL: ${shopifyConfig.appUrl}`);
+  console.log(`Scopes: ${shopifyConfig.scopes?.join(', ') || '[MISSING]'}`);
+  console.log(`Custom Domain: ${process.env.SHOP_CUSTOM_DOMAIN || '[NOT SET]'}`);
+  console.log("-----------------------------------------");
+  
+  return shopifyConfig;
+}
 
-// CRITICAL DEBUGGING STEP: Log the values to see what the app sees
-console.log("--- Initializing Shopify App with Config ---");
-console.log("Raw environment variables:");
-console.log(`process.env.SHOPIFY_API_KEY: ${process.env.SHOPIFY_API_KEY}`);
-console.log(`process.env.SHOPIFY_API_SECRET: ${process.env.SHOPIFY_API_SECRET}`);
-console.log(`process.env.SHOPIFY_APP_URL: ${process.env.SHOPIFY_APP_URL}`);
-console.log(`process.env.SCOPES: ${process.env.SCOPES}`);
-console.log("Processed config:");
-console.log(`API Key: ${shopifyConfig.apiKey}`);
-console.log(`API Secret Key: ${shopifyConfig.apiSecretKey ? '[PRESENT]' : '[MISSING]'}`);
-console.log(`App URL: ${shopifyConfig.appUrl}`);
-console.log(`Scopes: ${shopifyConfig.scopes?.join(', ') || '[MISSING]'}`);
-console.log(`Custom Domain: ${process.env.SHOP_CUSTOM_DOMAIN || '[NOT SET]'}`);
-console.log("-----------------------------------------");
+// Get the configuration (lazy evaluation)
+const shopifyConfig = getShopifyConfig();
 
 // Comprehensive validation of essential variables
 const validationErrors = [];

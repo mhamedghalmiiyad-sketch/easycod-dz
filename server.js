@@ -14,6 +14,15 @@ console.log('Architecture:', process.arch);
 console.log('Current working directory:', process.cwd());
 console.log('Process arguments:', process.argv);
 
+// Additional Render-specific debugging
+console.log('=== RENDER ENVIRONMENT DEBUGGING ===');
+console.log('RENDER environment variable:', process.env.RENDER ? 'SET' : 'NOT SET');
+console.log('NODE_ENV:', process.env.NODE_ENV || 'NOT SET');
+console.log('PORT:', process.env.PORT || 'NOT SET');
+console.log('Total environment variables count:', Object.keys(process.env).length);
+console.log('Environment variables starting with SHOPIFY:', Object.keys(process.env).filter(key => key.startsWith('SHOPIFY')));
+console.log('=====================================');
+
 // Log ALL environment variables (be careful with secrets in production)
 console.log('\n=== ALL ENVIRONMENT VARIABLES ===');
 Object.keys(process.env).sort().forEach(key => {
@@ -75,6 +84,14 @@ const host = "0.0.0.0";
 console.log(`✅ All required environment variables are present`);
 console.log(`🚀 Starting server on ${host}:${port}`);
 console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+
+// CRITICAL: Ensure environment variables are available to the built application
+console.log('🔧 Setting up environment variables for built application...');
+console.log('Environment variables before importing built app:');
+console.log(`SHOPIFY_API_KEY: ${process.env.SHOPIFY_API_KEY ? '[PRESENT]' : '[MISSING]'}`);
+console.log(`SHOPIFY_API_SECRET: ${process.env.SHOPIFY_API_SECRET ? '[PRESENT]' : '[MISSING]'}`);
+console.log(`SHOPIFY_APP_URL: ${process.env.SHOPIFY_APP_URL || '[MISSING]'}`);
+console.log(`SCOPES: ${process.env.SCOPES || '[MISSING]'}`);
 
 // Import the built server
 const build = await import("./build/server/index.js");

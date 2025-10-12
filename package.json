@@ -26,7 +26,8 @@
     "build": "npm run build:form && vite build && vite build --ssr",
     "vite": "vite",
     "diagnose-env": "node scripts/diagnose-env.js",
-    "verify-deployment": "node scripts/verify-deployment.js"
+    "verify-deployment": "node scripts/verify-deployment.js",
+    "fix-render-env": "node scripts/fix-render-env.js"
   },
   "type": "module",
   "engines": {

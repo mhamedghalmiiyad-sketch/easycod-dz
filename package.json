@@ -24,7 +24,9 @@
     "setup-cloudflare-verify-prod": "shopify app cloudflare verify --prod",
     "graphql-codegen": "graphql-codegen",
     "build": "npm run build:form && vite build && vite build --ssr",
-    "vite": "vite"
+    "vite": "vite",
+    "diagnose-env": "node scripts/diagnose-env.js",
+    "verify-deployment": "node scripts/verify-deployment.js"
   },
   "type": "module",
   "engines": {

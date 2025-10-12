@@ -44,9 +44,15 @@ SHOPIFY_API_KEY=your_shopify_api_key_here
 SHOPIFY_API_SECRET=your_shopify_api_secret_here
 SHOPIFY_APP_URL=https://your-app-name.onrender.com
 SCOPES=read_draft_orders,read_metaobject_definitions,read_metaobjects,read_online_store_pages,read_orders,read_products,write_draft_orders,write_metaobject_definitions,write_metaobjects,write_online_store_pages,write_orders,write_products
+DATABASE_URL=postgres://username:password@host:port/database
 ```
 
-### 3. Verify Deployment
+### 3. Get DATABASE_URL from Database Service
+1. Go to your database service (`easycod-dz-db`) in Render dashboard
+2. Copy the **Internal Database URL** from the database service details
+3. Paste this URL as the `DATABASE_URL` environment variable in your web service
+
+### 4. Verify Deployment
 After deployment, check the logs to ensure:
 - ✅ Database connection established
 - ✅ Session table exists
@@ -63,9 +69,14 @@ The build process now includes:
 ## Troubleshooting
 
 ### If DATABASE_URL is still missing:
-1. Check that the database service is created successfully
-2. Verify the database service name matches in `render.yaml`
-3. Ensure the web service is linked to the database service
+1. **Manual Setup Required**: The automatic injection might not work, so you need to set it manually:
+   - Go to your database service (`easycod-dz-db`) in Render dashboard
+   - Copy the **Internal Database URL** (starts with `postgres://`)
+   - Go to your web service environment variables
+   - Add `DATABASE_URL` with the copied URL as the value
+2. Check that the database service is created successfully
+3. Verify the database service name matches in `render.yaml`
+4. Ensure both services are in the same Render account/team
 
 ### If Session table doesn't exist:
 1. Check the build logs for migration errors

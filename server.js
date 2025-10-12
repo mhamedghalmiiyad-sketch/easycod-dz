@@ -156,11 +156,26 @@ try {
         console.error('🔧 Please redeploy the application to apply the changes.');
       }
       
+      // Check if it's a syntax error (SQLite vs PostgreSQL)
+      if (migrationError.message.includes('AUTOINCREMENT') || migrationError.message.includes('syntax error')) {
+        console.error('🔧 SQL syntax error detected. This usually happens when SQLite migrations are applied to PostgreSQL.');
+        console.error('🔧 The migration files have been updated to use PostgreSQL-compatible syntax.');
+        console.error('🔧 Please redeploy the application to apply the new migrations.');
+      }
+      
+      // Check if it's a migration state error
+      if (migrationError.message.includes('P3018') || migrationError.message.includes('migration failed to apply')) {
+        console.error('🔧 Migration state error detected. This usually happens when previous migrations failed.');
+        console.error('🔧 The migration history has been reset with PostgreSQL-compatible migrations.');
+        console.error('🔧 Please redeploy the application to apply the new migrations.');
+      }
+      
       console.error('🔧 Database setup failed. Please check:');
       console.error('1. DATABASE_URL is set correctly');
       console.error('2. Database is accessible');
       console.error('3. Database user has proper permissions');
       console.error('4. Migration lock file matches the database provider');
+      console.error('5. Migration files use PostgreSQL-compatible syntax');
       process.exit(1);
     }
   }

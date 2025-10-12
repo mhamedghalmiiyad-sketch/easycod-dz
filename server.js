@@ -128,6 +128,15 @@ try {
       // Run Prisma migrations
       console.log('📦 Running Prisma migrations...');
       const { execSync } = await import('child_process');
+      
+      // First, try to generate the Prisma client to ensure schema is up to date
+      console.log('🔧 Generating Prisma client...');
+      execSync('npx prisma generate', { 
+        stdio: 'inherit',
+        env: { ...process.env }
+      });
+      
+      // Then run migrations
       execSync('npx prisma migrate deploy', { 
         stdio: 'inherit',
         env: { ...process.env }
@@ -139,10 +148,19 @@ try {
       console.log('✅ Session table verified after migrations');
     } catch (migrationError) {
       console.error('❌ Database migration failed:', migrationError.message);
+      
+      // Check if it's a provider mismatch error
+      if (migrationError.message.includes('P3019') || migrationError.message.includes('provider')) {
+        console.error('🔧 Provider mismatch detected. This usually happens when switching from SQLite to PostgreSQL.');
+        console.error('🔧 The migration lock file has been updated to match the PostgreSQL provider.');
+        console.error('🔧 Please redeploy the application to apply the changes.');
+      }
+      
       console.error('🔧 Database setup failed. Please check:');
       console.error('1. DATABASE_URL is set correctly');
       console.error('2. Database is accessible');
       console.error('3. Database user has proper permissions');
+      console.error('4. Migration lock file matches the database provider');
       process.exit(1);
     }
   }

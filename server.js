@@ -170,6 +170,40 @@ try {
         console.error('🔧 Please redeploy the application to apply the new migrations.');
       }
       
+      // Check if it's a failed migration state error (P3009)
+      if (migrationError.message.includes('P3009') || migrationError.message.includes('failed migrations in the target database')) {
+        console.error('🔧 Failed migration state detected. The database has records of failed migrations.');
+        console.error('🔧 Attempting to reset migration state...');
+        
+        try {
+          // Try to reset the migration state by marking failed migrations as rolled back
+          const { execSync } = await import('child_process');
+          console.log('🔄 Resetting migration state...');
+          execSync('npx prisma migrate resolve --rolled-back 20250727203118_init', { 
+            stdio: 'inherit',
+            env: { ...process.env }
+          });
+          console.log('✅ Migration state reset successfully');
+          
+          // Now try to run migrations again
+          console.log('🔄 Retrying migrations after state reset...');
+          execSync('npx prisma migrate deploy', { 
+            stdio: 'inherit',
+            env: { ...process.env }
+          });
+          console.log('✅ Database migrations completed after reset');
+          
+          // Verify session table exists after migrations
+          await prisma.$queryRaw`SELECT 1 FROM "Session" LIMIT 1`;
+          console.log('✅ Session table verified after migrations');
+          return; // Success, exit the error handling
+        } catch (resetError) {
+          console.error('❌ Failed to reset migration state:', resetError.message);
+          console.error('🔧 Manual database cleanup may be required.');
+          console.error('🔧 You may need to drop and recreate the database or manually clean the _prisma_migrations table.');
+        }
+      }
+      
       console.error('🔧 Database setup failed. Please check:');
       console.error('1. DATABASE_URL is set correctly');
       console.error('2. Database is accessible');

@@ -196,7 +196,8 @@ try {
           // Verify session table exists after migrations
           await prisma.$queryRaw`SELECT 1 FROM "Session" LIMIT 1`;
           console.log('✅ Session table verified after migrations');
-          return; // Success, exit the error handling
+          console.log('✅ Migration state reset and migrations completed successfully');
+          // Continue with normal flow instead of return
         } catch (resetError) {
           console.error('❌ Failed to reset migration state:', resetError.message);
           console.error('🔧 Manual database cleanup may be required.');

@@ -10,6 +10,7 @@ import { NavMenu } from "@shopify/app-bridge-react";
 import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
 import { useTranslations } from "../hooks/useTranslations";
 import { getLanguageFromRequest, getTranslations, isRTL, saveLanguagePreference } from "../utils/i18n.server";
+import { shopifyEnv } from "../utils/env.server";
 
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
@@ -39,7 +40,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   headers.set('Set-Cookie', `i18nextLng=${language}; Path=/; Max-Age=31536000; SameSite=Lax`);
 
   return json({ 
-    apiKey: process.env.SHOPIFY_API_KEY || "",
+    apiKey: shopifyEnv.apiKey || "",
     language,
     translations,
     rtl,

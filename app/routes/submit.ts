@@ -5,6 +5,7 @@ import crypto from "crypto";
 import { unauthenticated, default as shopify } from "../shopify.server";
 import db from "../db.server";
 import { calculateRiskScore } from "../utils/riskScoring.server"; // Server-only risk scoring logic
+import { shopifyEnv } from "../utils/env.server";
 
 // =================================================================
 // PASTE ALL YOUR HELPER FUNCTIONS & TYPE DEFINITIONS HERE
@@ -106,7 +107,7 @@ async function validateAppProxyRequest(request: Request): Promise<boolean> {
         return false;
     }
 
-    const apiSecret = process.env.SHOPIFY_API_SECRET;
+    const apiSecret = shopifyEnv.apiSecret;
     console.log("🔍 API Secret available:", !!apiSecret);
     if (!apiSecret) {
         console.error("❌ SHOPIFY_API_SECRET is not defined");

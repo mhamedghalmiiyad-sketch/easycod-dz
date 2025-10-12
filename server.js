@@ -93,6 +93,18 @@ console.log(`SHOPIFY_API_SECRET: ${process.env.SHOPIFY_API_SECRET ? '[PRESENT]' 
 console.log(`SHOPIFY_APP_URL: ${process.env.SHOPIFY_APP_URL || '[MISSING]'}`);
 console.log(`SCOPES: ${process.env.SCOPES || '[MISSING]'}`);
 
+// CRITICAL: Set environment variables globally before importing the built app
+// This ensures they're available when the built application loads
+global.process = global.process || process;
+if (!global.process.env) {
+  global.process.env = {};
+}
+
+// Copy all environment variables to global scope
+Object.keys(process.env).forEach(key => {
+  global.process.env[key] = process.env[key];
+});
+
 // Import the built server
 const build = await import("./build/server/index.js");
 

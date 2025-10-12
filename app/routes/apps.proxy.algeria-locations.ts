@@ -2,6 +2,7 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import crypto from "crypto";
 import { db } from "../db.server";
+import { shopifyEnv } from "../utils/env.server";
 
 // Helper function to calculate HMAC signature
 function calculateHmac(data: string, secret: string): string {
@@ -26,7 +27,7 @@ async function validateAppProxyRequest(request: Request): Promise<boolean> {
     return false;
   }
 
-  const apiSecret = process.env.SHOPIFY_API_SECRET;
+  const apiSecret = shopifyEnv.apiSecret;
   if (!apiSecret) {
     console.error("❌ SHOPIFY_API_SECRET is not defined");
     return false;

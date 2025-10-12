@@ -1,18 +1,20 @@
 services:
   - type: web
-    name: easyood-dz
+    name: easycod-dz
     env: node
     plan: free
     buildCommand: "npm install && npm run build"
-    startCommand: "node ./build/server/index.js"
+    startCommand: "node server.js"
     envVars:
       - key: NODE_VERSION
         value: "20.11.0"
+      - key: NODE_ENV
+        value: "production"
       - key: SHOPIFY_API_KEY
-        value: 78b3b49a43d2ac2ca7e3abaf380e011d
+        value: "78b3b49a43d2ac2ca7e3abaf380e011d"
       - key: SHOPIFY_APP_URL
-        value: https://easycod-dz.onrender.com
+        value: "https://easycod-dz.onrender.com"
       - key: SCOPES
         value: "read_draft_orders,read_metaobject_definitions,read_metaobjects,read_online_store_pages,read_orders,read_products,write_draft_orders,write_metaobject_definitions,write_metaobjects,write_online_store_pages,write_orders,write_products"
       - key: SHOPIFY_API_SECRET
-        value: cf24bd7dc35faadf8b645cdee12803f3
+        value: "cf24bd7dc35faadf8b645cdee12803f3"

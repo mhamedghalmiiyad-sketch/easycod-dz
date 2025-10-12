@@ -14,6 +14,12 @@ const port = process.env.PORT || 8080;
 const host = "0.0.0.0";
 
 console.log(`Starting server on ${host}:${port}`);
+console.log('Environment variables check:');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('SHOPIFY_API_KEY:', process.env.SHOPIFY_API_KEY ? 'SET' : 'MISSING');
+console.log('SHOPIFY_API_SECRET:', process.env.SHOPIFY_API_SECRET ? 'SET' : 'MISSING');
+console.log('SHOPIFY_APP_URL:', process.env.SHOPIFY_APP_URL);
+console.log('SCOPES:', process.env.SCOPES ? 'SET' : 'MISSING');
 
 // Import the built server
 const build = await import("./build/server/index.js");

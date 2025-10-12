@@ -5074,7 +5074,7 @@ const groupedRates = useMemo(() => {
     const renderSection = (title: string, key: keyof ExpandedSections, content: React.ReactNode, icon: IconSource, action?: React.ReactNode) => (
         <Card>
             <div style={{ cursor: 'pointer' }} onClick={() => setExpandedSections(prev => ({ ...prev, [key]: !prev[key] }))}>
-                <Box padding="100" paddingBlock={expandedSections[key] ? "200" : 50} borderBlockEndWidth={expandedSections[key] ? '025' : undefined} borderColor='border'>
+                <Box padding="100" paddingBlock={expandedSections[key] ? "200" : "100"} borderBlockEndWidth={expandedSections[key] ? '025' : undefined} borderColor='border'>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <div style={{ display: 'flex', alignItems: 'center' }}>
                             <div style={{ marginRight: '2px' }}>
@@ -5216,12 +5216,12 @@ const groupedRates = useMemo(() => {
                             {tabValue === 'form' && (
                                 <BlockStack gap="200">
                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                                        <Text variant="headingMd" as="h3" style={{ margin: 0 }}>
+                                        <Text variant="headingMd" as="h3">
                                             1. Select your form mode
                                         </Text>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                             <s-icon type="eye" size="small" />
-                                            <Text variant="headingMd" as="h3" style={{ margin: 0 }}>
+                                            <Text variant="headingMd" as="h3">
                                                 Live Preview
                                             </Text>
                                         </div>

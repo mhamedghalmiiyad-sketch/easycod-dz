@@ -30,6 +30,12 @@ const shopifyConfig = {
 
 // CRITICAL DEBUGGING STEP: Log the values to see what the app sees
 console.log("--- Initializing Shopify App with Config ---");
+console.log("Raw environment variables:");
+console.log(`process.env.SHOPIFY_API_KEY: ${process.env.SHOPIFY_API_KEY}`);
+console.log(`process.env.SHOPIFY_API_SECRET: ${process.env.SHOPIFY_API_SECRET}`);
+console.log(`process.env.SHOPIFY_APP_URL: ${process.env.SHOPIFY_APP_URL}`);
+console.log(`process.env.SCOPES: ${process.env.SCOPES}`);
+console.log("Processed config:");
 console.log(`API Key: ${shopifyConfig.apiKey}`);
 console.log(`API Secret Key: ${shopifyConfig.apiSecretKey ? '[PRESENT]' : '[MISSING]'}`);
 console.log(`App URL: ${shopifyConfig.appUrl}`);

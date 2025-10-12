@@ -1,3 +1,9 @@
+# This GitHub Actions workflow automates testing and deployment to Fly.io.
+# It runs tests on every push and pull request to the main branch.
+# If tests pass on a push to main, it deploys the application.
+# After deployment, it performs a health check and can automatically roll back on failure.
+# Finally, it sends success or failure notifications to Slack and Discord.
+
 name: Deploy to Fly.io
 
 on:
@@ -8,9 +14,10 @@ on:
   workflow_dispatch:
 
 env:
-  FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+  FLY_APP_NAME: "easycod-dz"
 
 jobs:
+  # Job to run tests, linting, and build checks
   test:
     name: Test Application
     runs-on: ubuntu-latest
@@ -19,7 +26,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js v20
         uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -37,17 +44,19 @@ jobs:
       - name: Run type checking
         run: npx tsc --noEmit
 
+  # Job to deploy the application to Fly.io
   deploy:
     name: Deploy to Fly.io
     needs: test
     runs-on: ubuntu-latest
+    # Run only on push to the main branch, not on pull requests
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js v20
         uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -70,17 +79,15 @@ jobs:
             --no-postgres \
             --strategy immediate \
             --verbose
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
-      - name: Wait for deployment
+      - name: Wait for deployment to stabilize
         run: sleep 30
 
       - name: Health check with auto-rollback
         run: |
           echo "🔍 Checking production app health..."
           for i in {1..5}; do
-            response=$(curl -s -o /dev/null -w "%{http_code}" https://easycod-dz.fly.dev/ping)
+            response=$(curl -s -o /dev/null -w "%{http_code}" https://${{ env.FLY_APP_NAME }}.fly.dev/ping)
             if [ "$response" = "200" ]; then
               echo "✅ Health check passed on attempt $i"
               break
@@ -88,10 +95,10 @@ jobs:
               echo "❌ Health check failed on attempt $i with status: $response"
               if [ $i -eq 5 ]; then
                 echo "🚨 All health check attempts failed. Initiating automatic rollback..."
-                flyctl releases rollback --app easycod-dz
+                flyctl releases rollback --app ${{ env.FLY_APP_NAME }}
                 sleep 30
                 # Check if rollback worked
-                rollback_response=$(curl -s -o /dev/null -w "%{http_code}" https://easycod-dz.fly.dev/ping)
+                rollback_response=$(curl -s -o /dev/null -w "%{http_code}" https://${{ env.FLY_APP_NAME }}.fly.dev/ping)
                 if [ "$rollback_response" = "200" ]; then
                   echo "✅ Automatic rollback successful - app is healthy"
                 else
@@ -104,74 +111,49 @@ jobs:
               fi
             fi
           done
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
       - name: Show deployment status
         run: |
           flyctl status
-          echo "🔗 App URL: https://easycod-dz.fly.dev"
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          echo "🔗 App URL: https://${{ env.FLY_APP_NAME }}.fly.dev"
 
+  # Job to send notifications based on deployment status
   notify:
     name: Notify Deployment Status
     needs: [test, deploy]
     runs-on: ubuntu-latest
+    # Always run this job to report success or failure
     if: always()
     
     steps:
-      - name: Deployment Success
-        if: needs.deploy.result == 'success'
-        run: |
-          echo "🎉 Deployment successful!"
-          echo "🔗 App URL: https://easycod-dz.fly.dev"
-          echo "📊 Status: https://fly.io/dashboard"
-          echo "📝 Commit: ${{ github.sha }}"
-          echo "👤 Author: ${{ github.actor }}"
-
-      - name: Deployment Failed
-        if: needs.deploy.result == 'failure'
-        run: |
-          echo "❌ Deployment failed!"
-          echo "Check the logs above for details."
-          echo "📝 Commit: ${{ github.sha }}"
-          echo "👤 Author: ${{ github.actor }}"
-          echo "🔄 To rollback, run: fly releases rollback"
-          exit 1
-
       - name: Slack Notification (Success)
-        if: needs.deploy.result == 'success' && secrets.SLACK_WEBHOOK_URL
+        if: needs.deploy.result == 'success' && secrets.SLACK_WEBHOOK_URL != ''
         uses: 8398a7/action-slack@v3
         with:
           status: success
           channel: '#deployments'
           text: |
             🚀 *Deployment Successful*
-            App: easycod-dz
-            Commit: ${{ github.sha }}
+            App: ${{ env.FLY_APP_NAME }}
+            Commit: `${{ github.sha }}`
             Author: ${{ github.actor }}
-            URL: https://easycod-dz.fly.dev
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+            URL: https://${{ env.FLY_APP_NAME }}.fly.dev
 
       - name: Slack Notification (Failure)
-        if: needs.deploy.result == 'failure' && secrets.SLACK_WEBHOOK_URL
+        if: needs.deploy.result == 'failure' && secrets.SLACK_WEBHOOK_URL != ''
         uses: 8398a7/action-slack@v3
         with:
           status: failure
           channel: '#deployments'
           text: |
             ❌ *Deployment Failed*
-            App: easycod-dz
-            Commit: ${{ github.sha }}
+            App: ${{ env.FLY_APP_NAME }}
+            Commit: `${{ github.sha }}`
             Author: ${{ github.actor }}
             Check logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: Discord Notification (Success)
-        if: needs.deploy.result == 'success' && secrets.DISCORD_WEBHOOK_URL
+        if: needs.deploy.result == 'success' && secrets.DISCORD_WEBHOOK_URL != ''
         run: |
           curl -H "Content-Type: application/json" \
                -d '{
@@ -179,18 +161,18 @@ jobs:
                    "title": "🚀 Deployment Successful",
                    "color": 65280,
                    "fields": [
-                     {"name": "App", "value": "easycod-dz", "inline": true},
-                     {"name": "Commit", "value": "${{ github.sha }}", "inline": true},
+                     {"name": "App", "value": "${{ env.FLY_APP_NAME }}", "inline": true},
+                     {"name": "Commit", "value": "`${{ github.sha }}`", "inline": true},
                      {"name": "Author", "value": "${{ github.actor }}", "inline": true},
-                     {"name": "URL", "value": "https://easycod-dz.fly.dev", "inline": false}
+                     {"name": "URL", "value": "https://${{ env.FLY_APP_NAME }}.fly.dev", "inline": false}
                    ],
                    "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%S.000Z)'"
                  }]
                }' \
-               ${{ secrets.DISCORD_WEBHOOK_URL }}
+               "${{ secrets.DISCORD_WEBHOOK_URL }}"
 
       - name: Discord Notification (Failure)
-        if: needs.deploy.result == 'failure' && secrets.DISCORD_WEBHOOK_URL
+        if: needs.deploy.result == 'failure' && secrets.DISCORD_WEBHOOK_URL != ''
         run: |
           curl -H "Content-Type: application/json" \
                -d '{
@@ -198,12 +180,12 @@ jobs:
                    "title": "❌ Deployment Failed",
                    "color": 16711680,
                    "fields": [
-                     {"name": "App", "value": "easycod-dz", "inline": true},
-                     {"name": "Commit", "value": "${{ github.sha }}", "inline": true},
+                     {"name": "App", "value": "${{ env.FLY_APP_NAME }}", "inline": true},
+                     {"name": "Commit", "value": "`${{ github.sha }}`", "inline": true},
                      {"name": "Author", "value": "${{ github.actor }}", "inline": true},
                      {"name": "Logs", "value": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}", "inline": false}
                    ],
                    "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%S.000Z)'"
                  }]
                }' \
-               ${{ secrets.DISCORD_WEBHOOK_URL }}
+               "${{ secrets.DISCORD_WEBHOOK_URL }}"

@@ -7,7 +7,7 @@ WORKDIR /app
 
 # Install dependencies based on the preferred package manager
 COPY package.json package-lock.json* ./
-RUN npm ci --omit=dev && npm cache clean --force
+RUN npm ci && npm cache clean --force
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -33,10 +33,24 @@ RUN adduser --system --uid 1001 remix
 
 # Copy the built application
 COPY --from=builder --chown=remix:nodejs /app/build ./build
-COPY --from=builder --chown=remix:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=remix:nodejs /app/package.json ./package.json
+COPY --from=builder --chown=remix:nodejs /app/package.json /app/package-lock.json ./
 COPY --from=builder --chown=remix:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=remix:nodejs /app/public ./public
+COPY --from=builder --chown=remix:nodejs /app/server.js ./server.js
+RUN chmod +x ./server.js
+
+# Install only production dependencies for the final image
+RUN npm ci --omit=dev && npm cache clean --force
+
+# Create a startup script before switching to remix user
+RUN echo '#!/bin/sh' > /app/start.sh && \
+    echo 'echo "Environment variables:"' >> /app/start.sh && \
+    echo 'env | grep SHOPIFY' >> /app/start.sh && \
+    echo 'echo "Starting app..."' >> /app/start.sh && \
+    echo 'npx prisma migrate deploy' >> /app/start.sh && \
+    echo 'echo "Starting server on 0.0.0.0:8080..."' >> /app/start.sh && \
+    echo 'npm run start' >> /app/start.sh && \
+    chmod +x /app/start.sh
 
 USER remix
 
@@ -45,5 +59,7 @@ EXPOSE 8080
 ENV PORT=8080
 ENV NODE_ENV=production
 
-# Run database migrations and start the application
-CMD ["sh", "-c", "npx prisma migrate deploy && npm run start"]
+# Environment variables will be set by Render
+
+# Run the startup script
+CMD ["/app/start.sh"]

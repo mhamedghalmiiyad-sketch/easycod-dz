@@ -5,16 +5,17 @@ services:
     plan: free
     buildCommand: "npm install && npm run build"
     startCommand: "node server.js"
+    # Environment variables should be set in the Render dashboard
+    # DO NOT hardcode sensitive values in this file
+    # The following are non-sensitive defaults:
     envVars:
       - key: NODE_VERSION
         value: "20.11.0"
       - key: NODE_ENV
         value: "production"
-      - key: SHOPIFY_API_KEY
-        value: "78b3b49a43d2ac2ca7e3abaf380e011d"
-      - key: SHOPIFY_APP_URL
-        value: "https://easycod-dz.onrender.com"
-      - key: SCOPES
-        value: "read_draft_orders,read_metaobject_definitions,read_metaobjects,read_online_store_pages,read_orders,read_products,write_draft_orders,write_metaobject_definitions,write_metaobjects,write_online_store_pages,write_orders,write_products"
-      - key: SHOPIFY_API_SECRET
-        value: "cf24bd7dc35faadf8b645cdee12803f3"
+    # Required Shopify environment variables (set these in Render dashboard):
+    # - SHOPIFY_API_KEY: Your Shopify app's API key
+    # - SHOPIFY_API_SECRET: Your Shopify app's API secret
+    # - SHOPIFY_APP_URL: Your app's URL (e.g., https://your-app.onrender.com)
+    # - SCOPES: Comma-separated list of Shopify scopes
+    # - DATABASE_URL: Your database connection string (if using external DB)

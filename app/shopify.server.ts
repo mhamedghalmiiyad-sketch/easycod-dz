@@ -43,13 +43,27 @@ console.log(`Scopes: ${shopifyConfig.scopes?.join(', ') || '[MISSING]'}`);
 console.log(`Custom Domain: ${process.env.SHOP_CUSTOM_DOMAIN || '[NOT SET]'}`);
 console.log("-----------------------------------------");
 
-// Check if the essential variables are present before starting
-if (!shopifyConfig.apiKey || !shopifyConfig.apiSecretKey || !shopifyConfig.appUrl) {
-  console.error("Missing essential Shopify environment variables!");
-  console.error(`API Key: ${shopifyConfig.apiKey ? 'PRESENT' : 'MISSING'}`);
-  console.error(`API Secret Key: ${shopifyConfig.apiSecretKey ? 'PRESENT' : 'MISSING'}`);
-  console.error(`App URL: ${shopifyConfig.appUrl ? 'PRESENT' : 'MISSING'}`);
-  throw new Error("Missing essential Shopify environment variables! Check your Render config.");
+// Comprehensive validation of essential variables
+const validationErrors = [];
+if (!shopifyConfig.apiKey) validationErrors.push('SHOPIFY_API_KEY');
+if (!shopifyConfig.apiSecretKey) validationErrors.push('SHOPIFY_API_SECRET');
+if (!shopifyConfig.appUrl) validationErrors.push('SHOPIFY_APP_URL');
+if (!shopifyConfig.scopes || shopifyConfig.scopes.length === 0) validationErrors.push('SCOPES');
+
+if (validationErrors.length > 0) {
+  console.error("❌ Missing essential Shopify environment variables:");
+  validationErrors.forEach(varName => console.error(`  - ${varName}`));
+  console.error("\n🔧 To fix this:");
+  console.error("1. Go to your Render service dashboard");
+  console.error("2. Navigate to the 'Environment' tab");
+  console.error("3. Add the missing environment variables");
+  console.error("4. Redeploy your service");
+  console.error("\n📋 Required variables:");
+  console.error("  - SHOPIFY_API_KEY: Your Shopify app's API key");
+  console.error("  - SHOPIFY_API_SECRET: Your Shopify app's API secret");
+  console.error("  - SHOPIFY_APP_URL: Your app's URL (e.g., https://your-app.onrender.com)");
+  console.error("  - SCOPES: Comma-separated list of Shopify scopes");
+  throw new Error(`Missing essential Shopify environment variables: ${validationErrors.join(', ')}`);
 }
 
 const shopify = shopifyApp(shopifyConfig);

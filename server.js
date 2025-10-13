@@ -49,6 +49,7 @@ console.log('==========================================\n');
 
 import { createRequestHandler } from "@remix-run/node";
 import { installGlobals } from "@remix-run/node";
+import express from "express";
 
 installGlobals();
 
@@ -85,6 +86,10 @@ const host = "0.0.0.0";
 console.log(`✅ All required environment variables are present`);
 console.log(`🚀 Starting server on ${host}:${port}`);
 console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+
+// Create Express app for static file serving
+const app = express();
+app.use(express.static("public"));
 
 // CRITICAL: Ensure environment variables are available to the built application
 console.log('🔧 Setting up environment variables for built application...');
@@ -362,9 +367,18 @@ const remixHandler = createRequestHandler(build, process.env.NODE_ENV);
 
 // Create a simple HTTP server
 import { createServer } from "http";
+import { parse } from "url";
 
 const server = createServer(async (req, res) => {
   try {
+    const parsedUrl = parse(req.url);
+    
+    // ✅ Serve static assets directly
+    if (parsedUrl.pathname.startsWith("/build") || parsedUrl.pathname.startsWith("/assets")) {
+      const staticHandler = app.handle.bind(app);
+      return staticHandler(req, res);
+    }
+    
     console.log(`${req.method} ${req.url}`);
     
     // Convert Node.js request to Web API Request

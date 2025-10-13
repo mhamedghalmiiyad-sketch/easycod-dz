@@ -106,18 +106,58 @@ Object.keys(process.env).forEach(key => {
   global.process.env[key] = process.env[key];
 });
 
-// CRITICAL: Quick database connection test before importing the built app
-console.log('🔧 Testing database connection...');
+// --- Migration Verification & Auto-Fix Block ---
+console.log('🔍 Starting migration verification and auto-fix...');
 try {
-  // Import Prisma client to test database connection
+  // Import Prisma client for migration verification
   const { PrismaClient } = await import("@prisma/client");
   const prisma = new PrismaClient();
   
-  // Test database connection
+  // Test database connection first
   await prisma.$connect();
   console.log('✅ Database connection established');
   
-  // Quick check if session table exists
+  // Check for failed or incomplete migrations
+  console.log('🔍 Checking Prisma migrations...');
+  const failed = await prisma.$queryRaw`
+    SELECT migration_name, applied_steps_count, finished_at
+    FROM "_prisma_migrations"
+    WHERE finished_at IS NULL OR applied_steps_count = 0;
+  `;
+
+  if (failed.length > 0) {
+    console.warn('⚠️ Found failed migrations:', failed);
+    console.log('🧹 Cleaning up failed migration records...');
+    
+    // Clean up failed migration records
+    await prisma.$executeRaw`
+      DELETE FROM "_prisma_migrations"
+      WHERE finished_at IS NULL OR applied_steps_count = 0;
+    `;
+    console.log('✅ Cleaned up failed migrations');
+
+    // Re-run migrations after cleanup
+    console.log('📦 Re-running migrations...');
+    const { execSync } = await import('child_process');
+    
+    // Generate Prisma client first
+    console.log('🔧 Generating Prisma client...');
+    execSync('npx prisma generate', { 
+      stdio: 'inherit',
+      env: { ...process.env }
+    });
+    
+    // Deploy migrations
+    execSync('npx prisma migrate deploy', { 
+      stdio: 'inherit',
+      env: { ...process.env }
+    });
+    console.log('✅ Re-applied migrations successfully');
+  } else {
+    console.log('✅ All migrations verified successfully');
+  }
+  
+  // Verify session table exists
   try {
     await prisma.$queryRaw`SELECT 1 FROM "Session" LIMIT 1`;
     console.log('✅ Session table exists');
@@ -231,6 +271,7 @@ try {
   }
   
   await prisma.$disconnect();
+  console.log('✅ Migration verification and auto-fix completed');
 } catch (dbError) {
   console.error('❌ Database connection failed:', dbError.message);
   console.error('🔧 Make sure DATABASE_URL is set correctly in your environment variables');

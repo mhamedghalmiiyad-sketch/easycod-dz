@@ -47,7 +47,37 @@ async function resolveMigrationIssues() {
     // Try to resolve any failed migrations
     console.log('🔄 Attempting to resolve failed migrations...');
     
+    // First, try to resolve the specific stuck migration
+    const stuckMigration = '20250727203118_init';
+    console.log(`🔧 Attempting to resolve stuck migration: ${stuckMigration}`);
+    
+    try {
+      // Try as applied first
+      execSync(`npx prisma migrate resolve --applied ${stuckMigration}`, { 
+        stdio: 'inherit',
+        env: { ...process.env }
+      });
+      console.log(`✅ Successfully resolved migration as applied: ${stuckMigration}`);
+    } catch (appliedError) {
+      console.log(`⚠️ Could not resolve as applied: ${appliedError.message}`);
+      
+      try {
+        // Try as rolled back
+        execSync(`npx prisma migrate resolve --rolled-back ${stuckMigration}`, { 
+          stdio: 'inherit',
+          env: { ...process.env }
+        });
+        console.log(`✅ Successfully resolved migration as rolled back: ${stuckMigration}`);
+      } catch (rollbackError) {
+        console.log(`⚠️ Could not resolve as rolled back: ${rollbackError.message}`);
+        console.log(`🔧 Will attempt direct database cleanup for ${stuckMigration}`);
+      }
+    }
+    
+    // Then try to resolve any other failed migrations
     for (const migration of availableMigrations) {
+      if (migration === stuckMigration) continue; // Already handled above
+      
       try {
         console.log(`🔧 Resolving migration: ${migration}`);
         execSync(`npx prisma migrate resolve --rolled-back ${migration}`, { 

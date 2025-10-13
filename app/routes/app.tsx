@@ -41,6 +41,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   return json({ 
     apiKey: shopifyEnv.apiKey || "",
+    shop: session.shop,
     language,
     translations,
     rtl,
@@ -48,11 +49,19 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 };
 
 function AppContent() {
-  const { apiKey, language, translations, rtl } = useLoaderData<typeof loader>();
+  const { apiKey, shop, language, translations, rtl } = useLoaderData<typeof loader>();
   const [isClientReady, setIsClientReady] = useState(false);
 
   // Initialize client i18n with server data
   useEffect(() => {
+    // Set App Bridge configuration in session storage
+    if (typeof window !== 'undefined' && apiKey && shop) {
+      sessionStorage.setItem('app-bridge-config', JSON.stringify({
+        apiKey: apiKey,
+        shopOrigin: shop
+      }));
+    }
+
     Object.entries(translations).forEach(([namespace, bundle]) => {
       clientI18n.addResourceBundle(language, namespace, bundle, true, true);
     });
@@ -64,14 +73,14 @@ function AppContent() {
       document.documentElement.setAttribute('lang', language);
       setIsClientReady(true);
     });
-  }, [language, translations, rtl]);
+  }, [language, translations, rtl, apiKey, shop]);
 
   // Use server-side translations for initial render to prevent hydration mismatch
   const getTranslation = (key: string) => {
     if (!isClientReady) {
       // Use server-side translation during initial render
       const [namespace, translationKey] = key.split(':');
-      return translations[namespace]?.[translationKey] || key;
+      return (translations as any)[namespace]?.[translationKey] || key;
     }
     return clientI18n.t(key);
   };

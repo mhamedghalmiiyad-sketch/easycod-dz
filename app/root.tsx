@@ -9,7 +9,6 @@ import {
   Scripts,
   ScrollRestoration,
 } from "@remix-run/react";
-import { AppProvider as ShopifyAppProvider } from "@shopify/shopify-app-remix/react";
 
 import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
 import tailwindStyles from "./tailwind.css?url";
@@ -36,9 +35,7 @@ export default function App() {
         <Links />
       </head>
       <body>
-        <ShopifyAppProvider apiKey={process.env.SHOPIFY_API_KEY || ""}>
-          <Outlet />
-        </ShopifyAppProvider>
+        <Outlet />
         <ScrollRestoration />
         <Scripts />
       </body>

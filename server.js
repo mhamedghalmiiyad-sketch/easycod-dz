@@ -287,7 +287,7 @@ try {
 // Import the built server
 const build = await import("./build/server/index.js");
 
-// Create a URL-safe request handler wrapper
+// Create a URL-safe request handler wrapper with AbortSignal fix
 const createUrlSafeRequestHandler = (build, mode) => {
   const originalHandler = createRequestHandler(build, mode);
   
@@ -300,13 +300,41 @@ const createUrlSafeRequestHandler = (build, mode) => {
         req.url = fullUrl.toString();
       }
       
+      // Fix for Remix AbortSignal error behind proxies like Render
+      // Ensure the request object has a proper signal property
+      if (req.signal === undefined) {
+        // Create a safe abort signal with timeout
+        if (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) {
+          req.signal = AbortSignal.timeout(30000); // 30 second timeout
+        } else {
+          // Fallback for older Node.js versions
+          const controller = new AbortController();
+          req.signal = controller.signal;
+          // Set a timeout to abort after 30 seconds
+          setTimeout(() => controller.abort(), 30000);
+        }
+      }
+      
       return await originalHandler(req, res);
     } catch (error) {
-      console.error("URL construction error:", error);
-      console.error("Request URL:", req.url);
-      console.error("Request headers:", req.headers);
-      res.statusCode = 500;
-      res.end("Internal Server Error");
+      console.error("Request handler error:", error);
+      console.error("Error details:", {
+        message: error.message,
+        stack: error.stack,
+        requestUrl: req.url,
+        requestMethod: req.method,
+        requestHeaders: req.headers
+      });
+      
+      // Handle specific AbortSignal errors gracefully
+      if (error.message && error.message.includes('aborted')) {
+        console.log("Request was aborted (likely timeout) - this is normal behavior");
+        res.statusCode = 408; // Request Timeout
+        res.end("Request Timeout");
+      } else {
+        res.statusCode = 500;
+        res.end("Internal Server Error");
+      }
     }
   };
 };

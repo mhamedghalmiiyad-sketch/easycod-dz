@@ -5,6 +5,7 @@ services:
     plan: free
     buildCommand: "npm install && npx prisma generate && npm run build"
     startCommand: "node server.js"
+    healthCheckPath: "/health"
     # Environment variables should be set in the Render dashboard
     # DO NOT hardcode sensitive values in this file
     # Set these environment variables in the Render dashboard:

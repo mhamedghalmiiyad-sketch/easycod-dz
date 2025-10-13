@@ -45,6 +45,10 @@ async function startServer() {
   const app = express();
   const port = process.env.PORT || 8080;
   const host = "0.0.0.0";
+  
+  // Log port information for debugging
+  console.log(`🔧 Port configuration: ${port} (from PORT env: ${process.env.PORT})`);
+  console.log(`🔧 Host configuration: ${host}`);
 
   // Serve build assets with aggressive caching
   app.use(
@@ -54,6 +58,16 @@ async function startServer() {
 
   // Serve other public files (e.g., favicon.ico)
   app.use(express.static("public", { maxAge: "1h" }));
+
+  // Health check endpoint for Render
+  app.get("/health", (req, res) => {
+    res.status(200).json({ 
+      status: "ok", 
+      timestamp: new Date().toISOString(),
+      port: port,
+      environment: process.env.NODE_ENV 
+    });
+  });
 
   // Let Remix handle all other requests
   app.all(
@@ -65,9 +79,18 @@ async function startServer() {
   );
 
   // --- Start Server ---
-  app.listen(port, host, () => {
+  const server = app.listen(port, host, () => {
     console.log(`🚀 Server is running and ready on http://${host}:${port}`);
     console.log(`✅ Environment: ${process.env.NODE_ENV}`);
+    console.log(`🔧 Server listening on port: ${server.address()?.port}`);
+  });
+
+  // Ensure server is properly bound
+  server.on('listening', () => {
+    const addr = server.address();
+    if (addr && typeof addr === 'object') {
+      console.log(`✅ Server successfully bound to ${addr.address}:${addr.port}`);
+    }
   });
 }
 

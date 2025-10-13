@@ -173,35 +173,50 @@ try {
       // Check if it's a failed migration state error (P3009)
       if (migrationError.message.includes('P3009') || migrationError.message.includes('failed migrations in the target database')) {
         console.error('🔧 Failed migration state detected. The database has records of failed migrations.');
-        console.error('🔧 Attempting to reset migration state...');
+        console.error('🔧 Attempting to resolve migration issues...');
         
         try {
-          // Try to reset the migration state by marking failed migrations as rolled back
+          // Use the migration resolution script
           const { execSync } = await import('child_process');
-          console.log('🔄 Resetting migration state...');
-          execSync('npx prisma migrate resolve --rolled-back 20250727203118_init', { 
+          console.log('🔄 Running migration resolution script...');
+          execSync('node scripts/resolve-migration-issues.js', { 
             stdio: 'inherit',
             env: { ...process.env }
           });
-          console.log('✅ Migration state reset successfully');
-          
-          // Now try to run migrations again
-          console.log('🔄 Retrying migrations after state reset...');
-          execSync('npx prisma migrate deploy', { 
-            stdio: 'inherit',
-            env: { ...process.env }
-          });
-          console.log('✅ Database migrations completed after reset');
+          console.log('✅ Migration resolution completed');
           
           // Verify session table exists after migrations
           await prisma.$queryRaw`SELECT 1 FROM "Session" LIMIT 1`;
           console.log('✅ Session table verified after migrations');
-          console.log('✅ Migration state reset and migrations completed successfully');
+          console.log('✅ Migration issues resolved successfully');
           // Continue with normal flow instead of return
         } catch (resetError) {
-          console.error('❌ Failed to reset migration state:', resetError.message);
-          console.error('🔧 Manual database cleanup may be required.');
-          console.error('🔧 You may need to drop and recreate the database or manually clean the _prisma_migrations table.');
+          console.error('❌ Failed to resolve migration issues:', resetError.message);
+          console.error('🔧 Attempting direct database cleanup...');
+          
+          try {
+            // Try to directly clean the migration table
+            console.log('🔄 Cleaning migration history table...');
+            await prisma.$executeRaw`DELETE FROM "_prisma_migrations" WHERE finished_at IS NULL`;
+            console.log('✅ Migration history cleaned');
+            
+            // Now try to run migrations again
+            console.log('🔄 Retrying migrations after cleanup...');
+            execSync('npx prisma migrate deploy', { 
+              stdio: 'inherit',
+              env: { ...process.env }
+            });
+            console.log('✅ Database migrations completed after cleanup');
+            
+            // Verify session table exists after migrations
+            await prisma.$queryRaw`SELECT 1 FROM "Session" LIMIT 1`;
+            console.log('✅ Session table verified after migrations');
+            console.log('✅ Migration cleanup and deployment completed successfully');
+          } catch (cleanupError) {
+            console.error('❌ Database cleanup failed:', cleanupError.message);
+            console.error('🔧 Manual database cleanup may be required.');
+            console.error('🔧 You may need to drop and recreate the database or manually clean the _prisma_migrations table.');
+          }
         }
       }
       

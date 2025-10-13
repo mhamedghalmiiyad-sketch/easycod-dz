@@ -49,6 +49,7 @@ console.log('==========================================\n');
 
 import { createRequestHandler } from "@remix-run/node";
 import { installGlobals } from "@remix-run/node";
+import express from "express";
 
 installGlobals();
 
@@ -357,16 +358,59 @@ async function sendWebResponse(webResponse, res) {
   res.end();
 }
 
+// Create Express app
+const app = express();
+
+// CRITICAL: Serve static assets BEFORE Remix handler
+// This ensures that requests for /assets/* files are served directly by Express
+// instead of being passed to Remix, which causes 404 errors
+
+// Serve build assets with aggressive caching
+// Assets are requested at /assets/* but are located in build/client/assets/*
+app.use(
+  "/assets",
+  express.static("build/client/assets", { 
+    immutable: true, 
+    maxAge: "1y",
+    setHeaders: (res, path) => {
+      // Set proper cache headers for assets
+      if (path.endsWith('.js') || path.endsWith('.css')) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      }
+    }
+  })
+);
+
+// Also serve build files at /build for any other build assets
+app.use(
+  "/build",
+  express.static("build/client", { 
+    immutable: true, 
+    maxAge: "1y",
+    setHeaders: (res, path) => {
+      // Set proper cache headers for assets
+      if (path.endsWith('.js') || path.endsWith('.css')) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      }
+    }
+  })
+);
+
+// Serve other public files (like favicon.ico)
+app.use(express.static("public", { maxAge: "1h" }));
+
+// Add request logging
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url}`);
+  next();
+});
+
 // Create request handler
 const remixHandler = createRequestHandler(build, process.env.NODE_ENV);
 
-// Create a simple HTTP server
-import { createServer } from "http";
-
-const server = createServer(async (req, res) => {
+// Handle all other requests with Remix
+app.all("*", async (req, res) => {
   try {
-    console.log(`${req.method} ${req.url}`);
-    
     // Convert Node.js request to Web API Request
     const webRequest = createWebRequest(req);
     
@@ -398,12 +442,12 @@ const server = createServer(async (req, res) => {
   }
 });
 
-server.listen(port, host, () => {
+// Start the server
+const server = app.listen(port, host, () => {
   console.log(`✅ Server is running on http://${host}:${port}`);
   console.log(`✅ Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 
-// Graceful shutdown
 process.on('SIGTERM', () => {
   console.log('SIGTERM received, shutting down gracefully');
   server.close(() => {

@@ -38,10 +38,13 @@ async function startServer() {
     process.exit(1);
   }
 
+  // --- CRITICAL FIX: Load the build BEFORE starting the server ---
+  const build = await import("./build/server/index.js");
+
   // --- Express App Setup ---
   const app = express();
   const port = process.env.PORT || 8080;
-  const host = "0.0.0.0"; // <-- CRITICAL: This is the main fix.
+  const host = "0.0.0.0";
 
   // Serve build assets with aggressive caching
   app.use(
@@ -56,14 +59,14 @@ async function startServer() {
   app.all(
     "*",
     createRequestHandler({
-      build: await import("./build/server/index.js"),
+      build: build, // <-- Use the pre-loaded build here
       mode: process.env.NODE_ENV,
     })
   );
 
   // --- Start Server ---
-  app.listen(port, host, () => { // <-- CRITICAL: Pass the host here.
-    console.log(`🚀 Server is running on http://${host}:${port}`);
+  app.listen(port, host, () => {
+    console.log(`🚀 Server is running and ready on http://${host}:${port}`);
     console.log(`✅ Environment: ${process.env.NODE_ENV}`);
   });
 }

@@ -106,6 +106,12 @@ Object.keys(process.env).forEach(key => {
   global.process.env[key] = process.env[key];
 });
 
+// CRITICAL: Auto-detect Render URL for proper URL handling
+if (!process.env.SHOPIFY_APP_URL && process.env.RENDER_EXTERNAL_URL) {
+  process.env.SHOPIFY_APP_URL = process.env.RENDER_EXTERNAL_URL;
+  console.log(`🔧 Auto-detected SHOPIFY_APP_URL from RENDER_EXTERNAL_URL: ${process.env.SHOPIFY_APP_URL}`);
+}
+
 // --- Migration Verification & Auto-Fix Block ---
 console.log('🔍 Starting migration verification and auto-fix...');
 try {
@@ -281,7 +287,31 @@ try {
 // Import the built server
 const build = await import("./build/server/index.js");
 
-const requestHandler = createRequestHandler(build, process.env.NODE_ENV);
+// Create a URL-safe request handler wrapper
+const createUrlSafeRequestHandler = (build, mode) => {
+  const originalHandler = createRequestHandler(build, mode);
+  
+  return async (req, res) => {
+    try {
+      // Ensure we always have an absolute URL for Remix
+      if (!req.url.startsWith('http')) {
+        const baseUrl = process.env.SHOPIFY_APP_URL || `https://${req.headers.host}`;
+        const fullUrl = new URL(req.url, baseUrl);
+        req.url = fullUrl.toString();
+      }
+      
+      return await originalHandler(req, res);
+    } catch (error) {
+      console.error("URL construction error:", error);
+      console.error("Request URL:", req.url);
+      console.error("Request headers:", req.headers);
+      res.statusCode = 500;
+      res.end("Internal Server Error");
+    }
+  };
+};
+
+const requestHandler = createUrlSafeRequestHandler(build, process.env.NODE_ENV);
 
 // Create a simple HTTP server
 import { createServer } from "http";

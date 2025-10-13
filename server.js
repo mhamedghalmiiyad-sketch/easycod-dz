@@ -287,69 +287,115 @@ try {
 // Import the built server
 const build = await import("./build/server/index.js");
 
-// Create a URL-safe request handler wrapper with AbortSignal fix
-const createUrlSafeRequestHandler = (build, mode) => {
-  const originalHandler = createRequestHandler(build, mode);
+/**
+ * Convert Node.js IncomingMessage to Web API Request
+ */
+function createWebRequest(req) {
+  const baseUrl = process.env.SHOPIFY_APP_URL || `https://${req.headers.host}`;
+  const url = new URL(req.url, baseUrl);
   
-  return async (req, res) => {
-    try {
-      // Ensure we always have an absolute URL for Remix
-      if (!req.url.startsWith('http')) {
-        const baseUrl = process.env.SHOPIFY_APP_URL || `https://${req.headers.host}`;
-        const fullUrl = new URL(req.url, baseUrl);
-        req.url = fullUrl.toString();
-      }
-      
-      // Fix for Remix AbortSignal error behind proxies like Render
-      // Ensure the request object has a proper signal property
-      if (req.signal === undefined) {
-        // Create a safe abort signal with timeout
-        if (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) {
-          req.signal = AbortSignal.timeout(30000); // 30 second timeout
-        } else {
-          // Fallback for older Node.js versions
-          const controller = new AbortController();
-          req.signal = controller.signal;
-          // Set a timeout to abort after 30 seconds
-          setTimeout(() => controller.abort(), 30000);
+  // Convert Node.js headers to Web API Headers
+  const headers = new Headers();
+  for (const [key, value] of Object.entries(req.headers)) {
+    if (value !== undefined) {
+      if (Array.isArray(value)) {
+        for (const v of value) {
+          headers.append(key, v);
         }
-      }
-      
-      return await originalHandler(req, res);
-    } catch (error) {
-      console.error("Request handler error:", error);
-      console.error("Error details:", {
-        message: error.message,
-        stack: error.stack,
-        requestUrl: req.url,
-        requestMethod: req.method,
-        requestHeaders: req.headers
-      });
-      
-      // Handle specific AbortSignal errors gracefully
-      if (error.message && error.message.includes('aborted')) {
-        console.log("Request was aborted (likely timeout) - this is normal behavior");
-        res.statusCode = 408; // Request Timeout
-        res.end("Request Timeout");
       } else {
-        res.statusCode = 500;
-        res.end("Internal Server Error");
+        headers.set(key, value);
       }
     }
+  }
+  
+  // Create init object for Request constructor
+  const init = {
+    method: req.method,
+    headers: headers,
   };
-};
+  
+  // Add body for methods that support it
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    init.body = req;
+  }
+  
+  // Create AbortSignal with timeout
+  if (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) {
+    init.signal = AbortSignal.timeout(30000); // 30 second timeout
+  }
+  
+  return new Request(url.toString(), init);
+}
 
-const requestHandler = createUrlSafeRequestHandler(build, process.env.NODE_ENV);
+/**
+ * Convert Web API Response to Node.js ServerResponse
+ */
+async function sendWebResponse(webResponse, res) {
+  // Set status code
+  res.statusCode = webResponse.status;
+  
+  // Set headers
+  for (const [key, value] of webResponse.headers.entries()) {
+    res.setHeader(key, value);
+  }
+  
+  // Send body
+  if (webResponse.body) {
+    const reader = webResponse.body.getReader();
+    
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        res.write(value);
+      }
+    } finally {
+      reader.releaseLock();
+    }
+  }
+  
+  res.end();
+}
+
+// Create request handler
+const remixHandler = createRequestHandler(build, process.env.NODE_ENV);
 
 // Create a simple HTTP server
 import { createServer } from "http";
 
-const server = createServer((req, res) => {
-  requestHandler(req, res).catch((error) => {
+const server = createServer(async (req, res) => {
+  try {
+    console.log(`${req.method} ${req.url}`);
+    
+    // Convert Node.js request to Web API Request
+    const webRequest = createWebRequest(req);
+    
+    // Handle with Remix
+    const webResponse = await remixHandler(webRequest);
+    
+    // Convert Web API Response back to Node.js response
+    await sendWebResponse(webResponse, res);
+    
+  } catch (error) {
     console.error("Request handler error:", error);
-    res.statusCode = 500;
-    res.end("Internal Server Error");
-  });
+    console.error("Error details:", {
+      message: error.message,
+      stack: error.stack,
+      requestUrl: req.url,
+      requestMethod: req.method,
+      requestHeaders: req.headers
+    });
+    
+    // Handle specific errors gracefully
+    if (error.message && error.message.includes('aborted')) {
+      console.log("Request was aborted (likely timeout) - this is normal behavior");
+      res.statusCode = 408;
+      res.end("Request Timeout");
+    } else {
+      res.statusCode = 500;
+      res.end("Internal Server Error");
+    }
+  }
 });
 
 server.listen(port, host, () => {

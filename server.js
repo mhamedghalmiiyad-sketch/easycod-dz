@@ -40,6 +40,7 @@ async function startServer() {
 
   // --- CRITICAL FIX: Load the build BEFORE starting the server ---
   const build = await import("./build/server/index.js");
+  console.log("✅ Remix build loaded successfully from ./build/server/index.js");
 
   // --- Express App Setup ---
   const app = express();
@@ -50,13 +51,10 @@ async function startServer() {
   console.log(`🔧 Port configuration: ${port} (from PORT env: ${process.env.PORT})`);
   console.log(`🔧 Host configuration: ${host}`);
 
-  // Serve build assets with aggressive caching
-  app.use(
-    "/assets",
-    express.static("build/client/assets", { immutable: true, maxAge: "1y" })
-  );
-
-  // Serve other public files (e.g., favicon.ico)
+  // ✅ Serve all built client assets (Vite output)
+  app.use(express.static("build/client", { immutable: true, maxAge: "1y" }));
+  
+  // ✅ Serve public folder (favicon, logo, etc.)
   app.use(express.static("public", { maxAge: "1h" }));
 
   // Health check endpoint for Render

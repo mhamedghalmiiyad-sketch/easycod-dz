@@ -38,6 +38,16 @@ async function startServer() {
     process.exit(1);
   }
 
+  // --- Wilaya Data Check ---
+  try {
+    console.log("🏛️ Ensuring wilaya data is available...");
+    execSync("npm run ensure-wilaya-data", { stdio: "inherit" });
+    console.log("✅ Wilaya data check completed successfully.");
+  } catch (error) {
+    console.error("⚠️ Wilaya data check failed, but continuing with fallback data:", error.message);
+    // Don't exit - the app has fallback data in the route
+  }
+
   // --- CRITICAL FIX: Load the build BEFORE starting the server ---
   const build = await import("./build/server/index.js");
   console.log("✅ Remix build loaded successfully from ./build/server/index.js");
@@ -65,6 +75,28 @@ async function startServer() {
       port: port,
       environment: process.env.NODE_ENV 
     });
+  });
+
+  // Wilaya data health check endpoint
+  app.get("/health/wilaya", async (req, res) => {
+    try {
+      const { PrismaClient } = await import("@prisma/client");
+      const prisma = new PrismaClient();
+      const count = await prisma.algeriaCities.count();
+      await prisma.$disconnect();
+      
+      res.status(200).json({ 
+        status: "ok", 
+        wilayaCount: count,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        status: "error", 
+        error: error.message,
+        timestamp: new Date().toISOString()
+      });
+    }
   });
 
   // Let Remix handle all other requests

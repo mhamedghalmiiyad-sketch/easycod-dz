@@ -66,4 +66,10 @@ export function validateShopifyEnv(): void {
   if (missing.length > 0) {
     throw new Error(`Missing required Shopify environment variables: ${missing.join(', ')}`);
   }
+  
+  // ✅ Validate HTTPS URL for production
+  if (shopifyEnv.appUrl && !shopifyEnv.appUrl.startsWith('https://')) {
+    console.warn(`⚠️ SHOPIFY_APP_URL should use HTTPS: ${shopifyEnv.appUrl}`);
+    console.warn('🔧 Update SHOPIFY_APP_URL to start with https:// for proper cookie handling');
+  }
 }

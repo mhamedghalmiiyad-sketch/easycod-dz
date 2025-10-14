@@ -74,7 +74,17 @@ try {
   throw error;
 }
 
-const shopify = shopifyApp(shopifyConfig);
+const shopify = shopifyApp({
+  ...shopifyConfig,
+  useSecureCookies: true, // ✅ Force secure cookies for Render HTTPS
+  hooks: {
+    afterAuth: async ({ session }) => {
+      console.log("✅ Shopify session saved:", session.id, "for shop:", session.shop);
+    },
+  },
+});
+
+console.log("✅ Secure cookie configuration enabled for Render HTTPS");
 
 // --- END: EXPLICIT CONFIGURATION WITH DEBUGGING ---
 

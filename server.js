@@ -114,6 +114,35 @@ async function startServer() {
     }
   });
 
+  // Debug session endpoint to check if sessions are being stored
+  app.get("/debug/session", async (req, res) => {
+    try {
+      const { PrismaClient } = await import("@prisma/client");
+      const prisma = new PrismaClient();
+      const sessions = await prisma._Session.findMany({
+        take: 5,
+        orderBy: { id: "desc" },
+      });
+      await prisma.$disconnect();
+      
+      res.json({
+        count: sessions.length,
+        sample: sessions.map((s) => ({ 
+          id: s.id, 
+          shop: s.shop, 
+          isOnline: s.isOnline,
+          expires: s.expires 
+        })),
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        error: error.message,
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
   // Let Remix handle all other requests
   app.all(
     "*",

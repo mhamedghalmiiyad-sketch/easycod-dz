@@ -175,7 +175,7 @@ const resetAllAppData = async (sessionId: string, shopDomain: string) => {
       }
     }
 
-    await initializeShopSettings(sessionId);
+    await initializeShopSettings(shopDomain);
     
     console.log(`✅ Database reset completed for shop: ${shopDomain}`);
     return true;
@@ -190,7 +190,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   console.log("🔍 Session ID:", session.id);
   console.log("🏪 Shop domain:", session.shop);
   
-  await initializeShopSettings(session.id);
+  await initializeShopSettings(session.shop);
   
   const generalSettings = await getCachedSettings(session.id);
   
@@ -239,7 +239,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       settingsToSave = DEFAULT_SETTINGS;
       console.log("🔄 Complete database reset performed");
     } else {
-      await initializeShopSettings(session.id);
+      await initializeShopSettings(session.shop);
 
       const rawSettings = {
         orderCreationMode: formData.get("orderCreationMode") as "cod" | "draft",

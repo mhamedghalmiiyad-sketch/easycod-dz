@@ -52,10 +52,20 @@ const DEFAULT_SHOP_SETTINGS = {
 /**
  * Initializes settings for a new shop if they don't already exist.
  * This includes default shop settings, general settings, and app proxy settings.
- * @param {string} shopId - The ID of the shop to initialize.
+ * @param {string} shopId - The shop domain to initialize (e.g., "shop.myshopify.com").
  */
 export async function initializeShopSettings(shopId: string) {
   try {
+    // First, check if a Session exists for this shop
+    const existingSession = await db.session.findUnique({
+      where: { shop: shopId },
+    });
+
+    if (!existingSession) {
+      console.log(`⚠️ No session found for shop ${shopId}. Shop settings initialization skipped.`);
+      return;
+    }
+
     const existing = await db.shopSettings.findUnique({
       where: { shopId },
     });

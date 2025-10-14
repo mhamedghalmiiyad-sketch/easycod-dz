@@ -44,7 +44,7 @@ async function startServer() {
 
   // --- Express App Setup ---
   const app = express();
-  const port = process.env.PORT || 8080;
+  const port = process.env.PORT || 10000;
   const host = "0.0.0.0";
   
   // Log port information for debugging

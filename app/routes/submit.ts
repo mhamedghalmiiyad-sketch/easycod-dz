@@ -6,6 +6,7 @@ import { unauthenticated, default as shopify } from "../shopify.server";
 import db from "../db.server";
 import { calculateRiskScore } from "../utils/riskScoring.server"; // Server-only risk scoring logic
 import { shopifyEnv } from "../utils/env.server";
+import { initializeShopSettings } from "../utils/shopSettings";
 
 // =================================================================
 // PASTE ALL YOUR HELPER FUNCTIONS & TYPE DEFINITIONS HERE
@@ -228,6 +229,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         return json({ success: false, error: "Shop parameter is missing." }, { status: 400 });
     }
 
+    console.log("🔍 Initializing shop settings for:", shop);
+    await initializeShopSettings(shop);
+    
     console.log("🔍 Looking up shop settings for:", shop);
     const settings = (await db.shopSettings.findUnique({
         where: { shopId: shop },

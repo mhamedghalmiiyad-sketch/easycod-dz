@@ -3,9 +3,6 @@ import { db } from "../db.server";
 // FIX: Use camelCase for Prisma types to match the model names in schema.prisma.
 import {
   Prisma,
-  shopSettingsUpdateInput,
-  shopSettingsCreateInput,
-  appProxyUpdateInput,
 } from "@prisma/client";
 
 // A default object for general settings, can be imported from a shared file
@@ -67,16 +64,12 @@ export async function initializeShopSettings(shopId: string) {
       await db.shopSettings.create({
         data: {
           ...DEFAULT_SHOP_SETTINGS,
-          Session: {
-            connect: {
-              id: shopId,
-            },
-          },
+          shopId: shopId,
         },
       });
     } else {
       // FIX: Use the camelCased 'shopSettingsUpdateInput' type.
-      const dataToUpdate: shopSettingsUpdateInput = {};
+      const dataToUpdate: any = {};
       if (
         existing.generalSettings === null ||
         existing.generalSettings === undefined
@@ -193,7 +186,7 @@ export async function updateShopSettings(
   updates: ShopSettingsUpdates,
 ) {
   // FIX: Use the camelCased 'shopSettingsUpdateInput' type.
-  const data: shopSettingsUpdateInput = {};
+  const data: any = {};
 
   if (updates.formFields !== undefined)
     data.formFields = stringifyJsonField(updates.formFields, "[]");
@@ -245,7 +238,7 @@ export async function upsertShopSettings(
   updates: ShopSettingsUpdates,
 ) {
   // FIX: Use the camelCased 'shopSettingsUpdateInput' type.
-  const updateData: shopSettingsUpdateInput = {};
+  const updateData: any = {};
 
   if (updates.formFields !== undefined)
     updateData.formFields = stringifyJsonField(updates.formFields, "[]");
@@ -297,8 +290,8 @@ export async function upsertShopSettings(
     updateData.enableSpecificCountries = updates.enableSpecificCountries;
 
   // FIX: Use the camelCased 'shopSettingsCreateInput' type.
-  const createData: shopSettingsCreateInput = {
-    Session: { connect: { id: shopId } },
+  const createData: any = {
+    shopId: shopId,
     formFields:
       updates.formFields !== undefined
         ? stringifyJsonField(updates.formFields, "[]")
@@ -376,7 +369,7 @@ export async function updateAppProxySettings(
   updates: AppProxyUpdates,
 ) {
   // FIX: Use the camelCased 'appProxyUpdateInput' type.
-  const data: appProxyUpdateInput = {};
+  const data: any = {};
   if (updates.isEnabled !== undefined) data.isEnabled = updates.isEnabled;
   if (updates.configuration !== undefined)
     data.configuration = stringifyJsonField(updates.configuration);
@@ -397,7 +390,7 @@ export async function upsertAppProxySettings(
   updates: AppProxyUpdates,
 ) {
   // FIX: Use the camelCased 'appProxyUpdateInput' type.
-  const updateData: appProxyUpdateInput = {};
+  const updateData: any = {};
   if (updates.isEnabled !== undefined) updateData.isEnabled = updates.isEnabled;
   if (updates.configuration !== undefined)
     updateData.configuration = stringifyJsonField(updates.configuration);

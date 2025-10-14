@@ -47,8 +47,21 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   
   console.log("✅ Forwarding to submit handler");
   
-  // Call the submit action directly
-  return await submitAction({ request: submitRequest, params: {}, context: {} });
+  try {
+    // Call the submit action directly
+    return await submitAction({ request: submitRequest, params: {}, context: {} });
+  } catch (error) {
+    console.error("❌ Error in submit handler:", error);
+    // If it's an app not installed error, return a more user-friendly response
+    if (error instanceof Error && error.message.includes("App not installed")) {
+      return json({
+        success: false,
+        error: "This app needs to be installed first. Please contact the store administrator.",
+        installRequired: true
+      }, { status: 403 });
+    }
+    throw error;
+  }
 };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {

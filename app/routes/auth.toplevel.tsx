@@ -9,9 +9,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     throw new Response("Missing shop parameter", { status: 400 });
   }
 
-  // Redirect to the main auth route without the embedded parameter
+  // Redirect to the auth callback route without the embedded parameter
   // This will break out of the iframe and allow cookies to be set
-  return redirect(`/auth?shop=${encodeURIComponent(shop)}`);
+  return redirect(`/auth/callback?shop=${encodeURIComponent(shop)}`);
 };
 
 // This route renders a simple HTML page that redirects the top-level window
@@ -30,10 +30,10 @@ export default function TopLevelAuth() {
               const shop = urlParams.get('shop');
               
               if (shop) {
-                // Redirect the top-level window to the auth route
-                window.top.location.href = '/auth?shop=' + encodeURIComponent(shop);
+                // Redirect the top-level window to the auth callback route
+                window.top.location.href = '/auth/callback?shop=' + encodeURIComponent(shop);
               } else {
-                window.top.location.href = '/auth';
+                window.top.location.href = '/auth/callback';
               }
             `,
           }}

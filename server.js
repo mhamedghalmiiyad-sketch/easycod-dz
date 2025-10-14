@@ -79,6 +79,9 @@ async function startServer() {
   // ✅ Serve all built client assets (Vite output)
   app.use(express.static("build/client", { immutable: true, maxAge: "1y" }));
   
+  // ✅ Serve assets from the assets subdirectory
+  app.use("/assets", express.static("build/client/assets", { immutable: true, maxAge: "1y" }));
+  
   // ✅ Serve public folder (favicon, logo, etc.)
   app.use(express.static("public", { maxAge: "1h" }));
 

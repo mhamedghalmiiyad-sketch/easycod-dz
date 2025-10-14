@@ -19,6 +19,15 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     console.error("❌ Proxy submit error:", error);
     console.error("🔥 Error stack:", error instanceof Error ? error.stack : 'No stack trace');
     
+    // Check if it's an app installation issue
+    if (error instanceof Error && error.message.includes("App not installed")) {
+      return json({
+        success: false,
+        error: "This app needs to be installed first. Please contact the store administrator.",
+        installRequired: true
+      }, { status: 403 });
+    }
+    
     // Return a proper JSON error response
     return json({ 
       success: false, 

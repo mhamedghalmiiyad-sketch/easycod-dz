@@ -63,6 +63,8 @@ export async function initializeShopSettings(shopId: string) {
 
     if (!existingSession) {
       console.log(`⚠️ No session found for shop ${shopId}. Shop settings initialization skipped.`);
+      console.log(`🔍 This means the app hasn't been installed/authorized for this shop yet.`);
+      console.log(`🔍 The shop needs to go through the OAuth flow first.`);
       return;
     }
 

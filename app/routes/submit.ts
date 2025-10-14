@@ -240,7 +240,16 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     console.log("🔍 Shop settings found:", !!settings);
     if (!settings) {
         console.log("❌ App configuration not found for shop:", shop);
-        return json({ success: false, error: "App configuration not found." }, { status: 500 });
+        console.log("🔍 This usually means the app hasn't been installed yet.");
+        console.log("🔍 Redirecting to app installation...");
+        
+        // Return a proper error response that can be handled by the frontend
+        return json({ 
+            success: false, 
+            error: "App not installed. Please install the app first.",
+            redirectToInstall: true,
+            installUrl: `https://admin.shopify.com/store/${shop.split('.')[0]}/oauth/install?client_id=${process.env.SHOPIFY_API_KEY}`
+        }, { status: 403 });
     }
 
     try {

@@ -17,6 +17,7 @@ async function startServer() {
     "SHOPIFY_APP_URL",
     "SCOPES",
     "DATABASE_URL",
+    "SESSION_SECRET",
   ];
   const missingVars = requiredEnvVars.filter((v) => !process.env[v]);
 

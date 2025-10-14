@@ -40,12 +40,14 @@ export const shopifyEnv = {
   get appUrl() { return getEnvVar('SHOPIFY_APP_URL'); },
   get scopes() { return getEnvVar('SCOPES'); },
   get customDomain() { return getEnvVar('SHOP_CUSTOM_DOMAIN'); },
+  get sessionSecret() { return getEnvVar('SESSION_SECRET'); },
   
   // Required getters that throw if not found
   get requiredApiKey() { return getRequiredEnvVar('SHOPIFY_API_KEY'); },
   get requiredApiSecret() { return getRequiredEnvVar('SHOPIFY_API_SECRET'); },
   get requiredAppUrl() { return getRequiredEnvVar('SHOPIFY_APP_URL'); },
   get requiredScopes() { return getRequiredEnvVar('SCOPES'); },
+  get requiredSessionSecret() { return getRequiredEnvVar('SESSION_SECRET'); },
 };
 
 /**
@@ -59,6 +61,7 @@ export function validateShopifyEnv(): void {
   if (!shopifyEnv.apiSecret) missing.push('SHOPIFY_API_SECRET');
   if (!shopifyEnv.appUrl) missing.push('SHOPIFY_APP_URL');
   if (!shopifyEnv.scopes) missing.push('SCOPES');
+  if (!shopifyEnv.sessionSecret) missing.push('SESSION_SECRET');
   
   if (missing.length > 0) {
     throw new Error(`Missing required Shopify environment variables: ${missing.join(', ')}`);

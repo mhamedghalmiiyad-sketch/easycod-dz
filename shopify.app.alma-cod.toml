@@ -19,6 +19,10 @@ scopes = "read_draft_orders,read_metaobject_definitions,read_metaobjects,read_on
 [auth]
 redirect_urls = ["https://easycod-dz.onrender.com/auth/callback", "https://easycod-dz.onrender.com/auth/shopify/callback", "https://easycod-dz.onrender.com/api/auth/callback"]
 
+[session_storage]
+type = "postgresql"
+url = "env://DATABASE_URL"
+
 [app_proxy]
 url = "https://easycod-dz.onrender.com"
 subpath = "proxy"

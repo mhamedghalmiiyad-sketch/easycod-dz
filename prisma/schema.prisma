@@ -61,6 +61,7 @@ model Session {
   firstName      String?
   lastName       String?
   locale         String?
+  onlineAccessInfo Json?
   AbandonedCarts AbandonedCart[]
   AppProxy       AppProxy?
   OrderTrackings OrderTracking[]

@@ -28,6 +28,15 @@ async function startServer() {
     process.exit(1);
   }
   console.log("✅ All required environment variables are present.");
+  
+  // --- SESSION_SECRET Runtime Check ---
+  if (!process.env.SESSION_SECRET) {
+    console.error("❌ SESSION_SECRET is missing at runtime!");
+    console.error("🔧 Add SESSION_SECRET to Render environment variables and redeploy.");
+    process.exit(1);
+  } else {
+    console.log("✅ SESSION_SECRET is present and loaded (length:", process.env.SESSION_SECRET.length, ")");
+  }
 
   // --- Database Migration Check ---
   try {
@@ -52,11 +61,16 @@ async function startServer() {
   // --- CRITICAL FIX: Load the build BEFORE starting the server ---
   const build = await import("./build/server/index.js");
   console.log("✅ Remix build loaded successfully from ./build/server/index.js");
+  console.log("🧠 Using Prisma session storage — verifying persistence...");
 
   // --- Express App Setup ---
   const app = express();
   const port = process.env.PORT || 10000;
   const host = "0.0.0.0";
+  
+  // --- CRITICAL: Trust Proxy for Render HTTPS ---
+  app.set("trust proxy", 1);
+  console.log("✅ Express trust proxy enabled for Render HTTPS termination");
   
   // Log port information for debugging
   console.log(`🔧 Port configuration: ${port} (from PORT env: ${process.env.PORT})`);

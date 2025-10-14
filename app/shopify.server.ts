@@ -46,6 +46,8 @@ function getShopifyConfig() {
   console.log(`App URL: ${shopifyConfig.appUrl}`);
   console.log(`Scopes: ${shopifyConfig.scopes?.join(', ') || '[MISSING]'}`);
   console.log(`Custom Domain: ${shopifyEnv.customDomain || '[NOT SET]'}`);
+  console.log(`Session Secret: ${shopifyEnv.sessionSecret ? '[PRESENT]' : '[MISSING]'}`);
+  console.log("✅ Shopify session storage initialized with PrismaSessionStorage");
   console.log("-----------------------------------------");
   
   return shopifyConfig;

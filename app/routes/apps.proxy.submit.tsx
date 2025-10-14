@@ -25,13 +25,23 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         success: false,
         error: "This app needs to be installed first. Please contact the store administrator.",
         installRequired: true
-      }, { status: 403 });
+      }, { 
+        status: 403,
+        headers: {
+          "Content-Type": "application/liquid",
+        }
+      });
     }
     
     // Return a proper JSON error response
     return json({ 
       success: false, 
       error: error instanceof Error ? error.message : "An unexpected error occurred" 
-    }, { status: 500 });
+    }, { 
+      status: 500,
+      headers: {
+        "Content-Type": "application/liquid",
+      }
+    });
   }
 };

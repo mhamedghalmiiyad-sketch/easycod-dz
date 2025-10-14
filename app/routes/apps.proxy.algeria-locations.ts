@@ -74,7 +74,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const isValid = await validateAppProxyRequest(request);
   if (!isValid) {
     console.log("❌ App proxy validation failed for algeria-locations");
-    return json({ error: "Unauthorized" }, { status: 401 });
+    return json({ error: "Unauthorized" }, { 
+      status: 401,
+      headers: {
+        "Content-Type": "application/liquid",
+      }
+    });
   }
   
   // Add CORS headers for frontend access
@@ -131,7 +136,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       });
 
       console.log(`✅ Found ${communes.length} communes for wilaya ${wilayaIdParam}`);
-      return json(communes, { headers });
+      return json(communes, { 
+        headers: {
+          ...headers,
+          "Content-Type": "application/liquid",
+        }
+      });
     }
 
     // Otherwise, fetch the unique list of all wilayas
@@ -152,7 +162,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     }));
 
     console.log(`✅ Found ${wilayas.length} wilayas`);
-    return json(wilayas, { headers });
+    return json(wilayas, { 
+      headers: {
+        ...headers,
+        "Content-Type": "application/liquid",
+      }
+    });
   } catch (error) {
     console.error("❌ Error fetching Algeria locations:", error);
     console.error("❌ Error details:", {
@@ -224,6 +239,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       { id: 58, wilaya_code: "58", wilaya_name: "El Meniaa", wilaya_name_ascii: "El Meniaa" }
     ];
     
-    return json(fallbackWilayas, { headers });
+    return json(fallbackWilayas, { 
+      headers: {
+        ...headers,
+        "Content-Type": "application/liquid",
+      }
+    });
   }
 };

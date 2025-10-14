@@ -58,7 +58,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         success: false,
         error: "This app needs to be installed first. Please contact the store administrator.",
         installRequired: true
-      }, { status: 403 });
+      }, { 
+        status: 403,
+        headers: {
+          "Content-Type": "application/liquid",
+        }
+      });
     }
     throw error;
   }
@@ -82,5 +87,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     path: url.pathname,
     method: request.method,
     searchParams
+  }, {
+    headers: {
+      "Content-Type": "application/liquid",
+    },
   });
 };

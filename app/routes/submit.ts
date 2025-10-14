@@ -213,12 +213,22 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         console.log("🔍 HMAC validation result:", isValid);
         if (!isValid) {
             console.log("❌ HMAC validation failed");
-            return json({ success: false, error: "Authentication failed." }, { status: 401 });
+            return json({ success: false, error: "Authentication failed." }, { 
+              status: 401,
+              headers: {
+                "Content-Type": "application/liquid",
+              }
+            });
         }
         console.log("✅ HMAC validation passed");
     } catch (error) {
         console.error("❌ Error during HMAC validation:", error);
-        return json({ success: false, error: "Authentication validation failed." }, { status: 401 });
+        return json({ success: false, error: "Authentication validation failed." }, { 
+          status: 401,
+          headers: {
+            "Content-Type": "application/liquid",
+          }
+        });
     }
 
     const url = new URL(request.url);
@@ -226,7 +236,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     console.log("🔍 Shop parameter:", shop);
     if (!shop) {
         console.log("❌ Shop parameter is missing");
-        return json({ success: false, error: "Shop parameter is missing." }, { status: 400 });
+        return json({ success: false, error: "Shop parameter is missing." }, { 
+          status: 400,
+          headers: {
+            "Content-Type": "application/liquid",
+          }
+        });
     }
 
     console.log("🔍 Initializing shop settings for:", shop);
@@ -249,7 +264,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             error: "App not installed. Please install the app first.",
             redirectToInstall: true,
             installUrl: `https://admin.shopify.com/store/${shop.split('.')[0]}/oauth/install?client_id=${process.env.SHOPIFY_API_KEY}`
-        }, { status: 403 });
+        }, { 
+            status: 403,
+            headers: {
+                "Content-Type": "application/liquid",
+            }
+        });
     }
 
     try {
@@ -322,34 +342,69 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                 };
                 const riskScore = await calculateRiskScore(riskFactors, shop);
                 if (userBlocking.autoRejectHighRisk && riskScore.recommendation === 'reject') {
-                    return json({ success: false, error: blockedMessage, riskScore: riskScore.score }, { status: 403 });
+                    return json({ success: false, error: blockedMessage, riskScore: riskScore.score }, { 
+                        status: 403,
+                        headers: {
+                            "Content-Type": "application/liquid",
+                        }
+                    });
                 }
             }
             const blockedIps = userBlocking.blockedIps.split('\n').map(ip => ip.trim()).filter(Boolean);
             if (blockedIps.includes(customerIp)) {
-                return json({ success: false, error: blockedMessage }, { status: 403 });
+                return json({ success: false, error: blockedMessage }, { 
+                    status: 403,
+                    headers: {
+                        "Content-Type": "application/liquid",
+                    }
+                });
             }
             const blockedEmails = userBlocking.blockedEmails.split('\n').map(e => e.toLowerCase().trim()).filter(Boolean);
             if (customerEmail && blockedEmails.includes(customerEmail)) {
-                return json({ success: false, error: blockedMessage }, { status: 403 });
+                return json({ success: false, error: blockedMessage }, { 
+                    status: 403,
+                    headers: {
+                        "Content-Type": "application/liquid",
+                    }
+                });
             }
             const blockedPhones = userBlocking.blockedPhoneNumbers.split('\n').map(p => p.replace(/\D/g, "")).filter(Boolean);
             if (customerPhone && blockedPhones.includes(customerPhone)) {
-                return json({ success: false, error: blockedMessage }, { status: 403 });
+                return json({ success: false, error: blockedMessage }, { 
+                    status: 403,
+                    headers: {
+                        "Content-Type": "application/liquid",
+                    }
+                });
             }
             if (userBlocking.blockByQuantity) {
                 const totalQuantity = lineItems.reduce((sum: number, item: any) => sum + item.quantity, 0);
                 if (totalQuantity > parseInt(userBlocking.blockQuantityAmount, 10)) {
-                    return json({ success: false, error: blockedMessage }, { status: 403 });
+                    return json({ success: false, error: blockedMessage }, { 
+                        status: 403,
+                        headers: {
+                            "Content-Type": "application/liquid",
+                        }
+                    });
                 }
             }
             if (userBlocking.postalCodeMode !== 'none' && customerPostalCode) {
                 const postalCodeList = userBlocking.postalCodeList.split('\n').map(pc => pc.toUpperCase().trim()).filter(Boolean);
                 if (userBlocking.postalCodeMode === 'exclude' && postalCodeList.includes(customerPostalCode)) {
-                    return json({ success: false, error: blockedMessage }, { status: 403 });
+                    return json({ success: false, error: blockedMessage }, { 
+                        status: 403,
+                        headers: {
+                            "Content-Type": "application/liquid",
+                        }
+                    });
                 }
                 if (userBlocking.postalCodeMode === 'allow' && !postalCodeList.includes(customerPostalCode)) {
-                    return json({ success: false, error: blockedMessage }, { status: 403 });
+                    return json({ success: false, error: blockedMessage }, { 
+                        status: 403,
+                        headers: {
+                            "Content-Type": "application/liquid",
+                        }
+                    });
                 }
             }
             if (userBlocking.limitSameCustomerOrders) {
@@ -367,7 +422,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                     },
                 });
                 if (recentOrder) {
-                    return json({ success: false, error: blockedMessage }, { status: 403 });
+                    return json({ success: false, error: blockedMessage }, { 
+                        status: 403,
+                        headers: {
+                            "Content-Type": "application/liquid",
+                        }
+                    });
                 }
             }
         }
@@ -380,7 +440,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             admin = adminResult.admin;
             if (!admin) {
                 console.error(`❌ Could not create admin context for ${shop}. App may need to be reinstalled.`);
-                return json({ success: false, error: "Could not authenticate with Shopify. Please reinstall the app." }, { status: 401 });
+                return json({ success: false, error: "Could not authenticate with Shopify. Please reinstall the app." }, { 
+                    status: 401,
+                    headers: {
+                        "Content-Type": "application/liquid",
+                    }
+                });
             }
             console.log("✅ Admin API client created successfully");
         } catch (error) {
@@ -390,9 +455,19 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                     success: false, 
                     error: "App session not found. Please reinstall the app in your Shopify admin to continue.",
                     action: "reinstall_app"
-                }, { status: 401 });
+                }, { 
+                    status: 401,
+                    headers: {
+                        "Content-Type": "application/liquid",
+                    }
+                });
             }
-            return json({ success: false, error: "Could not authenticate with Shopify. Please reinstall the app." }, { status: 401 });
+            return json({ success: false, error: "Could not authenticate with Shopify. Please reinstall the app." }, { 
+                status: 401,
+                headers: {
+                    "Content-Type": "application/liquid",
+                }
+            });
         }
 
         // Check for lineItems (old format) or product_variant_id (new format)
@@ -467,9 +542,19 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         } catch (error: unknown) {
             console.error("❌ GraphQL mutation failed:", error);
             if (error instanceof Error) {
-                return json({ success: false, error: "Failed to create draft order: " + error.message }, { status: 500 });
+                return json({ success: false, error: "Failed to create draft order: " + error.message }, { 
+                    status: 500,
+                    headers: {
+                        "Content-Type": "application/liquid",
+                    }
+                });
             }
-            return json({ success: false, error: "Failed to create draft order" }, { status: 500 });
+            return json({ success: false, error: "Failed to create draft order" }, { 
+                status: 500,
+                headers: {
+                    "Content-Type": "application/liquid",
+                }
+            });
         }
 
         const createData = await createResponse.json();
@@ -477,12 +562,22 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         
         if (createData.data?.draftOrderCreate?.userErrors?.length > 0) {
             console.error("Error creating draft order:", createData.data.draftOrderCreate.userErrors);
-            return json({ success: false, error: createData.data.draftOrderCreate.userErrors[0].message }, { status: 400 });
+            return json({ success: false, error: createData.data.draftOrderCreate.userErrors[0].message }, { 
+                status: 400,
+                headers: {
+                    "Content-Type": "application/liquid",
+                }
+            });
         }
         
         if (!createData.data?.draftOrderCreate?.draftOrder) {
             console.error("No draft order returned:", createData);
-            return json({ success: false, error: "Failed to create draft order." }, { status: 500 });
+            return json({ success: false, error: "Failed to create draft order." }, { 
+                status: 500,
+                headers: {
+                    "Content-Type": "application/liquid",
+                }
+            });
         }
 
         const draftOrderId = createData.data.draftOrderCreate.draftOrder.id;
@@ -494,7 +589,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         const completeData = await completeResponse.json();
         if (completeData.data.draftOrderComplete.userErrors.length > 0) {
             console.error("CRITICAL: Error completing draft order:", completeData.data.draftOrderComplete.userErrors);
-            return json({ success: false, error: "Your order was received but could not be finalized. Please contact support." }, { status: 500 });
+            return json({ success: false, error: "Your order was received but could not be finalized. Please contact support." }, { 
+                status: 500,
+                headers: {
+                    "Content-Type": "application/liquid",
+                }
+            });
         }
 
         const finalOrder = completeData.data.draftOrderComplete.draftOrder.order;
@@ -542,6 +642,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
     } catch (error) {
         console.error("Server Error:", error);
-        return json({ success: false, error: "An unexpected error occurred." }, { status: 500 });
+        return json({ success: false, error: "An unexpected error occurred." }, { 
+            status: 500,
+            headers: {
+                "Content-Type": "application/liquid",
+            }
+        });
     }
 };

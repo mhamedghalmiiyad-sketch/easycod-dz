@@ -29,7 +29,7 @@ function getShopifyConfig() {
     scopes: shopifyEnv.scopes?.split(","),
     appUrl: shopifyEnv.appUrl || "",
     authPathPrefix: "/auth",
-    sessionStorage: new PrismaSessionStorage(db),  // ✅ fixed here
+    sessionStorage: new PrismaSessionStorage(db),  // ✅ Use PrismaSessionStorage
     distribution: AppDistribution.AppStore,
     future: {
       unstable_newEmbeddedAuthStrategy: true,
@@ -48,6 +48,7 @@ function getShopifyConfig() {
   console.log(`Custom Domain: ${shopifyEnv.customDomain || '[NOT SET]'}`);
   console.log(`Session Secret: ${shopifyEnv.sessionSecret ? '[PRESENT]' : '[MISSING]'}`);
   console.log("✅ Shopify session storage initialized with PrismaSessionStorage");
+  console.log("✅ Cookie attributes will be configured at app level for cross-site iframe compatibility");
   console.log("-----------------------------------------");
   
   return shopifyConfig;
@@ -77,6 +78,13 @@ try {
 const shopify = shopifyApp({
   ...shopifyConfig,
   useSecureCookies: true, // ✅ Force secure cookies for Render HTTPS
+  // ✅ Additional cookie configuration for cross-site iframe compatibility
+  cookieOptions: {
+    sameSite: "none",
+    secure: true,
+    httpOnly: true,
+    path: "/",
+  },
   hooks: {
     afterAuth: async ({ session }) => {
       console.log("✅ Shopify session saved:", session.id, "for shop:", session.shop);
@@ -84,7 +92,8 @@ const shopify = shopifyApp({
   },
 });
 
-console.log("✅ Secure cookie configuration enabled for Render HTTPS");
+console.log("✅ Enhanced cookie configuration enabled for Render HTTPS + cross-site iframe compatibility");
+console.log("✅ Cookie attributes: SameSite=None, Secure=true, HttpOnly=true, Path=/");
 
 // --- END: EXPLICIT CONFIGURATION WITH DEBUGGING ---
 

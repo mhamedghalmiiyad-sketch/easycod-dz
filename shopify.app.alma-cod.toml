@@ -7,7 +7,7 @@ embedded = true
 handle = "alma-cod"
 
 [build]
-automatically_update_urls_on_dev = true
+automatically_update_urls_on_dev = false
 
 [webhooks]
 api_version = "2025-07"
@@ -20,7 +20,7 @@ scopes = "read_draft_orders,read_metaobject_definitions,read_metaobjects,read_on
 redirect_urls = ["https://easycod-dz.onrender.com/auth/callback", "https://easycod-dz.onrender.com/auth/shopify/callback", "https://easycod-dz.onrender.com/api/auth/callback"]
 
 [app_proxy]
-url = "https://hop-formerly-gained-filme.trycloudflare.com"
+url = "https://easycod-dz.onrender.com"
 subpath = "proxy"
 prefix = "apps"
 

@@ -3,7 +3,7 @@ services:
     name: easycod-dz
     env: node
     plan: free
-    buildCommand: "npm install && npx prisma generate && npx prisma migrate deploy && npm run seed && npm run build"
+    buildCommand: "npm install && npx prisma generate && npm run build"
     startCommand: "node server.js"
     healthCheckPath: "/health"
     # Environment variables should be set in the Render dashboard
@@ -11,7 +11,7 @@ services:
     # Set these environment variables in the Render dashboard:
     # - SHOPIFY_API_KEY: Your Shopify app's API key
     # - SHOPIFY_API_SECRET: Your Shopify app's API secret
-    # - SHOPIFY_APP_URL: Your app's URL (e.g., https://your-app.onrender.com)
+    # - SHOPIFY_APP_URL: Your app's URL (e.g., https://easycod-dz.onrender.com) - OPTIONAL, has fallback
     # - SCOPES: Comma-separated list of Shopify scopes
     # - DATABASE_URL: Get this from the database service's "Internal Database URL" (must include ?sslmode=require)
     # - SESSION_SECRET: A long, random string for session security

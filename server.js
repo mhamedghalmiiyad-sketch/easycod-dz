@@ -14,7 +14,6 @@ async function startServer() {
   const requiredEnvVars = [
     "SHOPIFY_API_KEY",
     "SHOPIFY_API_SECRET",
-    "SHOPIFY_APP_URL",
     "SCOPES",
     "DATABASE_URL",
     "SESSION_SECRET",
@@ -28,6 +27,13 @@ async function startServer() {
     process.exit(1);
   }
   console.log("✅ All required environment variables are present.");
+  
+  // Check SHOPIFY_APP_URL with fallback
+  if (!process.env.SHOPIFY_APP_URL) {
+    console.log("⚠️ SHOPIFY_APP_URL not set, using fallback: https://easycod-dz.onrender.com");
+  } else {
+    console.log(`✅ SHOPIFY_APP_URL is set: ${process.env.SHOPIFY_APP_URL}`);
+  }
   
   // --- SESSION_SECRET Runtime Check ---
   if (!process.env.SESSION_SECRET) {
@@ -91,7 +97,9 @@ async function startServer() {
       status: "ok", 
       timestamp: new Date().toISOString(),
       port: port,
-      environment: process.env.NODE_ENV 
+      environment: process.env.NODE_ENV,
+      version: process.env.npm_package_version || "1.0.0",
+      uptime: process.uptime()
     });
   });
 

@@ -18,15 +18,42 @@ async function startServer() {
     "DATABASE_URL",
     "SESSION_SECRET",
   ];
+  
+  // Check for missing variables
   const missingVars = requiredEnvVars.filter((v) => !process.env[v]);
-
   if (missingVars.length > 0) {
     console.error(
       `❌ Missing required environment variables: ${missingVars.join(", ")}`
     );
     process.exit(1);
   }
-  console.log("✅ All required environment variables are present.");
+  
+  // Check for empty values (common issue with Render)
+  const emptyVars = requiredEnvVars.filter((v) => process.env[v] && process.env[v].trim() === "");
+  if (emptyVars.length > 0) {
+    console.error(
+      `❌ Empty required environment variables: ${emptyVars.join(", ")}`
+    );
+    console.error("🔧 These variables are set but contain empty values. Check your Render dashboard.");
+    process.exit(1);
+  }
+  
+  // Validate specific Shopify credentials
+  if (!process.env.SHOPIFY_API_KEY || process.env.SHOPIFY_API_KEY.length < 10) {
+    console.error("❌ SHOPIFY_API_KEY is missing or too short");
+    console.error(`Current value: "${process.env.SHOPIFY_API_KEY}"`);
+    process.exit(1);
+  }
+  
+  if (!process.env.SHOPIFY_API_SECRET || process.env.SHOPIFY_API_SECRET.length < 10) {
+    console.error("❌ SHOPIFY_API_SECRET is missing or too short");
+    console.error(`Current value: "${process.env.SHOPIFY_API_SECRET}"`);
+    process.exit(1);
+  }
+  
+  console.log("✅ All required environment variables are present and valid.");
+  console.log(`✅ SHOPIFY_API_KEY: ${process.env.SHOPIFY_API_KEY.substring(0, 8)}...`);
+  console.log(`✅ SHOPIFY_API_SECRET: ${process.env.SHOPIFY_API_SECRET.substring(0, 8)}...`);
   
   // Check SHOPIFY_APP_URL with fallback
   if (!process.env.SHOPIFY_APP_URL) {

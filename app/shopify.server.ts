@@ -9,11 +9,22 @@ import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prism
 import { restResources } from "@shopify/shopify-api/rest/admin/2024-07";
 import db from "./db.server";
 
+// Validate required environment variables before initializing Shopify
+if (!process.env.SHOPIFY_API_KEY) {
+  throw new Error("SHOPIFY_API_KEY environment variable is required");
+}
+if (!process.env.SHOPIFY_API_SECRET) {
+  throw new Error("SHOPIFY_API_SECRET environment variable is required");
+}
+if (!process.env.SCOPES) {
+  throw new Error("SCOPES environment variable is required");
+}
+
 const shopify = shopifyApp({
   apiKey: process.env.SHOPIFY_API_KEY,
-  apiSecretKey: process.env.SHOPIFY_API_SECRET || "",
+  apiSecretKey: process.env.SHOPIFY_API_SECRET,
   apiVersion: LATEST_API_VERSION,
-  scopes: process.env.SCOPES?.split(","),
+  scopes: process.env.SCOPES.split(","),
   appUrl: process.env.SHOPIFY_APP_URL || "https://easycod-dz.onrender.com",
   authPathPrefix: "/auth",
   sessionStorage: new PrismaSessionStorage(db),

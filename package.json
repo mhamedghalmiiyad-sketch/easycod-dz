@@ -32,7 +32,8 @@
     "diagnose-env": "node scripts/diagnose-env.js",
     "verify-deployment": "node scripts/verify-deployment.js",
     "fix-render-env": "node scripts/fix-render-env.js",
-    "deploy-prep": "node scripts/deploy-to-render.js"
+    "deploy-prep": "node scripts/deploy-to-render.js",
+    "check-env": "node scripts/check-env-vars.js"
   },
   "type": "module",
   "engines": {

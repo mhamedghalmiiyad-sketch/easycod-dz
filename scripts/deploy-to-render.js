@@ -53,6 +53,10 @@ async function main() {
   console.log('3. Go to Environment tab');
   console.log('4. Add the required environment variables');
   console.log('5. For SHOPIFY_APP_URL, use: https://easycod-dz.onrender.com');
+  console.log('\n⚠️ IMPORTANT: Make sure to set the actual values, not empty strings!');
+  console.log('   - SHOPIFY_API_KEY should be your app\'s API key from Shopify Partners');
+  console.log('   - SHOPIFY_API_SECRET should be your app\'s API secret from Shopify Partners');
+  console.log('   - These are found in your Shopify Partners dashboard under your app');
 
   console.log('\n📝 Example SCOPES value:');
   console.log('read_draft_orders,read_metaobject_definitions,read_metaobjects,read_online_store_pages,read_products,read_orders,write_draft_orders,write_metaobject_definitions,write_metaobjects,write_online_store_pages,write_products,write_orders');

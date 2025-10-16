@@ -3,6 +3,11 @@ import { createRequestHandler } from "@remix-run/express";
 import { installGlobals } from "@remix-run/node";
 import express from "express";
 import { execSync } from "child_process";
+import { config } from "dotenv";
+
+// Load environment variables from .env file (for local development)
+// In production (Render), environment variables are automatically available
+config();
 
 // Initialize Remix globals
 installGlobals();
@@ -92,9 +97,33 @@ async function startServer() {
   }
 
   // --- CRITICAL FIX: Load the build BEFORE starting the server ---
-  const build = await import("./build/server/index.js");
-  console.log("✅ Remix build loaded successfully from ./build/server/index.js");
-  console.log("🧠 Using Prisma session storage — verifying persistence...");
+  // Ensure environment variables are available before importing the build
+  console.log("🔧 Environment variables before build import:");
+  console.log(`   SHOPIFY_API_KEY: ${process.env.SHOPIFY_API_KEY ? 'PRESENT' : 'MISSING'}`);
+  console.log(`   SHOPIFY_API_SECRET: ${process.env.SHOPIFY_API_SECRET ? 'PRESENT' : 'MISSING'}`);
+  console.log(`   SCOPES: ${process.env.SCOPES ? 'PRESENT' : 'MISSING'}`);
+  
+  // Double-check that all required environment variables are present
+  const requiredForBuild = ["SHOPIFY_API_KEY", "SHOPIFY_API_SECRET", "SCOPES"];
+  const missingForBuild = requiredForBuild.filter((v) => !process.env[v]);
+  if (missingForBuild.length > 0) {
+    console.error(`❌ Missing environment variables for build import: ${missingForBuild.join(", ")}`);
+    process.exit(1);
+  }
+  
+  let build;
+  try {
+    build = await import("./build/server/index.js");
+    console.log("✅ Remix build loaded successfully from ./build/server/index.js");
+    console.log("🧠 Using Prisma session storage — verifying persistence...");
+  } catch (error) {
+    console.error("❌ Failed to import build:", error);
+    console.error("🔧 Environment variables at time of error:");
+    console.error(`   SHOPIFY_API_KEY: ${process.env.SHOPIFY_API_KEY ? 'PRESENT' : 'MISSING'}`);
+    console.error(`   SHOPIFY_API_SECRET: ${process.env.SHOPIFY_API_SECRET ? 'PRESENT' : 'MISSING'}`);
+    console.error(`   SCOPES: ${process.env.SCOPES ? 'PRESENT' : 'MISSING'}`);
+    throw error;
+  }
 
   // --- Express App Setup ---
   const app = express();

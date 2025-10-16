@@ -98,7 +98,7 @@ async function startServer() {
 
   // --- Express App Setup ---
   const app = express();
-  const port = process.env.PORT || 10000;
+  const port = process.env.PORT || 3000;
   const host = "0.0.0.0";
   
   // --- CRITICAL: Trust Proxy for Render HTTPS ---

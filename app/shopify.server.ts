@@ -9,45 +9,72 @@ import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prism
 import { restResources } from "@shopify/shopify-api/rest/admin/2024-07";
 import db from "./db.server";
 
-// Validate required environment variables before initializing Shopify
-if (!process.env.SHOPIFY_API_KEY) {
-  throw new Error("SHOPIFY_API_KEY environment variable is required");
-}
-if (!process.env.SHOPIFY_API_SECRET) {
-  throw new Error("SHOPIFY_API_SECRET environment variable is required");
-}
-if (!process.env.SCOPES) {
-  throw new Error("SCOPES environment variable is required");
+// Lazy initialization pattern to avoid environment variable validation at import time
+let shopifyInstance: ReturnType<typeof shopifyApp> | null = null;
+
+function getShopifyApp() {
+  if (!shopifyInstance) {
+    // Validate environment variables when the app is first accessed
+    if (!process.env.SHOPIFY_API_KEY) {
+      throw new Error("SHOPIFY_API_KEY environment variable is required");
+    }
+    if (!process.env.SHOPIFY_API_SECRET) {
+      throw new Error("SHOPIFY_API_SECRET environment variable is required");
+    }
+    if (!process.env.SCOPES) {
+      throw new Error("SCOPES environment variable is required");
+    }
+
+    shopifyInstance = shopifyApp({
+      apiKey: process.env.SHOPIFY_API_KEY,
+      apiSecretKey: process.env.SHOPIFY_API_SECRET,
+      apiVersion: LATEST_API_VERSION,
+      scopes: process.env.SCOPES.split(","),
+      appUrl: process.env.SHOPIFY_APP_URL || "https://easycod-dz.onrender.com",
+      authPathPrefix: "/auth",
+      sessionStorage: new PrismaSessionStorage(db),
+      distribution: AppDistribution.AppStore,
+      restResources,
+      webhooks: {
+        APP_UNINSTALLED: {
+          deliveryMethod: DeliveryMethod.Http,
+          callbackUrl: "/webhooks",
+        },
+      },
+      hooks: {
+        afterAuth: async ({ session }) => {
+          getShopifyApp().registerWebhooks({ session });
+        },
+      },
+      future: {
+        unstable_newEmbeddedAuthStrategy: true,
+      },
+      ...(process.env.SHOP_CUSTOM_DOMAIN
+        ? { customShopDomains: [process.env.SHOP_CUSTOM_DOMAIN] }
+        : {}),
+    });
+  }
+  return shopifyInstance;
 }
 
-const shopify = shopifyApp({
-  apiKey: process.env.SHOPIFY_API_KEY,
-  apiSecretKey: process.env.SHOPIFY_API_SECRET,
-  apiVersion: LATEST_API_VERSION,
-  scopes: process.env.SCOPES.split(","),
-  appUrl: process.env.SHOPIFY_APP_URL || "https://easycod-dz.onrender.com",
-  authPathPrefix: "/auth",
-  sessionStorage: new PrismaSessionStorage(db),
-  distribution: AppDistribution.AppStore,
-  restResources,
-  webhooks: {
-    APP_UNINSTALLED: {
-      deliveryMethod: DeliveryMethod.Http,
-      callbackUrl: "/webhooks",
-    },
+// Export a getter that returns the shopify instance
+const shopify = {
+  get authenticate() {
+    return getShopifyApp().authenticate;
   },
-  hooks: {
-    afterAuth: async ({ session }) => {
-      shopify.registerWebhooks({ session });
-    },
+  get unauthenticated() {
+    return getShopifyApp().unauthenticated;
   },
-  future: {
-    unstable_newEmbeddedAuthStrategy: true,
+  get login() {
+    return getShopifyApp().login;
   },
-  ...(process.env.SHOP_CUSTOM_DOMAIN
-    ? { customShopDomains: [process.env.SHOP_CUSTOM_DOMAIN] }
-    : {}),
-});
+  get registerWebhooks() {
+    return getShopifyApp().registerWebhooks;
+  },
+  get addDocumentResponseHeaders() {
+    return getShopifyApp().addDocumentResponseHeaders;
+  },
+};
 
 export default shopify;
 export const apiVersion = LATEST_API_VERSION;

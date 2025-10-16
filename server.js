@@ -9,6 +9,13 @@ import { config } from "dotenv";
 // In production (Render), environment variables are automatically available
 config();
 
+// Ensure environment variables are available globally
+// This is critical for the build import process
+if (typeof global !== 'undefined') {
+  global.process = global.process || process;
+  global.process.env = global.process.env || process.env;
+}
+
 // Initialize Remix globals
 installGlobals();
 
@@ -96,7 +103,7 @@ async function startServer() {
     // Don't exit - the app has fallback data in the route
   }
 
-  // --- CRITICAL FIX: Load the build BEFORE starting the server ---
+  // --- CRITICAL FIX: Load the build AFTER ensuring environment variables are available ---
   // Ensure environment variables are available before importing the build
   console.log("🔧 Environment variables before build import:");
   console.log(`   SHOPIFY_API_KEY: ${process.env.SHOPIFY_API_KEY ? 'PRESENT' : 'MISSING'}`);
@@ -110,6 +117,11 @@ async function startServer() {
     console.error(`❌ Missing environment variables for build import: ${missingForBuild.join(", ")}`);
     process.exit(1);
   }
+  
+  // Force environment variables to be available in the global process.env
+  // This ensures they are accessible when the build modules are imported
+  global.process = global.process || process;
+  global.process.env = global.process.env || process.env;
   
   let build;
   try {

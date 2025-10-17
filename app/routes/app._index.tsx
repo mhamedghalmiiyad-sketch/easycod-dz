@@ -44,6 +44,7 @@ import { getLanguageFromRequest, getTranslations, isRTL, saveLanguagePreference 
 import clientI18n from '../utils/i18n.client';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const { getAuthenticate } = await import("../lib/shopify.lazy.server");
   const authenticate = await getAuthenticate();
   const { session } = await authenticate.admin(request);
   

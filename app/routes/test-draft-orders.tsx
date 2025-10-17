@@ -1,5 +1,4 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
-import { getAuthenticate } from "\.\.\/lib\/shopify\.lazy\.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);

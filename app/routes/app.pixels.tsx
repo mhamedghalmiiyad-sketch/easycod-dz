@@ -33,7 +33,6 @@ import {
   useActionData,
   Form as RemixForm,
 } from "@remix-run/react";
-import { getAuthenticate } from "\.\.\/lib\/shopify\.lazy\.server";
 import { useState, useCallback, useEffect, useRef } from "react";
 import {
   QuestionCircleIcon,
@@ -85,6 +84,7 @@ interface DatabaseShopSettings {
 
 // Database-connected loader using the utility function
 export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const { getAuthenticate } = await import("../lib/shopify.lazy.server");
   const authenticate = await getAuthenticate();
   const { session } = await authenticate.admin(request);
   const settings: DatabaseShopSettings | null = await getShopSettings(session.shop);
@@ -121,6 +121,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 // Database-connected action using the utility function
 export const action = async ({ request }: ActionFunctionArgs) => {
+  const { getAuthenticate } = await import("../lib/shopify.lazy.server");
   const authenticate = await getAuthenticate();
   const { session } = await authenticate.admin(request);
   const formData = await request.formData();

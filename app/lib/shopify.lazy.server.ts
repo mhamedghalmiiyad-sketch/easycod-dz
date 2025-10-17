@@ -3,7 +3,7 @@
 
 export async function getShopifyInstance() {
   try {
-    const { default: shopify } = await import("../shopify.server.js");
+    const { default: shopify } = await import("../shopify.server");
     return shopify;
   } catch (error) {
     console.error("Failed to load Shopify instance:", error);

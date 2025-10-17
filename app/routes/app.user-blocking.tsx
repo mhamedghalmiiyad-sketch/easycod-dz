@@ -39,7 +39,6 @@ import {
   ChevronUpIcon,
   AlertDiamondIcon, // Added for the new section
 } from "@shopify/polaris-icons";
-import { getAuthenticate } from "\.\.\/lib\/shopify\.lazy\.server";
 import { db } from "../db.server";
 
 // Define the shape of user blocking settings
@@ -65,6 +64,7 @@ interface UserBlockingSettings {
 
 // LOADER: Fetches existing settings from the database
 export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const { getAuthenticate } = await import("../lib/shopify.lazy.server");
   const authenticate = await getAuthenticate();
   const { session } = await authenticate.admin(request);
   const settings = await db.shopSettings.findUnique({
@@ -182,6 +182,7 @@ function validateServerSideSettings(settings: UserBlockingSettings): { isValid: 
 
 // ACTION: Saves the settings to the database
 export const action = async ({ request }: ActionFunctionArgs) => {
+  const { getAuthenticate } = await import("../lib/shopify.lazy.server");
   const authenticate = await getAuthenticate();
   const { session } = await authenticate.admin(request);
   const formData = await request.formData();

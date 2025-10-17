@@ -79,12 +79,16 @@ const shopify = {
     return getShopifyApp().registerWebhooks;
   },
   get addDocumentResponseHeaders() {
-    return getShopifyApp().addDocumentResponseHeaders;
+    return (request: Request, responseHeaders: Headers) => {
+      return getShopifyApp().addDocumentResponseHeaders(request, responseHeaders);
+    };
   },
 };
 
 export default shopify;
 export const apiVersion = LATEST_API_VERSION;
+
+// Lazy getters to prevent build-time evaluation
 export const addDocumentResponseHeaders = shopify.addDocumentResponseHeaders;
 export const authenticate = shopify.authenticate;
 export const unauthenticated = shopify.unauthenticated;

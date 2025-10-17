@@ -914,7 +914,8 @@ const initialShippingRates: ShippingRate[] = [{ id: `rate-${Date.now()}`, name: 
 
 // ADD The Loader
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-    const authenticate = await getAuthenticate();$n  const { session } = await authenticate.admin(request);
+    const authenticate = await getAuthenticate();
+    const { session } = await authenticate.admin(request);
     const language = await getLanguageFromRequest(request);
     const translations = await getTranslations(language);
     const rtl = isRTL(language);

@@ -87,7 +87,8 @@ interface DatabaseShopSettings {
 
 // Database-connected loader using the utility function
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const authenticate = await getAuthenticate();$n  const { session } = await authenticate.admin(request);
+  const authenticate = await getAuthenticate();
+  const { session } = await authenticate.admin(request);
   const language = await getLanguageFromRequest(request);
   const translations = await getTranslations(language);
   const rtl = isRTL(language);
@@ -129,7 +130,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 // Database-connected action using the utility function
 export const action = async ({ request }: ActionFunctionArgs) => {
-  const authenticate = await getAuthenticate();$n  const { session } = await authenticate.admin(request);
+  const authenticate = await getAuthenticate();
+  const { session } = await authenticate.admin(request);
   const formData = await request.formData();
 
   // Convert FormData to a settings object

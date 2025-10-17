@@ -15,9 +15,8 @@ import { shopifyEnv } from "../utils/env.server";
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  // ✅ Server-only import is moved inside the loader
-  const { authenticate } = await import("../shopify.server");
-  const authenticate = await getAuthenticate();$n  const { session } = await authenticate.admin(request);
+  const authenticate = await getAuthenticate();
+  const { session } = await authenticate.admin(request);
 
   // Get language and translations (check database first, then URL params)
   const language = await getLanguageFromRequest(request, session.id);

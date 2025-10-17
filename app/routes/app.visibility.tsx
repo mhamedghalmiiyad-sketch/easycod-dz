@@ -58,7 +58,8 @@ interface VisibilitySettings {
 
 // LOADER: Fetches the current settings when the page loads
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const authenticate = await getAuthenticate();$n  const { session } = await authenticate.admin(request);
+  const authenticate = await getAuthenticate();
+  const { session } = await authenticate.admin(request);
 
   try {
     const settings = await getShopSettings(session.shop);
@@ -122,7 +123,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 // ✅ ACTION: Updated to handle the hasConfiguredVisibility flag
 export const action = async ({ request }: ActionFunctionArgs) => {
-  const authenticate = await getAuthenticate();$n  const { session } = await authenticate.admin(request);
+  const authenticate = await getAuthenticate();
+  const { session } = await authenticate.admin(request);
   const formData = await request.formData();
 
   try {

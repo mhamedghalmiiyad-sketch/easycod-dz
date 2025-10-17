@@ -104,7 +104,8 @@ const PROVIDER_URLS: Record<string, string> = {
  */
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   // 1. Authenticate the request to ensure it's from a logged-in admin.
-  const authenticate = await getAuthenticate();$n  const { session } = await authenticate.admin(request);
+  const authenticate = await getAuthenticate();
+  const { session } = await authenticate.admin(request);
   if (!session) {
     return json({ error: "Not authenticated" }, { status: 401 });
   }

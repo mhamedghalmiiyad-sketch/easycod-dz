@@ -50,6 +50,7 @@ export default defineConfig({
     tsconfigPaths(),
   ],
   build: {
+    target: 'node18',
     rollupOptions: {
       input: undefined,
       external: (id) => {

@@ -54,7 +54,8 @@ import { OAuth2Client } from "google-auth-library";
 
 // LOADER: Fetches settings and determines login state
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const authenticate = await getAuthenticate();$n  const { session } = await authenticate.admin(request);
+  const authenticate = await getAuthenticate();
+  const { session } = await authenticate.admin(request);
 
   const settings = await db.shopSettings.findUnique({
     where: { shopId: session.shop },
@@ -93,7 +94,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 // ACTION: Saves the Google Sheet settings
 export const action = async ({ request }: ActionFunctionArgs) => {
-  const authenticate = await getAuthenticate();$n  const { session } = await authenticate.admin(request);
+  const authenticate = await getAuthenticate();
+  const { session } = await authenticate.admin(request);
   const formData = await request.formData();
 
   const updates = {

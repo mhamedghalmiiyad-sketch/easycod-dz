@@ -33,7 +33,7 @@ import {
   useActionData,
   Form as RemixForm,
 } from "@remix-run/react";
-import { authenticate } from "../shopify.server";
+import { getAuthenticate } from "\.\.\/lib\/shopify\.lazy\.server";
 import { useState, useCallback, useEffect, useRef } from "react";
 import {
   QuestionCircleIcon,
@@ -85,7 +85,7 @@ interface DatabaseShopSettings {
 
 // Database-connected loader using the utility function
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const { session } = await authenticate.admin(request);
+  const authenticate = await getAuthenticate();$n  const { session } = await authenticate.admin(request);
   const settings: DatabaseShopSettings | null = await getShopSettings(session.shop);
 
   // Parse the JSON string and provide proper typing
@@ -120,7 +120,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 // Database-connected action using the utility function
 export const action = async ({ request }: ActionFunctionArgs) => {
-  const { session } = await authenticate.admin(request);
+  const authenticate = await getAuthenticate();$n  const { session } = await authenticate.admin(request);
   const formData = await request.formData();
 
   // Convert FormData to a settings object

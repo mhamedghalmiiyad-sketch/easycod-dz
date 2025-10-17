@@ -1,8 +1,9 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
-import { authenticate } from "../shopify.server";
+import { getAuthenticate } from "../lib/shopify.lazy.server";
 import { db } from "../db.server";  // ✅ correct
 
 export const action = async ({ request }: ActionFunctionArgs) => {
+  const authenticate = await getAuthenticate();
   const { shop, session, topic } = await authenticate.webhook(request);
 
   console.log(`Received ${topic} webhook for ${shop}`);

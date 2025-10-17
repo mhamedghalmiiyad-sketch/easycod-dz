@@ -45,7 +45,7 @@ import clientI18n from '../utils/i18n.client';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { authenticate } = await import("~/shopify.server");
-  const { session } = await authenticate.admin(request);
+  const authenticate = await getAuthenticate();$n  const { session } = await authenticate.admin(request);
   
   // Get language and translations (check database first, then URL params)
   const language = await getLanguageFromRequest(request, session.id);

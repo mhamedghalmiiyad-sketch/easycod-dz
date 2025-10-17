@@ -1,6 +1,6 @@
 // File: app/routes/api.import-rates.ts
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
-import { authenticate } from "../shopify.server";
+import { getAuthenticate } from "\.\.\/lib\/shopify\.lazy\.server";
 import { wilayaInfoMap } from "../utils/algeria-locations.server";
 
 // Define a standard interface for delivery rates to ensure consistency.
@@ -104,7 +104,7 @@ const PROVIDER_URLS: Record<string, string> = {
  */
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   // 1. Authenticate the request to ensure it's from a logged-in admin.
-  const { session } = await authenticate.admin(request);
+  const authenticate = await getAuthenticate();$n  const { session } = await authenticate.admin(request);
   if (!session) {
     return json({ error: "Not authenticated" }, { status: 401 });
   }

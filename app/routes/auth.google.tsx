@@ -2,12 +2,12 @@
 
 import { ActionFunctionArgs, redirect } from "@remix-run/node";
 import { OAuth2Client } from "google-auth-library";
-import { authenticate } from "../shopify.server";
+import { getAuthenticate } from "\.\.\/lib\/shopify\.lazy\.server";
 import { db } from "../db.server";
 
 // This action handles both starting the auth flow and the callback
 export const action = async ({ request }: ActionFunctionArgs) => {
-  const { session } = await authenticate.admin(request);
+  const authenticate = await getAuthenticate();$n  const { session } = await authenticate.admin(request);
   const formData = await request.formData();
   const action = formData.get("_action");
 
@@ -45,7 +45,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
 // This loader handles the callback from Google after the user grants permission
 export const loader = async ({ request }: ActionFunctionArgs) => {
-  const { session } = await authenticate.admin(request);
+  const authenticate = await getAuthenticate();$n  const { session } = await authenticate.admin(request);
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
 

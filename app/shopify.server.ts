@@ -1,4 +1,10 @@
-import "@shopify/shopify-app-remix/adapters/node";
+// Conditional import to prevent build-time execution issues
+if (process.env.NODE_ENV === "production") {
+  await import("@shopify/shopify-app-remix/adapters/node");
+} else {
+  require("@shopify/shopify-app-remix/adapters/node");
+}
+
 import {
   AppDistribution,
   DeliveryMethod,

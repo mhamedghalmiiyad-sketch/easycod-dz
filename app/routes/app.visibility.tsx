@@ -26,7 +26,7 @@ import {
   LocationIcon,
   WandIcon,
 } from "@shopify/polaris-icons";
-import { authenticate } from "../shopify.server";
+import { getAuthenticate } from "\.\.\/lib\/shopify\.lazy\.server";
 // ✅ UPDATED: Added getGeneralSettings to the import
 import { getShopSettings, upsertShopSettings, getGeneralSettings } from "~/utils/shopSettings";
 
@@ -58,7 +58,7 @@ interface VisibilitySettings {
 
 // LOADER: Fetches the current settings when the page loads
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const { session } = await authenticate.admin(request);
+  const authenticate = await getAuthenticate();$n  const { session } = await authenticate.admin(request);
 
   try {
     const settings = await getShopSettings(session.shop);
@@ -122,7 +122,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 // ✅ ACTION: Updated to handle the hasConfiguredVisibility flag
 export const action = async ({ request }: ActionFunctionArgs) => {
-  const { session } = await authenticate.admin(request);
+  const authenticate = await getAuthenticate();$n  const { session } = await authenticate.admin(request);
   const formData = await request.formData();
 
   try {

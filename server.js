@@ -123,6 +123,9 @@ async function startServer() {
   global.process = global.process || process;
   global.process.env = global.process.env || process.env;
   
+  // Prevent Remix build-time env caching
+  delete process.env.NODE_ENV;
+  
   let build;
   try {
     build = await import("./build/server/index.js");

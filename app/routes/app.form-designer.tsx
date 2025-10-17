@@ -5,7 +5,7 @@ import React, { useState, useCallback, useEffect, useRef, Fragment, useMemo } fr
 /* -------------------------------------------------------------------------- */
 import { ActionFunctionArgs, LoaderFunctionArgs, json } from "@remix-run/node";
 import { useLoaderData, useSubmit, useFetcher, useNavigation } from "@remix-run/react";
-import { authenticate } from "../shopify.server";
+import { getAuthenticate } from "\.\.\/lib\/shopify\.lazy\.server";
 import { db } from "../db.server";
 import {
     getShopSettings,
@@ -914,7 +914,7 @@ const initialShippingRates: ShippingRate[] = [{ id: `rate-${Date.now()}`, name: 
 
 // ADD The Loader
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-    const { session } = await authenticate.admin(request);
+    const authenticate = await getAuthenticate();$n  const { session } = await authenticate.admin(request);
     const language = await getLanguageFromRequest(request);
     const translations = await getTranslations(language);
     const rtl = isRTL(language);

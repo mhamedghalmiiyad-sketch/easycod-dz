@@ -3,8 +3,9 @@ import { json } from "@remix-run/node";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   // ✅ Dynamic imports for server-only code
-  const { authenticate } = await import("../shopify.server");
+  const { getAuthenticate } = await import("../lib/shopify.lazy.server");
   const { db } = await import("../db.server");
+  const authenticate = await getAuthenticate();
 
   const { payload, session, topic, shop } = await authenticate.webhook(request);
   console.log(`Received ${topic} webhook for ${shop}`);

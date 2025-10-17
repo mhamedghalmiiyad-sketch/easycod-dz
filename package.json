@@ -33,7 +33,11 @@
     "verify-deployment": "node scripts/verify-deployment.js",
     "fix-render-env": "node scripts/fix-render-env.js",
     "deploy-prep": "node scripts/deploy-to-render.js",
-    "check-env": "node scripts/check-env-vars.js"
+    "check-env": "node scripts/check-env-vars.js",
+    "ai-agent": "node scripts/ai-agent.js",
+    "test-tkone": "node scripts/test-tkone.js",
+    "setup-ai": "node scripts/setup-ai-agent.js",
+    "demo-ai": "node scripts/demo-ai-agent.js"
   },
   "type": "module",
   "engines": {
@@ -60,6 +64,7 @@
     "@shopify/polaris-icons": "^9.3.1",
     "@shopify/shopify-app-remix": "~3.8.5",
     "@shopify/shopify-app-session-storage-prisma": "^6.0.0",
+    "axios": "^1.12.2",
     "dotenv": "^16.6.1",
     "express": "^4.21.2",
     "framer-motion": "^12.23.6",

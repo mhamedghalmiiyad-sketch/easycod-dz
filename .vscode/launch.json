@@ -1,0 +1,28 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    
+    {
+      "name": "Debug AI Agent",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/scripts/ai-agent.js",
+      "console": "integratedTerminal",
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Test Tkone API",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/scripts/test-tkone.js",
+      "console": "integratedTerminal",
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "skipFiles": ["<node_internals>/**"]
+    }
+  ]
+}

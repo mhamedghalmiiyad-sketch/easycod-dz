@@ -6,7 +6,7 @@ import {
   type EntryContext,
 } from "@remix-run/node";
 import { isbot } from "isbot";
-import { addDocumentResponseHeaders } from "./shopify.server";
+// Dynamic import to avoid build conflicts
 
 export const streamTimeout = 5000;
 
@@ -16,6 +16,8 @@ export default async function handleRequest(
   responseHeaders: Headers,
   remixContext: EntryContext
 ) {
+  // Dynamic import to avoid build conflicts
+  const { addDocumentResponseHeaders } = await import("./shopify.server");
   addDocumentResponseHeaders(request, responseHeaders);
   const userAgent = request.headers.get("user-agent");
   const callbackName = isbot(userAgent ?? '')

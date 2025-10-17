@@ -24,7 +24,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   // Check if this is a recovery request
   if (searchParams.recovery) {
     console.log("🔄 Handling cart recovery request");
-    // Forward to recovery handler
+    // Forward to recovery handler - use direct import to avoid dynamic import conflict
     const { action: recoveryAction } = await import("./apps.proxy.track-abandonment");
     return await recoveryAction({ request, params: {}, context: {} });
   }
@@ -33,7 +33,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   console.log("🔄 Forwarding POST request to submit handler");
   
   // Import the submit handler dynamically to avoid circular imports
-  const { action: submitAction } = await import("./submit");
+    const { action: submitAction } = await import("./submit");
   
   // Create a new request for the submit route
   const submitUrl = new URL("/submit", url.origin);

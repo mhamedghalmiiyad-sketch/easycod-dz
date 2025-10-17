@@ -1,7 +1,7 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { Link, Outlet, useLocation, useLoaderData } from "@remix-run/react";
 import { Page, Tabs, Box } from "@shopify/polaris";
-import { getAuthenticate } from "../lib/shopify.lazy.server";
+// Dynamic import to avoid build conflicts
 import { getLanguageFromRequest, getTranslations, isRTL, saveLanguagePreference } from "../utils/i18n.server";
 import { useTranslation } from "react-i18next";
 import { I18nextProvider } from "react-i18next";
@@ -10,6 +10,7 @@ import { useEffect } from "react";
 
 // Loader to ensure user is authenticated and load translations
 export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const { getAuthenticate } = await import("../lib/shopify.lazy.server");
   const authenticate = await getAuthenticate();
   const { session } = await authenticate.admin(request);
   

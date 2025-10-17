@@ -17,21 +17,26 @@ let shopifyInstance: ReturnType<typeof shopifyApp> | null = null;
 function getShopifyApp() {
   if (!shopifyInstance) {
     // Validate environment variables when the app is first accessed
-    if (!process.env.SHOPIFY_API_KEY) {
+    // Use more defensive checks to handle build-time scenarios
+    const apiKey = process.env.SHOPIFY_API_KEY;
+    const apiSecret = process.env.SHOPIFY_API_SECRET;
+    const scopes = process.env.SCOPES;
+    
+    if (!apiKey || apiKey.trim() === '') {
       throw new Error("SHOPIFY_API_KEY environment variable is required");
     }
-    if (!process.env.SHOPIFY_API_SECRET) {
+    if (!apiSecret || apiSecret.trim() === '') {
       throw new Error("SHOPIFY_API_SECRET environment variable is required");
     }
-    if (!process.env.SCOPES) {
+    if (!scopes || scopes.trim() === '') {
       throw new Error("SCOPES environment variable is required");
     }
 
     shopifyInstance = shopifyApp({
-      apiKey: process.env.SHOPIFY_API_KEY,
-      apiSecretKey: process.env.SHOPIFY_API_SECRET,
+      apiKey: apiKey,
+      apiSecretKey: apiSecret,
       apiVersion: LATEST_API_VERSION,
-      scopes: process.env.SCOPES.split(","),
+      scopes: scopes.split(","),
       appUrl: process.env.SHOPIFY_APP_URL || "https://easycod-dz.onrender.com",
       authPathPrefix: "/auth",
       sessionStorage: new PrismaSessionStorage(db),

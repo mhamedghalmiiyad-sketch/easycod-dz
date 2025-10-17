@@ -1,9 +1,10 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
-import { getAuthenticate } from "../lib/shopify.lazy.server";
+// Dynamic import to avoid build conflicts
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   // This is the key part: authenticate.admin(request) will handle the
   // top-level redirect to the Shopify login page outside the iframe.
+  const { getAuthenticate } = await import("../lib/shopify.lazy.server");
   const authenticate = await getAuthenticate();
   await authenticate.admin(request);
 

@@ -33,7 +33,7 @@ import {
   AlertTriangleIcon,
   CheckCircleIcon,
 } from "@shopify/polaris-icons";
-import { getAuthenticate } from "../lib/shopify.lazy.server";
+// Dynamic import to avoid build conflicts
 import { db } from "../db.server";
 import { z, ZodIssue } from "zod";
 import DOMPurify from 'isomorphic-dompurify';
@@ -182,6 +182,7 @@ const resetAllAppData = async (sessionId: string, shopDomain: string) => {
 };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const { getAuthenticate } = await import("../lib/shopify.lazy.server");
   const authenticate = await getAuthenticate();
   const { session } = await authenticate.admin(request);
   console.log("🔍 Session ID:", session.id);
@@ -195,6 +196,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   try {
+    const { getAuthenticate } = await import("../lib/shopify.lazy.server");
     const authenticate = await getAuthenticate();
     const { session } = await authenticate.admin(request);
     const formData = await request.formData();

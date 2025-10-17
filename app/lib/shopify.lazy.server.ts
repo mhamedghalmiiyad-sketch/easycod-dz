@@ -2,8 +2,13 @@
 // Lazy loader for Shopify app initialization to prevent build-time environment variable issues
 
 export async function getShopifyInstance() {
-  const { default: shopify } = await import("../shopify.server.js");
-  return shopify;
+  try {
+    const { default: shopify } = await import("../shopify.server.js");
+    return shopify;
+  } catch (error) {
+    console.error("Failed to load Shopify instance:", error);
+    throw error;
+  }
 }
 
 // Convenience functions for common Shopify operations

@@ -2,7 +2,7 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import crypto from "crypto";
-import { unauthenticated, default as shopify } from "../shopify.server";
+// Dynamic import to avoid build conflicts
 import db from "../db.server";
 import { calculateRiskScore } from "../utils/riskScoring.server"; // Server-only risk scoring logic
 import { shopifyEnv } from "../utils/env.server";
@@ -436,6 +436,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         console.log("🔍 Creating admin context for shop:", shop);
         let admin;
         try {
+            const { unauthenticated } = await import("../shopify.server");
             const adminResult = await unauthenticated.admin(shop);
             admin = adminResult.admin;
             if (!admin) {

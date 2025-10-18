@@ -142,4 +142,13 @@ export default function App() {
 }
 
 export function ErrorBoundary() { return boundary.error(useRouteError()); }
-export const headers: HeadersFunction = (headersArgs) => { return boundary.headers(headersArgs); };
+
+// --- RE-COMMENT OUT THIS EXPORT FOR FINAL TEST ---
+// export const headers: HeadersFunction = (headersArgs) => {
+//   if ((headersArgs as any).error instanceof Response && (headersArgs as any).error.status === 410) {
+//       console.warn("--- WARNING: boundary.headers received the 410 error object (final test) ---");
+//       return headersArgs.parentHeaders; // Pass through headers set by entry.server.tsx
+//   }
+//   return boundary.headers(headersArgs);
+// };
+// --- END RE-COMMENT OUT ---

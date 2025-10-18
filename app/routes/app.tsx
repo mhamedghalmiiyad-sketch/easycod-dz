@@ -1,5 +1,5 @@
-import type { LoaderFunctionArgs, HeadersFunction, ActionFunctionArgs } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
+import type { LoaderFunctionArgs, HeadersFunction } from "@remix-run/node";
+import { json } from "@remix-run/node";
 import { Link, Outlet, useLoaderData, useRouteError } from "@remix-run/react";
 import { I18nextProvider } from "react-i18next";
 import clientI18n from "../utils/i18n.client";
@@ -8,15 +8,13 @@ import { boundary } from "@shopify/shopify-app-remix/server";
 import { AppProvider } from "@shopify/shopify-app-remix/react";
 import { NavMenu } from "@shopify/app-bridge-react";
 import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
-import { useTranslations } from "../hooks/useTranslations";
 import { getLanguageFromRequest, getTranslations, isRTL, saveLanguagePreference } from "../utils/i18n.server";
 import { shopifyEnv } from "../utils/env.server";
+import { authenticate } from "../shopify.server";
 
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const { getAuthenticate } = await import("../lib/shopify.lazy.server");
-  const authenticate = await getAuthenticate();
   const { session } = await authenticate.admin(request);
 
   // Get language and translations (check database first, then URL params)

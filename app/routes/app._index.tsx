@@ -1,27 +1,20 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData, useNavigate } from "@remix-run/react";
-import { I18nextProvider } from "react-i18next";
 import React, { useState, useCallback, useEffect } from 'react';
 import {
-  AppProvider,
   Page,
   Layout,
   Card,
   Button,
-  Badge,
   Icon,
   Text,
   ProgressBar,
   Collapsible,
-  ButtonGroup,
   BlockStack,
   InlineStack,
   Box,
   Divider,
-  Banner,
-  List,
-  Frame,
   Toast,
   Modal,
   TextContainer,
@@ -31,18 +24,14 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
   QuestionCircleIcon,
-  ChatIcon,
   BookIcon,
 } from '@shopify/polaris-icons';
 import { MessageCircle, Mail } from 'lucide-react';
-import enTranslations from '@shopify/polaris/locales/en.json';
-import frTranslations from '@shopify/polaris/locales/fr.json';
-// import { useTranslations } from '../hooks/useTranslations'; // <-- This was unused
 import { useTranslation } from 'react-i18next';
 import { LanguageSelector } from '../components/LanguageSelector';
 import { getLanguageFromRequest, getTranslations, isRTL, saveLanguagePreference } from '../utils/i18n.server';
-import clientI18n from '../utils/i18n.client';
-import { authenticate } from "../shopify.server"; // <-- THIS IS THE CORRECT IMPORT
+import clientI18n from '../utils/i18n.client'; // Keep this, it's used by the parent
+import { authenticate } from "../shopify.server";
 
 // --- THIS IS THE FIXED LOADER ---
 export const loader = async (args: LoaderFunctionArgs) => {
@@ -80,10 +69,13 @@ export const loader = async (args: LoaderFunctionArgs) => {
   }, { headers });
 };
 
-const ShopifyDashboard = () => {
+// --- THIS IS THE FIXED COMPONENT ---
+// We've removed the redundant AppProvider, I18nextProvider, and Frame.
+// This component will now render *inside* the layout from app.tsx.
+export default function ShopifyDashboard() {
   const { shop, language, translations, rtl } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
-  // Use dashboard namespace specifically to prevent flash of untranslated content
+  // We can use useTranslation because the parent app.tsx provides I18nextProvider
   const { t: clientT } = useTranslation('dashboard');
   const [isClientReady, setIsClientReady] = useState(false);
   const [isSetupExpanded, setIsSetupExpanded] = useState(true);
@@ -702,33 +694,13 @@ const ShopifyDashboard = () => {
     </Page>
   );
 
-  // Get the appropriate Polaris translations based on language
-  const getPolarisTranslations = () => {
-    switch (language) {
-      case 'fr':
-        return frTranslations;
-      case 'ar':
-      default:
-        return enTranslations; // Use English for Arabic since Polaris doesn't have Arabic translations
-    }
-  };
-
+  // This component now returns the Page markup directly.
+  // The Frame, AppProvider, and I18nextProvider are in the parent app.tsx.
   return (
-    <I18nextProvider i18n={clientI18n}>
-      <div style={{ height: '100vh' }} dir={rtl ? 'rtl' : 'ltr'}>
-        <AppProvider
-          i18n={getPolarisTranslations()}
-          features={{ newDesignLanguage: true }}
-        >
-          <Frame>
-            {pageMarkup}
-            {toastMarkup}
-            {modalMarkup}
-          </Frame>
-        </AppProvider>
-      </div>
-    </I18nextProvider>
+    <>
+      {pageMarkup}
+      {toastMarkup}
+      {modalMarkup}
+    </>
   );
-};
-
-export default ShopifyDashboard;
+}

@@ -1,70 +1,36 @@
-import '@shopify/shopify-app-remix/adapters/node';
-import { shopifyApp } from '@shopify/shopify-app-remix/server';
-import { PrismaSessionStorage } from '@shopify/shopify-app-session-storage-prisma';
-import { restResources } from '@shopify/shopify-api/rest/admin/2024-07';
-import prisma from '~/db.server';
-import { shopifyEnv } from '~/utils/env.server'; // <--- IMPORT THE FIX
+import type { LoaderFunctionArgs, ActionFunctionArgs, AppLoadContext } from "@remix-run/node";
+import { shopifyApp } from "@shopify/shopify-app-remix/server";
+import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prisma";
+import { restResources } from "@shopify/shopify-api/rest/admin/2024-07";
+import prisma from "~/db.server";
 
-let shopifyInstance: ReturnType<typeof shopifyApp> | null = null;
+// --- THIS IS THE FIX ---
+// The shopifyApp instance is now created on-demand for each request.
+const initializeShopifyApp = (context: AppLoadContext) => {
+  // Read the env variables from the context injected by server.js
+  const { shopify: env } = context as { shopify: { SHOPIFY_API_KEY: string; SHOPIFY_API_SECRET: string; SCOPES: string; SHOPIFY_APP_URL: string; SESSION_SECRET: string } };
 
-function getShopifyApp() {
-  if (!shopifyInstance) {
-    // --- THIS IS THE CHANGE ---
-    // We now use shopifyEnv.required... to get the env vars
-    // This utility (env.server.ts) is smart enough to find the
-    // variables provided by your server.js file.
-    shopifyInstance = shopifyApp({
-      apiKey: shopifyEnv.requiredApiKey,
-      apiSecret: shopifyEnv.requiredApiSecret,
-      scopes: shopifyEnv.requiredScopes?.split(','),
-      appUrl: shopifyEnv.requiredAppUrl,
-      isEmbeddedApp: true,
-      sessionStorage: new PrismaSessionStorage(prisma),
-      restResources,
-    });
-    // --- END OF CHANGE ---
+  if (!env?.SHOPIFY_API_KEY || !env?.SHOPIFY_API_SECRET || !env?.SCOPES || !env?.SHOPIFY_APP_URL) {
+    throw new Error("Missing Shopify environment variables in request context.");
   }
-  return shopifyInstance;
-}
-
-const shopify = new Proxy(
-  {},
-  {
-    get: (_target, prop) => {
-      const app = getShopifyApp();
-      return app[prop as keyof typeof app];
-    },
-  }
-) as ReturnType<typeof shopifyApp>;
-
-export default shopify;
-
-// Export authentication functions
-export const authenticate = new Proxy(
-  {},
-  {
-    get: (_target, prop) => {
-      const app = getShopifyApp();
-      return app.authenticate[prop as keyof typeof app.authenticate];
-    },
-  }
-) as typeof shopify.authenticate;
-
-export const login = (request: Request) => {
-  return getShopifyApp().login(request);
+  
+  return shopifyApp({
+    apiKey: env.SHOPIFY_API_KEY,
+    apiSecretKey: env.SHOPIFY_API_SECRET,
+    scopes: env.SCOPES.split(","),
+    appUrl: env.SHOPIFY_APP_URL,
+    isEmbeddedApp: true,
+    sessionStorage: new PrismaSessionStorage(prisma),
+    restResources,
+  });
 };
 
-export const unauthenticated = (request: Request) => {
-  return getShopifyApp().unauthenticated(request);
+// We create a new authenticate object with methods that accept the full loader arguments.
+export const authenticate = {
+  admin: async ({ request, context }: LoaderFunctionArgs | ActionFunctionArgs) => {
+    const shopify = initializeShopifyApp(context);
+    return await shopify.authenticate.admin(request);
+  },
+  // You can add public authentication here if needed later
+  // public: async ({ request, context }: LoaderFunctionArgs | ActionFunctionArgs) => { ... }
 };
-
-export const registerWebhooks = () => {
-  return getShopifyApp().registerWebhooks();
-};
-
-export const addDocumentResponseHeaders = (request: Request, response: Response) => {
-  return getShopifyApp().addDocumentResponseHeaders(request, response);
-};
-
-// Helper function to get the shopify instance
-export const getShopify = async () => getShopifyApp();

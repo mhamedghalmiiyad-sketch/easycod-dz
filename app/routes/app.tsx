@@ -9,20 +9,22 @@ import { AppProvider } from "@shopify/shopify-app-remix/react";
 import { NavMenu } from "@shopify/app-bridge-react";
 import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
 import { getLanguageFromRequest, getTranslations, isRTL, saveLanguagePreference } from "../utils/i18n.server";
-import { shopifyEnv } from "../utils/env.server";
 import { authenticate } from "../shopify.server";
 
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const { session } = await authenticate.admin(request);
+export const loader = async (args: LoaderFunctionArgs) => {
+  // --- THIS IS THE FIX ---
+  // We now pass the entire `args` object ({ request, context })
+  // to our new authentication function.
+  const { session } = await authenticate.admin(args);
+  // --- END FIX ---
 
-  // Get language and translations (check database first, then URL params)
+  const { request } = args;
   const language = await getLanguageFromRequest(request, session.id);
   const translations = await getTranslations(language);
   const rtl = isRTL(language);
   
-  // Save language preference to database if it came from URL parameter
   const url = new URL(request.url);
   const langParam = url.searchParams.get('lang');
   if (langParam && ['en', 'ar', 'fr'].includes(langParam)) {
@@ -33,12 +35,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     }
   }
   
-  // Set cookie for language persistence
   const headers = new Headers();
   headers.set('Set-Cookie', `i18nextLng=${language}; Path=/; Max-Age=31536000; SameSite=Lax`);
 
   return json({ 
-    apiKey: shopifyEnv.apiKey || "",
+    apiKey: process.env.SHOPIFY_API_KEY || "", // This is for the client-side AppProvider, it's safe.
     shop: session.shop,
     language,
     translations,

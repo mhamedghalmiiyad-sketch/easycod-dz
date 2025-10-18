@@ -16,40 +16,46 @@ import { getLanguageFromRequest, getTranslations, isRTL, saveLanguagePreference 
 import clientI18n from '../utils/i18n.client';
 import { authenticate } from "../shopify.server";
 
-// --- RESTORED ORIGINAL LOADER WITH AUTH AND i18n ---
+// --- LOADER WITH DUPLICATE ERROR HANDLING ---
 export const loader = async (args: LoaderFunctionArgs) => {
-  // Authenticate first
-  const { session } = await authenticate.admin(args);
-  const { request } = args;
+  try {
+    // Attempt authentication HERE as well
+    const { session } = await authenticate.admin(args);
+    const { request } = args;
 
-  // Restore i18n logic
-  const language = await getLanguageFromRequest(request, session.id);
-  const translations = await getTranslations(language);
-  const rtl = isRTL(language);
-
-  const url = new URL(request.url);
-  const langParam = url.searchParams.get('lang');
-  if (langParam && ['en', 'ar', 'fr'].includes(langParam)) {
-    try {
+    // If authentication succeeds, load i18n data
+    const language = await getLanguageFromRequest(request, session.id);
+    const translations = await getTranslations(language);
+    const rtl = isRTL(language);
+    const url = new URL(request.url);
+    const langParam = url.searchParams.get('lang');
+    if (langParam && ['en', 'ar', 'fr'].includes(langParam)) {
       await saveLanguagePreference(session.id, langParam);
-    } catch (error) {
-      console.warn('Failed to save language preference:', error);
     }
-  }
+    const headers = new Headers();
+    headers.set('Set-Cookie', `i18nextLng=${language}; Path=/; Max-Age=31536000; SameSite=Lax`);
 
-  const headers = new Headers();
-  headers.set('Set-Cookie', `i18nextLng=${language}; Path=/; Max-Age=31536000; SameSite=Lax`);
-
-  console.log(`--- DEBUG: app._index.tsx loader finished. Lang: ${language}`);
-
+    // On success, return data
   return json({
-    shop: session.shop,
-    language,
-    translations,
-    rtl,
-  }, { headers });
+      shop: session.shop,
+      language,
+      translations,
+      rtl,
+    }, { headers });
+
+  } catch (error) {
+     if (error instanceof Response && error.status === 410) {
+       // This handles if the PARENT loader succeeded but THIS one failed
+      console.warn("--- HANDLED (app._index.tsx): Caught 410. Forcing 200 OK response with loading shell. ---");
+      const apiKey = process.env.SHOPIFY_API_KEY || "";
+      const html = `<!DOCTYPE html><html><head><title>Authenticating...</title><script src="https://cdn.shopify.com/shopifycloud/app-bridge/edge/index.js"></script><script>document.addEventListener('DOMContentLoaded', function() { if (window.top === window.self) { window.location.href = "/auth/login"; } else { const app = AppBridge.createApp({ apiKey: "${apiKey}" }); app.dispatch(AppBridge.actions.Redirect.toRemote({ url: window.location.href })); } });</script></head><body><p>Authenticating, please wait...</p></body></html>`;
+      // IMPORTANT: MUST return a Response here, not json()
+      return new Response(html, { status: 200, headers: { "Content-Type": "text/html" } });
+    }
+    throw error; // Re-throw other errors
+  }
 };
-// --- END RESTORED ORIGINAL LOADER ---
+// --- END LOADER ---
 
 
 // --- ORIGINAL COMPONENT CODE RESTORED ---

@@ -4,14 +4,25 @@ import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prism
 import { restResources } from "@shopify/shopify-api/rest/admin/2024-07";
 import prisma from "~/db.server";
 
-// This function remains the same - used by loaders/actions with context
+// --- ADD TYPE DEFINITION FOR THE GLOBAL VARIABLE ---
+declare global {
+  var SHOPIFY_ENV_VARS: {
+    SHOPIFY_API_KEY?: string;
+    SHOPIFY_API_SECRET?: string;
+    SCOPES?: string;
+    SHOPIFY_APP_URL?: string;
+    SESSION_SECRET?: string;
+  };
+}
+// --- END TYPE DEFINITION ---
+
+
+// initializeShopifyApp remains the same (uses context)
 const initializeShopifyApp = (context: AppLoadContext) => {
   const { shopify: env } = context as { shopify: { SHOPIFY_API_KEY: string; SHOPIFY_API_SECRET: string; SCOPES: string; SHOPIFY_APP_URL: string; SESSION_SECRET: string } };
-
   if (!env?.SHOPIFY_API_KEY || !env?.SHOPIFY_API_SECRET || !env?.SCOPES || !env?.SHOPIFY_APP_URL) {
     throw new Error("Missing Shopify environment variables in request context.");
   }
-
   return shopifyApp({
     apiKey: env.SHOPIFY_API_KEY,
     apiSecretKey: env.SHOPIFY_API_SECRET,
@@ -21,9 +32,7 @@ const initializeShopifyApp = (context: AppLoadContext) => {
     sessionStorage: new PrismaSessionStorage(prisma),
     restResources,
     useShopifyManagedInstallations: true,
-    future: {
-      unstable_newEmbeddedAuthStrategy: true,
-    },
+    future: { unstable_newEmbeddedAuthStrategy: true },
   });
 };
 
@@ -40,36 +49,39 @@ export const login = async (args: LoaderFunctionArgs | ActionFunctionArgs) => {
 };
 
 // --- THIS IS THE FIXED FUNCTION ---
-// It no longer accepts `context`. It creates its own minimal Shopify instance
-// using process.env because it runs before getLoadContext.
+// It now reads directly from the global variable set by server.js
 export const addDocumentResponseHeaders = (
   request: Request,
   headers: Headers,
-  // context: AppLoadContext // <-- Removed context
 ) => {
-  // Create a minimal Shopify instance using process.env
-  const env = {
-    SHOPIFY_API_KEY: process.env.SHOPIFY_API_KEY,
-    SHOPIFY_API_SECRET: process.env.SHOPIFY_API_SECRET,
-    SCOPES: process.env.SCOPES,
-    SHOPIFY_APP_URL: process.env.SHOPIFY_APP_URL,
-  };
+  // Read directly from the global variable
+  const env = global.SHOPIFY_ENV_VARS || {}; // Use empty object as fallback
 
-   if (!env.SHOPIFY_API_KEY || !env.SHOPIFY_API_SECRET || !env.SCOPES || !env.SHOPIFY_APP_URL) {
-    // Log an error but don't throw, as headers are secondary to app function
-    console.error("Missing Shopify environment variables for setting CSP headers. Headers might be incomplete.");
-    return headers; // Return original headers if env vars missing
+   // Check required variables for CSP headers (API Key and App URL primarily)
+   if (!env.SHOPIFY_API_KEY || !env.SHOPIFY_APP_URL) {
+    console.error("Missing SHOPIFY_API_KEY or SHOPIFY_APP_URL in global env for setting CSP headers. Headers might be incomplete.");
+     // We still need SCOPES and API_SECRET for the shopifyApp call below, even if not strictly for CSP
+     if (!env.SHOPIFY_API_SECRET || !env.SCOPES) {
+       console.error("Also missing SHOPIFY_API_SECRET or SCOPES in global env.");
+     }
+    return headers; // Return original headers if essential vars missing
   }
 
+  // Ensure SCOPES and API_SECRET are present for the shopifyApp config object
+  if (!env.SHOPIFY_API_SECRET || !env.SCOPES) {
+      console.error("Missing SHOPIFY_API_SECRET or SCOPES in global env needed for shopifyApp config. Headers might be incomplete.");
+      return headers;
+  }
+
+  // Create a minimal Shopify instance using the global env vars
   const shopify = shopifyApp({
     apiKey: env.SHOPIFY_API_KEY,
-    apiSecretKey: env.SHOPIFY_API_SECRET, // Corrected property name
+    apiSecretKey: env.SHOPIFY_API_SECRET, // Use correct key
     scopes: env.SCOPES.split(","),
     appUrl: env.SHOPIFY_APP_URL,
     isEmbeddedApp: true,
     sessionStorage: new PrismaSessionStorage(prisma), // Still needed for config
     restResources, // Still needed for config
-    // No need for future flag here as it's just for headers
   });
 
   // Call the original function from the library using the minimal instance
@@ -78,7 +90,7 @@ export const addDocumentResponseHeaders = (
 // --- END OF FIXED FUNCTION ---
 
 
-// Unauthenticated and getShopify helpers remain the same
+// Unauthenticated and getShopify helpers remain the same (still use process.env - less critical timing)
 export const unauthenticated = {
   admin: async (shop: string) => {
     const env = { SHOPIFY_API_KEY: process.env.SHOPIFY_API_KEY, SHOPIFY_API_SECRET: process.env.SHOPIFY_API_SECRET, SCOPES: process.env.SCOPES, SHOPIFY_APP_URL: process.env.SHOPIFY_APP_URL };

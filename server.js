@@ -5,34 +5,44 @@ import express from "express";
 import { execSync } from "child_process";
 import { config } from "dotenv";
 
+// Load .env file FIRST
 config();
-installGlobals();
 
-// --- THIS IS THE FIX: PART 1 ---
-// We create an object with the environment variables that we will inject.
-const SHOPIFY_ENV = {
+// --- CRITICAL FIX: Set global variable AT THE TOP ---
+// This ensures it's available even during early module loads like entry.server.tsx
+global.SHOPIFY_ENV_VARS = {
   SHOPIFY_API_KEY: process.env.SHOPIFY_API_KEY,
   SHOPIFY_API_SECRET: process.env.SHOPIFY_API_SECRET,
   SCOPES: process.env.SCOPES,
   SHOPIFY_APP_URL: process.env.SHOPIFY_APP_URL,
-  SESSION_SECRET: process.env.SESSION_SECRET,
+  SESSION_SECRET: process.env.SESSION_SECRET, // Include session secret if needed elsewhere
 };
-// --- END FIX PART 1 ---
+// --- END CRITICAL FIX ---
+
+// Now install Remix globals
+installGlobals();
+
+
+// The rest of the file remains the same...
+const SHOPIFY_ENV_FOR_CONTEXT = { ...global.SHOPIFY_ENV_VARS }; // Use the global var for context too
 
 async function startServer() {
-  console.log("=== Environment Variable Validation ===");
+  console.log("=== Environment Variable Validation (using global) ===");
   const requiredEnvVars = ["SHOPIFY_API_KEY", "SHOPIFY_API_SECRET", "SCOPES", "SESSION_SECRET", "SHOPIFY_APP_URL"];
-  
+
+  // Validate using the global variable now
   for (const v of requiredEnvVars) {
-    if (!process.env[v]) {
-      console.error(`❌ Missing required environment variable: ${v}`);
+    if (!global.SHOPIFY_ENV_VARS[v]) {
+      console.error(`❌ Missing required environment variable in global: ${v}`);
+      // Also check process.env for debugging comparison
+      console.error(`   Value in process.env: ${process.env[v]}`);
       process.exit(1);
     }
   }
-  
-  console.log("✅ All required environment variables are present.");
-  console.log(`✅ SHOPIFY_API_KEY: ${process.env.SHOPIFY_API_KEY.substring(0, 8)}...`);
-  console.log(`✅ SHOPIFY_APP_URL is set: ${process.env.SHOPIFY_APP_URL}`);
+
+  console.log("✅ All required environment variables are present in global.");
+  console.log(`✅ SHOPIFY_API_KEY: ${global.SHOPIFY_ENV_VARS.SHOPIFY_API_KEY.substring(0, 8)}...`);
+  console.log(`✅ SHOPIFY_APP_URL is set: ${global.SHOPIFY_ENV_VARS.SHOPIFY_APP_URL}`);
 
   try {
     console.log("📦 Running database migrations...");
@@ -49,7 +59,7 @@ async function startServer() {
 
   const app = express();
   app.set("trust proxy", 1);
-  
+
   app.use(express.static("build/client", { immutable: true, maxAge: "1y" }));
   app.use(express.static("public", { maxAge: "1h" }));
 
@@ -59,14 +69,11 @@ async function startServer() {
     "*",
     createRequestHandler({
       build,
-      mode: process.env.NODE_ENV,
-      // --- THIS IS THE FIX: PART 2 ---
-      // This function runs on every request and passes the SHOPIFY_ENV object
-      // into the `context` argument of your loaders and actions.
+      mode: process.env.NODE_ENV || 'production', // Ensure NODE_ENV is set
       getLoadContext: () => ({
-        shopify: SHOPIFY_ENV,
+        // Pass the already populated object to the context
+        shopify: SHOPIFY_ENV_FOR_CONTEXT,
       }),
-      // --- END FIX PART 2 ---
     })
   );
 

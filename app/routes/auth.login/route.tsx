@@ -1,72 +1,46 @@
-import { useState } from "react";
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { Form, useActionData, useLoaderData } from "@remix-run/react";
-import {
-  AppProvider as PolarisAppProvider,
-  Button,
-  Card,
-  FormLayout,
-  Page,
-  Text,
-  TextField,
-} from "@shopify/polaris";
-import polarisTranslations from "@shopify/polaris/locales/en.json";
-import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
-
-export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
+import { json, redirect, type LoaderFunctionArgs } from '@remix-run/node';
+import { authenticate } from '~/shopify.server';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  // ✅ Server-only imports are moved inside the loader
-  const { login } = await import("../../shopify.server");
-  const { loginErrorMessage } = await import("./error.server");
+  const url = new URL(request.url);
+  
+  // If already has shop parameter, start the OAuth flow
+  if (url.searchParams.has('shop')) {
+    throw redirect(`/auth?${url.searchParams.toString()}`);
+  }
 
-  const errors = loginErrorMessage(await login(request));
-
-  return { errors, polarisTranslations };
+  // Return a login form or redirect to auth
+  return json({ message: 'Please provide a shop parameter' });
 };
 
-export const action = async ({ request }: ActionFunctionArgs) => {
-  // ✅ Server-only imports are moved inside the action
-  const { login } = await import("../../shopify.server");
-  const { loginErrorMessage } = await import("./error.server");
-
-  const errors = loginErrorMessage(await login(request));
-
-  return {
-    errors,
-  };
-};
-
-export default function Auth() {
-  const loaderData = useLoaderData<typeof loader>();
-  const actionData = useActionData<typeof action>();
-  const [shop, setShop] = useState("");
-  const { errors } = actionData || loaderData;
-
+export default function LoginPage() {
   return (
-    <PolarisAppProvider i18n={loaderData.polarisTranslations}>
-      <Page>
-        <Card>
-          <Form method="post">
-            <FormLayout>
-              <Text variant="headingMd" as="h2">
-                Log in
-              </Text>
-              <TextField
-                type="text"
-                name="shop"
-                label="Shop domain"
-                helpText="example.myshopify.com"
-                value={shop}
-                onChange={setShop}
-                autoComplete="on"
-                error={errors.shop}
-              />
-              <Button submit>Log in</Button>
-            </FormLayout>
-          </Form>
-        </Card>
-      </Page>
-    </PolarisAppProvider>
+    <div style={{ padding: '2rem', fontFamily: 'system-ui, sans-serif' }}>
+      <h1>Easycod App Installation</h1>
+      <p>Enter your Shopify store URL to get started:</p>
+      <form method="post" action="/auth">
+        <input
+          type="text"
+          name="shop"
+          placeholder="mystore.myshopify.com"
+          required
+          style={{
+            padding: '0.5rem',
+            fontSize: '1rem',
+            marginRight: '0.5rem',
+          }}
+        />
+        <button
+          type="submit"
+          style={{
+            padding: '0.5rem 1rem',
+            fontSize: '1rem',
+            cursor: 'pointer',
+          }}
+        >
+          Install App
+        </button>
+      </form>
+    </div>
   );
 }

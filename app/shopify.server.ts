@@ -36,8 +36,8 @@ function getEnvVars() {
   }
   
   // Try global scope (for Render ESM scoping fix)
-  if (typeof global !== 'undefined' && global.__SHOPIFY_ENV__) {
-    const globalEnv = global.__SHOPIFY_ENV__;
+  if (typeof global !== 'undefined' && (global as any).__SHOPIFY_ENV__) {
+    const globalEnv = (global as any).__SHOPIFY_ENV__;
     return {
       apiKey: globalEnv.apiKey,
       apiSecret: globalEnv.apiSecret,
@@ -124,3 +124,10 @@ export async function getShopifyInstance(prisma: any) {
 
 // ✅ Export API version as a constant
 export const apiVersion = "2024-07";
+
+// ✅ Export authenticate function for auth routes
+export async function authenticate(request: Request) {
+  const { db } = await import("./db.server");
+  const shopify = await getShopifyInstance(db);
+  return shopify.authenticate;
+}

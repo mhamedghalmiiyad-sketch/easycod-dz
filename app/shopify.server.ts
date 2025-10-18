@@ -23,6 +23,12 @@ const initializeShopifyApp = (context: AppLoadContext) => {
     sessionStorage: new PrismaSessionStorage(prisma),
     restResources,
     useShopifyManagedInstallations: true,
+    // --- THIS IS THE FIX ---
+    // Enable the future flag required for the new token exchange strategy.
+    future: {
+      unstable_newEmbeddedAuthStrategy: true,
+    },
+    // --- END OF FIX ---
   });
 };
 
@@ -66,6 +72,7 @@ export const unauthenticated = {
       isEmbeddedApp: true,
       sessionStorage: new PrismaSessionStorage(prisma),
       restResources,
+      future: { unstable_newEmbeddedAuthStrategy: true },
     });
     
     return await shopify.unauthenticated.admin(shop);
@@ -96,5 +103,6 @@ export const getShopify = async () => {
     sessionStorage: new PrismaSessionStorage(prisma),
     restResources,
     useShopifyManagedInstallations: true,
+    future: { unstable_newEmbeddedAuthStrategy: true },
   });
 };

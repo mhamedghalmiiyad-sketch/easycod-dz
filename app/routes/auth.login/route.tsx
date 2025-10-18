@@ -1,16 +1,21 @@
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
 import { getShopify } from '~/shopify.server';
 
+/**
+ * Login route handler
+ * This route MUST use shopify.login() not shopify.authenticate.admin()
+ */
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const shopify = await getShopify();
-  
-  // If shop parameter exists, start the login flow
   const url = new URL(request.url);
+  
+  // If shop parameter exists in URL, initiate login flow
   if (url.searchParams.has('shop')) {
+    const shopify = await getShopify();
     return shopify.login(request);
   }
 
-  return json({ message: 'Enter your store URL' });
+  // Otherwise show the login form
+  return json({ ok: true });
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -25,7 +30,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return json({ error: 'Shop parameter is required' }, { status: 400 });
   }
 
-  // Redirect with shop parameter, which will trigger the loader
+  // Create new URL with shop parameter and call login
   const url = new URL(request.url);
   url.searchParams.set('shop', shop);
   
@@ -46,7 +51,7 @@ export default function LoginPage() {
             placeholder="mystore.myshopify.com"
             required
             pattern=".*\.myshopify\.com"
-            title="Please enter a valid Shopify store URL"
+            title="Please enter a valid Shopify store URL (e.g., mystore.myshopify.com)"
             style={{
               padding: '0.75rem',
               fontSize: '1rem',
@@ -68,6 +73,7 @@ export default function LoginPage() {
             color: '#fff',
             border: 'none',
             borderRadius: '4px',
+            width: '100%',
           }}
         >
           Install App

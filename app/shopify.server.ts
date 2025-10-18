@@ -4,26 +4,61 @@ import { PrismaSessionStorage } from '@shopify/shopify-app-session-storage-prism
 import { restResources } from '@shopify/shopify-api/rest/admin/2024-07';
 import prisma from '~/db.server';
 
-// Shopify app configuration with proper authentication setup
+let shopifyInstance: ReturnType<typeof shopifyApp> | null = null;
 
-const shopify = shopifyApp({
-  apiKey: process.env.SHOPIFY_API_KEY || '',
-  apiSecretKey: process.env.SHOPIFY_API_SECRET || '',
-  scopes: process.env.SCOPES?.split(',') || [],
-  appUrl: process.env.SHOPIFY_APP_URL || 'http://localhost:3000',
-  isEmbeddedApp: true,
-  sessionStorage: new PrismaSessionStorage(prisma),
-  restResources,
-});
+function getShopifyApp() {
+  if (!shopifyInstance) {
+    shopifyInstance = shopifyApp({
+      apiKey: process.env.SHOPIFY_API_KEY,
+      apiSecret: process.env.SHOPIFY_API_SECRET,
+      scopes: process.env.SCOPES?.split(','),
+      appUrl: process.env.SHOPIFY_APP_URL,
+      isEmbeddedApp: true,
+      sessionStorage: new PrismaSessionStorage(prisma),
+      restResources,
+    });
+  }
+  return shopifyInstance;
+}
+
+const shopify = new Proxy(
+  {},
+  {
+    get: (_target, prop) => {
+      const app = getShopifyApp();
+      return app[prop as keyof typeof app];
+    },
+  }
+) as ReturnType<typeof shopifyApp>;
 
 export default shopify;
 
-// Export all the necessary functions that the Shopify library provides
-export const authenticate = shopify.authenticate;
-export const login = shopify.login;
-export const unauthenticated = shopify.unauthenticated;
-export const registerWebhooks = shopify.registerWebhooks;
-export const addDocumentResponseHeaders = shopify.addDocumentResponseHeaders;
+// Export authentication functions
+export const authenticate = new Proxy(
+  {},
+  {
+    get: (_target, prop) => {
+      const app = getShopifyApp();
+      return app.authenticate[prop as keyof typeof app.authenticate];
+    },
+  }
+) as typeof shopify.authenticate;
+
+export const login = (request: Request) => {
+  return getShopifyApp().login(request);
+};
+
+export const unauthenticated = (request: Request) => {
+  return getShopifyApp().unauthenticated(request);
+};
+
+export const registerWebhooks = () => {
+  return getShopifyApp().registerWebhooks();
+};
+
+export const addDocumentResponseHeaders = (request: Request, response: Response) => {
+  return getShopifyApp().addDocumentResponseHeaders(request, response);
+};
 
 // Helper function to get the shopify instance
-export const getShopify = async () => shopify;
+export const getShopify = async () => getShopifyApp();

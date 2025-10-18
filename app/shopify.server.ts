@@ -22,6 +22,7 @@ const initializeShopifyApp = (context: AppLoadContext) => {
     isEmbeddedApp: true,
     sessionStorage: new PrismaSessionStorage(prisma),
     restResources,
+    useShopifyManagedInstallations: true,
   });
 };
 
@@ -94,5 +95,6 @@ export const getShopify = async () => {
     isEmbeddedApp: true,
     sessionStorage: new PrismaSessionStorage(prisma),
     restResources,
+    useShopifyManagedInstallations: true,
   });
 };

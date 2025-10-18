@@ -78,6 +78,11 @@ export default function ShopifyDashboard() {
   // We can use useTranslation because the parent app.tsx provides I18nextProvider
   const { t: clientT } = useTranslation('dashboard');
   const [isClientReady, setIsClientReady] = useState(false);
+
+  // --- DEBUGGING CODE ---
+  console.log('--- DEBUG: app._index.tsx (Page) is rendering! ---');
+  console.log('--- DEBUG: Loader data in app._index.tsx:', { shop, language, rtl });
+  // --- END DEBUGGING CODE ---
   const [isSetupExpanded, setIsSetupExpanded] = useState(true);
   const [showToast, setShowToast] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -697,10 +702,11 @@ export default function ShopifyDashboard() {
   // This component now returns the Page markup directly.
   // The Frame, AppProvider, and I18nextProvider are in the parent app.tsx.
   return (
-    <>
+    // --- DEBUGGING STYLE: GREEN BACKGROUND ---
+    <div style={{ backgroundColor: 'lightgreen', padding: '20px', border: '5px solid darkgreen' }}>
       {pageMarkup}
       {toastMarkup}
       {modalMarkup}
-    </>
+    </div>
   );
 }

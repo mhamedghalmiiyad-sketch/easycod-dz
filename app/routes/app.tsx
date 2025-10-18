@@ -51,6 +51,11 @@ function AppContent() {
   const { apiKey, shop, language, translations, rtl } = useLoaderData<typeof loader>();
   const [isClientReady, setIsClientReady] = useState(false);
 
+  // --- DEBUGGING CODE ---
+  console.log('--- DEBUG: app.tsx (Layout) is rendering! ---');
+  console.log('--- DEBUG: Loader data in app.tsx:', { apiKey, shop, language, rtl });
+  // --- END DEBUGGING CODE ---
+
   // Initialize client i18n with server data
   useEffect(() => {
     // Set App Bridge configuration in session storage
@@ -86,7 +91,8 @@ function AppContent() {
 
   return (
     <I18nextProvider i18n={clientI18n}>
-      <div style={{ height: '100vh' }} dir={rtl ? 'rtl' : 'ltr'}>
+      {/* --- DEBUGGING STYLE: RED BACKGROUND --- */}
+      <div style={{ height: '100vh', backgroundColor: 'lightcoral' }} dir={rtl ? 'rtl' : 'ltr'}>
         <AppProvider isEmbeddedApp apiKey={apiKey}>
           <NavMenu>
             <Link to="/app" rel="home">

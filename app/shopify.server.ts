@@ -1,16 +1,21 @@
-// ✅ CRITICAL FIX: Use dynamic imports to prevent build-time execution
+// ✅ FACTORY PATTERN: Use Prisma as context carrier to ensure lazy initialization
 let shopifyAppModule: any = null;
 let PrismaSessionStorageModule: any = null;
 let restResourcesModule: any = null;
-let dbModule: any = null;
 
-// Lazy initialization pattern to ensure env vars are available at runtime
-let cachedShopifyApp: any = null;
+// Cache instances by Prisma instance to avoid re-initialization
+const shopifyInstances = new WeakMap();
 
-async function getShopifyApp() {
-  // If already initialized, return cached instance
-  if (cachedShopifyApp) {
-    return cachedShopifyApp;
+/**
+ * Factory function to create Shopify app instance
+ * Uses Prisma as a context carrier to ensure environment variables are available
+ * @param prisma - Prisma instance for session storage
+ * @returns Shopify app instance
+ */
+export async function getShopifyInstance(prisma: any) {
+  // Return cached instance if available
+  if (shopifyInstances.has(prisma)) {
+    return shopifyInstances.get(prisma);
   }
 
   // Dynamic imports to prevent build-time execution
@@ -19,7 +24,6 @@ async function getShopifyApp() {
     shopifyAppModule = await import("@shopify/shopify-app-remix/server");
     PrismaSessionStorageModule = await import("@shopify/shopify-app-session-storage-prisma");
     restResourcesModule = await import("@shopify/shopify-api/rest/admin/2024-07");
-    dbModule = await import("./db.server");
   }
 
   // Get environment variables at runtime (not module load time)
@@ -47,14 +51,14 @@ async function getShopifyApp() {
   }
 
   // Initialize Shopify app with runtime environment variables
-  cachedShopifyApp = shopifyAppModule.shopifyApp({
+  const shopifyApp = shopifyAppModule.shopifyApp({
     apiKey,
     apiSecretKey: apiSecret,
     apiVersion: shopifyAppModule.LATEST_API_VERSION,
     scopes: scopes.split(','),
     appUrl,
     authPathPrefix: "/auth",
-    sessionStorage: new PrismaSessionStorageModule.PrismaSessionStorage(dbModule.default),
+    sessionStorage: new PrismaSessionStorageModule.PrismaSessionStorage(prisma),
     distribution: shopifyAppModule.AppDistribution.AppStore,
     restResources: restResourcesModule.restResources,
     webhooks: {
@@ -65,7 +69,7 @@ async function getShopifyApp() {
     },
     hooks: {
       afterAuth: async ({ session }: any) => {
-        const app = await getShopifyApp();
+        const app = await getShopifyInstance(prisma);
         app.registerWebhooks({ session });
       },
     },
@@ -77,56 +81,9 @@ async function getShopifyApp() {
       : {}),
   });
 
-  return cachedShopifyApp;
-}
-
-// ✅ Export async getters that lazily initialize the app
-const shopify = {
-  get authenticate() {
-    return getShopifyApp().then(app => app.authenticate);
-  },
-  get unauthenticated() {
-    return getShopifyApp().then(app => app.unauthenticated);
-  },
-  get login() {
-    return getShopifyApp().then(app => app.login);
-  },
-  get registerWebhooks() {
-    return getShopifyApp().then(app => app.registerWebhooks);
-  },
-  get addDocumentResponseHeaders() {
-    return getShopifyApp().then(app => (request: Request, responseHeaders: Headers) => {
-      return app.addDocumentResponseHeaders(request, responseHeaders);
-    });
-  },
-};
-
-export default shopify;
-
-// ✅ Export async functions for use in routes
-export async function getAuthenticate() {
-  const app = await getShopifyApp();
-  return app.authenticate;
-}
-
-export async function getUnauthenticated() {
-  const app = await getShopifyApp();
-  return app.unauthenticated;
-}
-
-export async function getLogin() {
-  const app = await getShopifyApp();
-  return app.login;
-}
-
-export async function getRegisterWebhooks() {
-  const app = await getShopifyApp();
-  return app.registerWebhooks;
-}
-
-export async function getAddDocumentResponseHeaders() {
-  const app = await getShopifyApp();
-  return app.addDocumentResponseHeaders;
+  // Cache the instance
+  shopifyInstances.set(prisma, shopifyApp);
+  return shopifyApp;
 }
 
 // ✅ Export API version as a constant

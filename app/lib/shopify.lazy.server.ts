@@ -1,38 +1,37 @@
-// app/lib/shopify.lazy.server.ts
-// Lazy loader for Shopify app initialization to prevent build-time environment variable issues
+/**
+ * Lazy loader for Shopify authenticate function
+ * This ensures environment variables are available when the function is called
+ */
+import prisma from "../db.server";
 
-export async function getShopifyInstance() {
-  try {
-    const { default: shopify } = await import("../shopify.server");
-    return shopify;
-  } catch (error) {
-    console.error("Failed to load Shopify instance:", error);
-    throw error;
-  }
-}
+let cachedAuthenticate: any = null;
 
-// Convenience functions for common Shopify operations
+/**
+ * Get the Shopify authenticate function
+ * This is called inside route loaders to ensure env vars are available
+ */
 export async function getAuthenticate() {
-  const shopify = await getShopifyInstance();
-  return await shopify.authenticate;
-}
+  // Return cached if already initialized
+  if (cachedAuthenticate) {
+    return cachedAuthenticate;
+  }
 
-export async function getUnauthenticated() {
-  const shopify = await getShopifyInstance();
-  return await shopify.unauthenticated;
-}
-
-export async function getLogin() {
-  const shopify = await getShopifyInstance();
-  return await shopify.login;
-}
-
-export async function getRegisterWebhooks() {
-  const shopify = await getShopifyInstance();
-  return await shopify.registerWebhooks;
-}
-
-export async function getAddDocumentResponseHeaders() {
-  const shopify = await getShopifyInstance();
-  return await shopify.addDocumentResponseHeaders;
+  try {
+    // Import the Shopify instance factory
+    const { getShopifyInstance } = await import("../shopify.server");
+    
+    // Get the Shopify app instance (passes Prisma for session storage)
+    const shopifyApp = await getShopifyInstance(prisma);
+    
+    // Cache and return the authenticate function
+    cachedAuthenticate = shopifyApp.authenticate;
+    
+    console.log("✅ Shopify authenticate function loaded");
+    return cachedAuthenticate;
+  } catch (error) {
+    console.error("❌ Failed to load Shopify authenticate:", error);
+    throw new Error(
+      `Shopify initialization failed: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
 }

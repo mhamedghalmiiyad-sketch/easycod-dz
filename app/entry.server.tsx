@@ -21,41 +21,66 @@ export default async function handleRequest(
     ? "onAllReady"
     : "onShellReady";
 
-  // --- THIS IS THE UPDATED FUNCTION CALL ---
-  // We no longer pass the context, as the function now uses process.env
-  addDocumentResponseHeaders(request, responseHeaders);
-  // --- END OF UPDATED FUNCTION CALL ---
+  // Add CSP headers (this part is now correct)
+  try {
+    addDocumentResponseHeaders(request, responseHeaders);
+    console.log("--- DEBUG: CSP Headers added successfully in entry.server.tsx ---");
+  } catch (headerError) {
+    console.error("--- FATAL ERROR setting CSP headers in entry.server.tsx ---:", headerError);
+    // Continue attempting to render, but log the critical header failure
+  }
 
   return new Promise((resolve, reject) => {
+    let didError = false; // Flag to track if an error occurred
+
+    console.log(`--- DEBUG: Starting renderToPipeableStream with callback: ${callbackName} ---`);
+
     const { pipe, abort } = renderToPipeableStream(
       <RemixServer
         context={remixContext}
         url={request.url}
+        abortDelay={streamTimeout} // Use abortDelay
       />,
       {
         [callbackName]: () => {
+          console.log(`--- DEBUG: ${callbackName} callback triggered. Status: ${didError ? 'Error' : 'Success'} ---`);
           const body = new PassThrough();
           const stream = createReadableStreamFromReadable(body);
 
           responseHeaders.set("Content-Type", "text/html");
+          console.log(`--- DEBUG: Resolving response with status: ${responseStatusCode} ---`);
           resolve(
             new Response(stream, {
               headers: responseHeaders,
-              status: responseStatusCode,
+              status: didError ? 500 : responseStatusCode, // Use 500 if error occurred
             })
           );
           pipe(body);
         },
-        onShellError(error) {
-          reject(error);
+        onShellError: (error: unknown) => {
+          didError = true;
+          console.error("--- FATAL ERROR: onShellError in renderToPipeableStream ---");
+          console.error(error); // Log the actual error object
+          reject(error); // Reject the promise to indicate failure
         },
-        onError(error) {
-          responseStatusCode = 500;
-          console.error(error);
+        onError: (error: unknown) => {
+          didError = true;
+          // Log the error, but don't necessarily reject - onShellError usually handles fatal errors
+          // This might catch hydration errors or errors within suspense boundaries
+          console.error("--- ERROR: onError in renderToPipeableStream ---");
+          console.error(error); // Log the actual error object
+          // Update status code if it wasn't already set by a loader error
+          if (responseStatusCode === 200) {
+              responseStatusCode = 500;
+          }
         },
       }
     );
 
-    setTimeout(abort, streamTimeout + 1000);
+    // Keep the timeout, but log if it triggers
+    setTimeout(() => {
+        console.warn("--- WARNING: SSR Stream timeout reached. Aborting render. ---");
+        abort();
+    }, streamTimeout + 1000);
   });
 }

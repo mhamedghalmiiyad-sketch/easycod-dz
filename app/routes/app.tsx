@@ -137,6 +137,21 @@ export default function App() {
 export function ErrorBoundary() {
   return boundary.error(useRouteError());
 }
-export const headers: HeadersFunction = (headersArgs) => {
-  return boundary.headers(headersArgs);
-};
+
+// --- TEMPORARILY COMMENT OUT THIS EXPORT ---
+// export const headers: HeadersFunction = (headersArgs) => {
+//   console.log("--- DEBUG: Shopify boundary.headers function called ---"); // Add log
+//   try {
+//       // Check if error exists on headersArgs and log it
+//       if ((headersArgs as any).error) {
+//           console.warn("--- WARNING: boundary.headers received an error object ---", (headersArgs as any).error);
+//       }
+//       const shopifyHeaders = boundary.headers(headersArgs);
+//       console.log("--- DEBUG: Shopify boundary.headers result:", shopifyHeaders);
+//       return shopifyHeaders;
+//   } catch (e) {
+//       console.error("--- ERROR in boundary.headers ---", e);
+//       return new Headers(); // Return default headers on error
+//   }
+// };
+// --- END TEMPORARY COMMENT OUT ---

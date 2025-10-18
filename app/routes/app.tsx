@@ -37,6 +37,7 @@ export const loader = async (args: LoaderFunctionArgs) => {
 
     console.log("--- DEBUG: app.tsx loader finished successfully! ---");
 
+    // Success response defaults to 200 OK
     return json({
       apiKey: process.env.SHOPIFY_API_KEY || "",
       shop: session.shop,
@@ -50,8 +51,9 @@ export const loader = async (args: LoaderFunctionArgs) => {
     // This block catches errors thrown by authenticate.admin
     if (error instanceof Response && error.status === 410) {
       // This is our specific, known bug on initial load.
-      console.warn("--- HANDLED: Caught 410 Gone error on initial load. Rendering app shell. ---");
+      console.warn("--- HANDLED: Caught 410 Gone error on initial load. Rendering app shell with STATUS 200. ---");
       // Return dummy data so the app shell can render without crashing.
+      // --- CRITICAL FIX: EXPLICITLY SET STATUS 200 ---
       return json({
         apiKey: process.env.SHOPIFY_API_KEY || "",
         shop: null, // No shop available
@@ -59,7 +61,8 @@ export const loader = async (args: LoaderFunctionArgs) => {
         translations: {},
         rtl: false,
         error: "410_AUTHENTICATION_PENDING", // Send an error flag to the client
-      });
+      }, { status: 200 }); // <-- Force 200 OK status
+      // --- END CRITICAL FIX ---
     }
     
     // If it's a different error (e.g., a real redirect), re-throw it.

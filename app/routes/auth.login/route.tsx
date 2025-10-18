@@ -1,12 +1,13 @@
-import { json, redirect, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
+import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
 import { getShopify } from '~/shopify.server';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const url = new URL(request.url);
+  const shopify = await getShopify();
   
-  // If already has shop parameter, start the OAuth flow
+  // If shop parameter exists, start the login flow
+  const url = new URL(request.url);
   if (url.searchParams.has('shop')) {
-    return redirect(`/auth?shop=${url.searchParams.get('shop')}`);
+    return shopify.login(request);
   }
 
   return json({ message: 'Enter your store URL' });
@@ -24,7 +25,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return json({ error: 'Shop parameter is required' }, { status: 400 });
   }
 
-  return redirect(`/auth?shop=${shop}`);
+  // Redirect with shop parameter, which will trigger the loader
+  const url = new URL(request.url);
+  url.searchParams.set('shop', shop);
+  
+  const shopify = await getShopify();
+  return shopify.login(new Request(url.toString(), request));
 };
 
 export default function LoginPage() {
@@ -39,6 +45,8 @@ export default function LoginPage() {
             name="shop"
             placeholder="mystore.myshopify.com"
             required
+            pattern=".*\.myshopify\.com"
+            title="Please enter a valid Shopify store URL"
             style={{
               padding: '0.75rem',
               fontSize: '1rem',

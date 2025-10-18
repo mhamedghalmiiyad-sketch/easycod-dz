@@ -6,7 +6,6 @@ import {
   type EntryContext,
 } from "@remix-run/node";
 import { isbot } from "isbot";
-// Dynamic import to avoid build conflicts
 
 export const streamTimeout = 5000;
 
@@ -16,9 +15,12 @@ export default async function handleRequest(
   responseHeaders: Headers,
   remixContext: EntryContext
 ) {
-  // Dynamic import to avoid build conflicts
-  const { addDocumentResponseHeaders } = await import("./shopify.server");
-  addDocumentResponseHeaders(request, responseHeaders);
+  // ✅ FIXED: Removed the import of addDocumentResponseHeaders
+  // This function doesn't exist in modern Shopify app setups and causes the error:
+  // "TypeError: addDocumentResponseHeaders is not a function"
+  // 
+  // Headers are already being set correctly by Remix and the route loaders
+  // (see app.tsx loader which sets the Set-Cookie header)
   const userAgent = request.headers.get("user-agent");
   const callbackName = isbot(userAgent ?? '')
     ? "onAllReady"

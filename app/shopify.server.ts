@@ -27,10 +27,72 @@ const initializeShopifyApp = (context: AppLoadContext) => {
 
 // We create a new authenticate object with methods that accept the full loader arguments.
 export const authenticate = {
-  admin: async ({ request, context }: LoaderFunctionArgs | ActionFunctionArgs) => {
-    const shopify = initializeShopifyApp(context);
-    return await shopify.authenticate.admin(request);
+  admin: async (args: LoaderFunctionArgs | ActionFunctionArgs) => {
+    const shopify = initializeShopifyApp(args.context);
+    return await shopify.authenticate.admin(args.request);
   },
-  // You can add public authentication here if needed later
-  // public: async ({ request, context }: LoaderFunctionArgs | ActionFunctionArgs) => { ... }
+};
+
+// --- THIS IS THE FIX ---
+// We re-export the login function using the new per-request pattern.
+// It now also needs the 'context' to initialize correctly.
+export const login = async (args: LoaderFunctionArgs | ActionFunctionArgs) => {
+  const shopify = initializeShopifyApp(args.context);
+  return await shopify.login(args.request);
+};
+
+// Export other required functions using the new pattern
+export const unauthenticated = {
+  admin: async (shop: string) => {
+    // For unauthenticated admin, we need to create a shopify instance
+    // but we don't have context here, so we'll need to get env vars differently
+    const env = {
+      SHOPIFY_API_KEY: process.env.SHOPIFY_API_KEY,
+      SHOPIFY_API_SECRET: process.env.SHOPIFY_API_SECRET,
+      SCOPES: process.env.SCOPES,
+      SHOPIFY_APP_URL: process.env.SHOPIFY_APP_URL,
+    };
+
+    if (!env.SHOPIFY_API_KEY || !env.SHOPIFY_API_SECRET || !env.SCOPES || !env.SHOPIFY_APP_URL) {
+      throw new Error("Missing Shopify environment variables for unauthenticated admin.");
+    }
+    
+    const shopify = shopifyApp({
+      apiKey: env.SHOPIFY_API_KEY,
+      apiSecretKey: env.SHOPIFY_API_SECRET,
+      scopes: env.SCOPES.split(","),
+      appUrl: env.SHOPIFY_APP_URL,
+      isEmbeddedApp: true,
+      sessionStorage: new PrismaSessionStorage(prisma),
+      restResources,
+    });
+    
+    return await shopify.unauthenticated.admin(shop);
+  }
+};
+
+// Helper function to get the shopify instance (for backward compatibility)
+export const getShopify = async () => {
+  // This is a bit tricky since we don't have context here
+  // We'll create a minimal instance for backward compatibility
+  const env = {
+    SHOPIFY_API_KEY: process.env.SHOPIFY_API_KEY,
+    SHOPIFY_API_SECRET: process.env.SHOPIFY_API_SECRET,
+    SCOPES: process.env.SCOPES,
+    SHOPIFY_APP_URL: process.env.SHOPIFY_APP_URL,
+  };
+
+  if (!env.SHOPIFY_API_KEY || !env.SHOPIFY_API_SECRET || !env.SCOPES || !env.SHOPIFY_APP_URL) {
+    throw new Error("Missing Shopify environment variables for getShopify.");
+  }
+  
+  return shopifyApp({
+    apiKey: env.SHOPIFY_API_KEY,
+    apiSecretKey: env.SHOPIFY_API_SECRET,
+    scopes: env.SCOPES.split(","),
+    appUrl: env.SHOPIFY_APP_URL,
+    isEmbeddedApp: true,
+    sessionStorage: new PrismaSessionStorage(prisma),
+    restResources,
+  });
 };

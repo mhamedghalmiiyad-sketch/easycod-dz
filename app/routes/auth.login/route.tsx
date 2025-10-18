@@ -5,19 +5,21 @@ import { login } from '~/shopify.server';
  * Login route handler
  * This route MUST use shopify.login() not shopify.authenticate.admin()
  */
-export const loader = async ({ request }: LoaderFunctionArgs) => {
+export const loader = async (args: LoaderFunctionArgs) => {
+  const { request } = args;
   const url = new URL(request.url);
   
   // If shop parameter exists in URL, initiate login flow
   if (url.searchParams.has('shop')) {
-    return login(request);
+    return login(args);
   }
 
   // Otherwise show the login form
   return json({ ok: true });
 };
 
-export const action = async ({ request }: ActionFunctionArgs) => {
+export const action = async (args: ActionFunctionArgs) => {
+  const { request } = args;
   if (request.method !== 'POST') {
     return json({ error: 'Method not allowed' }, { status: 405 });
   }
@@ -33,7 +35,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const url = new URL(request.url);
   url.searchParams.set('shop', shop);
   
-  return login(new Request(url.toString(), request));
+  // Create new args object with the modified request
+  const modifiedArgs = {
+    ...args,
+    request: new Request(url.toString(), request)
+  };
+  
+  return login(modifiedArgs);
 };
 
 export default function LoginPage() {

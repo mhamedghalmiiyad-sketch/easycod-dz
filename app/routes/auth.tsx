@@ -1,16 +1,15 @@
 import { redirect, type LoaderFunctionArgs } from '@remix-run/node';
-import { getShopify } from '~/shopify.server';
+import { authenticate } from '~/shopify.server';
 
 /**
  * This route handles the OAuth callback from Shopify
  * After the user authorizes the app on Shopify, they get redirected here
  */
-export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const shopify = await getShopify();
-  const { admin } = await shopify.authenticate.admin(request);
+export const loader = async (args: LoaderFunctionArgs) => {
+  const { session } = await authenticate.admin(args);
 
-  // If we have an admin session, redirect to the app
-  if (admin) {
+  // If we have a session, redirect to the app
+  if (session) {
     return redirect('/app');
   }
 

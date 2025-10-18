@@ -6,7 +6,7 @@ import {
   type EntryContext,
 } from "@remix-run/node";
 import { isbot } from "isbot";
-import { addDocumentResponseHeaders } from "./shopify.server"; // <-- NEW IMPORT
+import { addDocumentResponseHeaders } from "./shopify.server";
 
 export const streamTimeout = 5000;
 
@@ -21,11 +21,10 @@ export default async function handleRequest(
     ? "onAllReady"
     : "onShellReady";
 
-  // --- THIS IS THE NEWLY ADDED FUNCTION CALL ---
-  // This adds the critical Content-Security-Policy headers that allow
-  // the app to be rendered within the Shopify Admin iframe.
-  addDocumentResponseHeaders(request, responseHeaders, remixContext as any);
-  // --- END OF NEW FUNCTION CALL ---
+  // --- THIS IS THE UPDATED FUNCTION CALL ---
+  // We no longer pass the context, as the function now uses process.env
+  addDocumentResponseHeaders(request, responseHeaders);
+  // --- END OF UPDATED FUNCTION CALL ---
 
   return new Promise((resolve, reject) => {
     const { pipe, abort } = renderToPipeableStream(
@@ -57,8 +56,6 @@ export default async function handleRequest(
       }
     );
 
-    // Automatically timeout the React renderer after 6 seconds, which ensures
-    // React has enough time to flush down the rejected boundary contents
     setTimeout(abort, streamTimeout + 1000);
   });
 }

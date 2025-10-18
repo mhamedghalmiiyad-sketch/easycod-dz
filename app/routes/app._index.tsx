@@ -37,16 +37,20 @@ import {
 import { MessageCircle, Mail } from 'lucide-react';
 import enTranslations from '@shopify/polaris/locales/en.json';
 import frTranslations from '@shopify/polaris/locales/fr.json';
-import { useTranslations } from '../hooks/useTranslations';
+// import { useTranslations } from '../hooks/useTranslations'; // <-- This was unused
 import { useTranslation } from 'react-i18next';
 import { LanguageSelector } from '../components/LanguageSelector';
 import { getLanguageFromRequest, getTranslations, isRTL, saveLanguagePreference } from '../utils/i18n.server';
 import clientI18n from '../utils/i18n.client';
+import { authenticate } from "../shopify.server"; // <-- THIS IS THE CORRECT IMPORT
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const { getAuthenticate } = await import("../lib/shopify.lazy.server");
-  const authenticate = await getAuthenticate();
-  const { session } = await authenticate.admin(request);
+// --- THIS IS THE FIXED LOADER ---
+export const loader = async (args: LoaderFunctionArgs) => {
+  // We pass the full 'args' object to authenticate
+  const { session } = await authenticate.admin(args);
+  
+  // Destructure request after authentication
+  const { request } = args;
   
   // Get language and translations (check database first, then URL params)
   const language = await getLanguageFromRequest(request, session.id);

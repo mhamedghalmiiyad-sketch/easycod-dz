@@ -13,39 +13,25 @@ import { authenticate } from "../shopify.server";
 
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
+// --- TEMPORARY DEBUGGING LOADER ---
 export const loader = async (args: LoaderFunctionArgs) => {
-  // --- THIS IS THE FIX ---
-  // We now pass the entire `args` object ({ request, context })
-  // to our new authentication function.
+  // We still authenticate to protect the route
   const { session } = await authenticate.admin(args);
-  // --- END FIX ---
-
-  const { request } = args;
-  const language = await getLanguageFromRequest(request, session.id);
-  const translations = await getTranslations(language);
-  const rtl = isRTL(language);
   
-  const url = new URL(request.url);
-  const langParam = url.searchParams.get('lang');
-  if (langParam && ['en', 'ar', 'fr'].includes(langParam)) {
-    try {
-      await saveLanguagePreference(session.id, langParam);
-    } catch (error) {
-      console.warn('Failed to save language preference:', error);
-    }
-  }
-  
-  const headers = new Headers();
-  headers.set('Set-Cookie', `i18nextLng=${language}; Path=/; Max-Age=31536000; SameSite=Lax`);
+  console.log(`--- DEBUG: Loader in ${args.request.url} finished authentication. Session Shop: ${session.shop}`);
 
+  // Return minimal data, removing all i18n calls
   return json({ 
-    apiKey: process.env.SHOPIFY_API_KEY || "", // This is for the client-side AppProvider, it's safe.
+    // We only need apiKey for AppProvider in app.tsx
+    apiKey: process.env.SHOPIFY_API_KEY || "", 
     shop: session.shop,
-    language,
-    translations,
-    rtl,
-  }, { headers });
+    // Add dummy values for other props to avoid component errors
+    language: 'en', 
+    translations: {}, 
+    rtl: false,
+  }); 
 };
+// --- END TEMPORARY DEBUGGING LOADER ---
 
 function AppContent() {
   const { apiKey, shop, language, translations, rtl } = useLoaderData<typeof loader>();

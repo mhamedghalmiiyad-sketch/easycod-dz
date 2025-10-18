@@ -33,41 +33,25 @@ import { getLanguageFromRequest, getTranslations, isRTL, saveLanguagePreference 
 import clientI18n from '../utils/i18n.client'; // Keep this, it's used by the parent
 import { authenticate } from "../shopify.server";
 
-// --- THIS IS THE FIXED LOADER ---
+// --- TEMPORARY DEBUGGING LOADER ---
 export const loader = async (args: LoaderFunctionArgs) => {
-  // We pass the full 'args' object to authenticate
+  // We still authenticate to protect the route
   const { session } = await authenticate.admin(args);
   
-  // Destructure request after authentication
-  const { request } = args;
-  
-  // Get language and translations (check database first, then URL params)
-  const language = await getLanguageFromRequest(request, session.id);
-  const translations = await getTranslations(language);
-  const rtl = isRTL(language);
-  
-  // Save language preference to database if it came from URL parameter
-  const url = new URL(request.url);
-  const langParam = url.searchParams.get('lang');
-  if (langParam && ['en', 'ar', 'fr'].includes(langParam)) {
-    try {
-      await saveLanguagePreference(session.id, langParam);
-    } catch (error) {
-      console.warn('Failed to save language preference:', error);
-    }
-  }
-  
-  // Set cookie for language persistence
-  const headers = new Headers();
-  headers.set('Set-Cookie', `i18nextLng=${language}; Path=/; Max-Age=31536000; SameSite=Lax`);
-  
+  console.log(`--- DEBUG: Loader in ${args.request.url} finished authentication. Session Shop: ${session.shop}`);
+
+  // Return minimal data, removing all i18n calls
   return json({ 
+    // We only need apiKey for AppProvider in app.tsx
+    apiKey: process.env.SHOPIFY_API_KEY || "", 
     shop: session.shop,
-    language,
-    translations,
-    rtl,
-  }, { headers });
+    // Add dummy values for other props to avoid component errors
+    language: 'en', 
+    translations: {}, 
+    rtl: false,
+  }); 
 };
+// --- END TEMPORARY DEBUGGING LOADER ---
 
 // --- THIS IS THE FIXED COMPONENT ---
 // We've removed the redundant AppProvider, I18nextProvider, and Frame.
@@ -109,7 +93,7 @@ export default function ShopifyDashboard() {
   const t = (key: string) => {
     if (!isClientReady) {
       // Use server-side translation during initial render
-      return translations.dashboard?.[key] || key;
+      return (translations as any).dashboard?.[key] || key;
     }
     return clientT(key);
   };

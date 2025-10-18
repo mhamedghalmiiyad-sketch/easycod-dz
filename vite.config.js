@@ -53,13 +53,24 @@ export default defineConfig({
     target: 'node18',
     rollupOptions: {
       input: undefined,
+      // ✅ CRITICAL: Exclude shopify packages from tree-shaking/inlining
       external: (id) => {
-        // Externalize i18next dependencies for SSR
-        if (id.includes('i18next-fs-backend') || id.includes('i18next-http-middleware')) {
+        // Externalize packages that need runtime env vars
+        if (
+          id.includes('@shopify/shopify-app-remix') ||
+          id.includes('@shopify/shopify-app-session-storage-prisma') ||
+          id.includes('@shopify/shopify-api') ||
+          id.includes('i18next-fs-backend') ||
+          id.includes('i18next-http-middleware')
+        ) {
           return true;
         }
         return false;
       },
+    },
+    // ✅ CRITICAL: Don't inline environment variables
+    commonjsOptions: {
+      transformMixedEsm: true,
     },
   },
   optimizeDeps: {
@@ -74,5 +85,11 @@ export default defineConfig({
   },
   define: {
     global: "globalThis",
+    // ✅ CRITICAL: Don't define env vars at build time
+    // Remove any hardcoded env vars here
+  },
+  // ✅ CRITICAL: Ensure SSR build uses runtime env vars
+  ssr: {
+    noExternal: [],
   },
 });

@@ -14,25 +14,25 @@ export async function getShopifyInstance() {
 // Convenience functions for common Shopify operations
 export async function getAuthenticate() {
   const shopify = await getShopifyInstance();
-  return shopify.authenticate;
+  return await shopify.authenticate;
 }
 
 export async function getUnauthenticated() {
   const shopify = await getShopifyInstance();
-  return shopify.unauthenticated;
+  return await shopify.unauthenticated;
 }
 
 export async function getLogin() {
   const shopify = await getShopifyInstance();
-  return shopify.login;
+  return await shopify.login;
 }
 
 export async function getRegisterWebhooks() {
   const shopify = await getShopifyInstance();
-  return shopify.registerWebhooks;
+  return await shopify.registerWebhooks;
 }
 
 export async function getAddDocumentResponseHeaders() {
   const shopify = await getShopifyInstance();
-  return shopify.addDocumentResponseHeaders;
+  return await shopify.addDocumentResponseHeaders;
 }

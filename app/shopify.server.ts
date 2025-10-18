@@ -1,96 +1,133 @@
-// Import the adapter - using dynamic import to prevent build-time execution issues
-await import("@shopify/shopify-app-remix/adapters/node");
+// ✅ CRITICAL FIX: Use dynamic imports to prevent build-time execution
+let shopifyAppModule: any = null;
+let PrismaSessionStorageModule: any = null;
+let restResourcesModule: any = null;
+let dbModule: any = null;
 
-import {
-  AppDistribution,
-  DeliveryMethod,
-  shopifyApp,
-  LATEST_API_VERSION,
-} from "@shopify/shopify-app-remix/server";
-import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prisma";
-import { restResources } from "@shopify/shopify-api/rest/admin/2024-07";
-import db from "./db.server";
+// Lazy initialization pattern to ensure env vars are available at runtime
+let cachedShopifyApp: any = null;
 
-// Lazy initialization pattern to avoid environment variable validation at import time
-let shopifyInstance: ReturnType<typeof shopifyApp> | null = null;
-
-function getShopifyApp() {
-  if (!shopifyInstance) {
-    // Validate environment variables when the app is first accessed
-    // Use more defensive checks to handle build-time scenarios
-    const apiKey = process.env.SHOPIFY_API_KEY;
-    const apiSecret = process.env.SHOPIFY_API_SECRET;
-    const scopes = process.env.SCOPES;
-    
-    if (!apiKey || apiKey.trim() === '') {
-      throw new Error("SHOPIFY_API_KEY environment variable is required");
-    }
-    if (!apiSecret || apiSecret.trim() === '') {
-      throw new Error("SHOPIFY_API_SECRET environment variable is required");
-    }
-    if (!scopes || scopes.trim() === '') {
-      throw new Error("SCOPES environment variable is required");
-    }
-
-    shopifyInstance = shopifyApp({
-      apiKey: apiKey,
-      apiSecretKey: apiSecret,
-      apiVersion: LATEST_API_VERSION,
-      scopes: scopes.split(","),
-      appUrl: process.env.SHOPIFY_APP_URL || "https://easycod-dz-1.onrender.com",
-      authPathPrefix: "/auth",
-      sessionStorage: new PrismaSessionStorage(db),
-      distribution: AppDistribution.AppStore,
-      restResources,
-      webhooks: {
-        APP_UNINSTALLED: {
-          deliveryMethod: DeliveryMethod.Http,
-          callbackUrl: "/webhooks",
-        },
-      },
-      hooks: {
-        afterAuth: async ({ session }) => {
-          getShopifyApp().registerWebhooks({ session });
-        },
-      },
-      future: {
-        unstable_newEmbeddedAuthStrategy: true,
-      },
-      ...(process.env.SHOP_CUSTOM_DOMAIN
-        ? { customShopDomains: [process.env.SHOP_CUSTOM_DOMAIN] }
-        : {}),
-    });
+async function getShopifyApp() {
+  // If already initialized, return cached instance
+  if (cachedShopifyApp) {
+    return cachedShopifyApp;
   }
-  return shopifyInstance;
+
+  // Dynamic imports to prevent build-time execution
+  if (!shopifyAppModule) {
+    await import("@shopify/shopify-app-remix/adapters/node");
+    shopifyAppModule = await import("@shopify/shopify-app-remix/server");
+    PrismaSessionStorageModule = await import("@shopify/shopify-app-session-storage-prisma");
+    restResourcesModule = await import("@shopify/shopify-api/rest/admin/2024-07");
+    dbModule = await import("./db.server");
+  }
+
+  // Get environment variables at runtime (not module load time)
+  const apiKey = process.env.SHOPIFY_API_KEY;
+  const apiSecret = process.env.SHOPIFY_API_SECRET;
+  const appUrl = process.env.SHOPIFY_APP_URL || 'https://easycod-dz-1.onrender.com';
+  const scopes = process.env.SCOPES;
+  const sessionSecret = process.env.SESSION_SECRET;
+
+  // Validate that all required variables are present
+  if (!apiKey) {
+    throw new Error('SHOPIFY_API_KEY environment variable is required');
+  }
+  if (!apiSecret) {
+    throw new Error('SHOPIFY_API_SECRET environment variable is required');
+  }
+  if (!appUrl) {
+    throw new Error('SHOPIFY_APP_URL environment variable is required');
+  }
+  if (!scopes) {
+    throw new Error('SCOPES environment variable is required');
+  }
+  if (!sessionSecret) {
+    throw new Error('SESSION_SECRET environment variable is required');
+  }
+
+  // Initialize Shopify app with runtime environment variables
+  cachedShopifyApp = shopifyAppModule.shopifyApp({
+    apiKey,
+    apiSecretKey: apiSecret,
+    apiVersion: shopifyAppModule.LATEST_API_VERSION,
+    scopes: scopes.split(','),
+    appUrl,
+    authPathPrefix: "/auth",
+    sessionStorage: new PrismaSessionStorageModule.PrismaSessionStorage(dbModule.default),
+    distribution: shopifyAppModule.AppDistribution.AppStore,
+    restResources: restResourcesModule.restResources,
+    webhooks: {
+      APP_UNINSTALLED: {
+        deliveryMethod: shopifyAppModule.DeliveryMethod.Http,
+        callbackUrl: "/webhooks",
+      },
+    },
+    hooks: {
+      afterAuth: async ({ session }: any) => {
+        const app = await getShopifyApp();
+        app.registerWebhooks({ session });
+      },
+    },
+    future: {
+      unstable_newEmbeddedAuthStrategy: true,
+    },
+    ...(process.env.SHOP_CUSTOM_DOMAIN
+      ? { customShopDomains: [process.env.SHOP_CUSTOM_DOMAIN] }
+      : {}),
+  });
+
+  return cachedShopifyApp;
 }
 
-// Export a getter that returns the shopify instance
+// ✅ Export async getters that lazily initialize the app
 const shopify = {
   get authenticate() {
-    return getShopifyApp().authenticate;
+    return getShopifyApp().then(app => app.authenticate);
   },
   get unauthenticated() {
-    return getShopifyApp().unauthenticated;
+    return getShopifyApp().then(app => app.unauthenticated);
   },
   get login() {
-    return getShopifyApp().login;
+    return getShopifyApp().then(app => app.login);
   },
   get registerWebhooks() {
-    return getShopifyApp().registerWebhooks;
+    return getShopifyApp().then(app => app.registerWebhooks);
   },
   get addDocumentResponseHeaders() {
-    return (request: Request, responseHeaders: Headers) => {
-      return getShopifyApp().addDocumentResponseHeaders(request, responseHeaders);
-    };
+    return getShopifyApp().then(app => (request: Request, responseHeaders: Headers) => {
+      return app.addDocumentResponseHeaders(request, responseHeaders);
+    });
   },
 };
 
 export default shopify;
-export const apiVersion = LATEST_API_VERSION;
 
-// Lazy getters to prevent build-time evaluation
-export const addDocumentResponseHeaders = shopify.addDocumentResponseHeaders;
-export const authenticate = shopify.authenticate;
-export const unauthenticated = shopify.unauthenticated;
-export const login = shopify.login;
-export const registerWebhooks = shopify.registerWebhooks;
+// ✅ Export async functions for use in routes
+export async function getAuthenticate() {
+  const app = await getShopifyApp();
+  return app.authenticate;
+}
+
+export async function getUnauthenticated() {
+  const app = await getShopifyApp();
+  return app.unauthenticated;
+}
+
+export async function getLogin() {
+  const app = await getShopifyApp();
+  return app.login;
+}
+
+export async function getRegisterWebhooks() {
+  const app = await getShopifyApp();
+  return app.registerWebhooks;
+}
+
+export async function getAddDocumentResponseHeaders() {
+  const app = await getShopifyApp();
+  return app.addDocumentResponseHeaders;
+}
+
+// ✅ Export API version as a constant
+export const apiVersion = "2024-07";

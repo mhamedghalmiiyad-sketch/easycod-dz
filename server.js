@@ -70,6 +70,7 @@ async function startServer() {
   // Check SHOPIFY_APP_URL with fallback
   if (!process.env.SHOPIFY_APP_URL) {
     console.log("⚠️ SHOPIFY_APP_URL not set, using fallback: https://easycod-dz-1.onrender.com");
+    process.env.SHOPIFY_APP_URL = "https://easycod-dz-1.onrender.com";
   } else {
     console.log(`✅ SHOPIFY_APP_URL is set: ${process.env.SHOPIFY_APP_URL}`);
   }
@@ -164,13 +165,21 @@ async function startServer() {
 
   // Health check endpoint for Render
   app.get("/health", (req, res) => {
-    res.status(200).json({ 
-      status: "ok", 
+    const hasEnvVars = !!(
+      process.env.SHOPIFY_API_KEY &&
+      process.env.SHOPIFY_API_SECRET &&
+      process.env.SCOPES &&
+      process.env.SESSION_SECRET
+    );
+    
+    res.status(hasEnvVars ? 200 : 503).json({ 
+      status: hasEnvVars ? "ok" : "degraded", 
       timestamp: new Date().toISOString(),
       port: port,
       environment: process.env.NODE_ENV,
       version: process.env.npm_package_version || "1.0.0",
-      uptime: process.uptime()
+      uptime: process.uptime(),
+      envVarsPresent: hasEnvVars
     });
   });
 

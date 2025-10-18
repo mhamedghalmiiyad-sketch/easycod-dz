@@ -8,13 +8,22 @@ import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
 // Keep Polaris styles linked
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
-// Minimal loader - just authenticate and return the shop
+// --- FINAL DEBUGGING LOADER (NO AUTH) ---
 export const loader = async (args: LoaderFunctionArgs) => {
-  const { session } = await authenticate.admin(args);
-  console.log(`--- DEBUG: Simplified app.tsx loader ran. Shop: ${session.shop}`);
-  // Only return the shop, which is essential for some basic App Bridge functions
-  return json({ shop: session.shop });
+  console.log(`--- DEBUG: Loader in ${args.request.url} running WITHOUT authentication ---`);
+
+  // TEMPORARILY COMMENTED OUT: await authenticate.admin(args);
+
+  // Return minimal dummy data
+  return json({
+    apiKey: process.env.SHOPIFY_API_KEY || "DUMMY_API_KEY", // Provide dummy key
+    shop: "dummy-shop.myshopify.com", // Provide dummy shop
+    language: 'en',
+    translations: {},
+    rtl: false,
+  });
 };
+// --- END FINAL DEBUGGING LOADER ---
 
 // Radically simplified component
 export default function App() {

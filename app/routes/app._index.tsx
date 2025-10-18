@@ -2,12 +2,22 @@ import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { authenticate } from "../shopify.server";
 
-// Minimal loader for the index page
+// --- FINAL DEBUGGING LOADER (NO AUTH) ---
 export const loader = async (args: LoaderFunctionArgs) => {
-  await authenticate.admin(args); // Still protect the route
-  console.log(`--- DEBUG: Simplified app._index.tsx loader ran.`);
-  return json({ message: "Index data loaded" });
+  console.log(`--- DEBUG: Loader in ${args.request.url} running WITHOUT authentication ---`);
+
+  // TEMPORARILY COMMENTED OUT: await authenticate.admin(args);
+
+  // Return minimal dummy data
+  return json({
+    apiKey: process.env.SHOPIFY_API_KEY || "DUMMY_API_KEY", // Provide dummy key
+    shop: "dummy-shop.myshopify.com", // Provide dummy shop
+    language: 'en',
+    translations: {},
+    rtl: false,
+  });
 };
+// --- END FINAL DEBUGGING LOADER ---
 
 // Radically simplified index page component
 export default function AppIndex() {

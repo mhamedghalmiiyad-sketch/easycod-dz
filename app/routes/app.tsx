@@ -14,65 +14,85 @@ import { authenticate } from "../shopify.server";
 
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
-// --- RESTORED FULL LOADER WITH AUTH AND i18n ---
+// --- FINAL LOADER WITH ERROR HANDLING ---
 export const loader = async (args: LoaderFunctionArgs) => {
-  // Authenticate first - this protects all child routes too
-  const { session } = await authenticate.admin(args);
-  const { request } = args; // Destructure after auth
+  try {
+    // We try to authenticate as normal. This is the single auth point.
+    const { session } = await authenticate.admin(args);
+    const { request } = args;
 
-  // Restore i18n logic
-  const language = await getLanguageFromRequest(request, session.id);
-  const translations = await getTranslations(language);
-  const rtl = isRTL(language);
+    // If authentication succeeds, we proceed with all the real logic.
+    const language = await getLanguageFromRequest(request, session.id);
+    const translations = await getTranslations(language);
+    const rtl = isRTL(language);
 
-  const url = new URL(request.url);
-  const langParam = url.searchParams.get('lang');
-  if (langParam && ['en', 'ar', 'fr'].includes(langParam)) {
-    try {
+    const url = new URL(request.url);
+    const langParam = url.searchParams.get('lang');
+    if (langParam && ['en', 'ar', 'fr'].includes(langParam)) {
       await saveLanguagePreference(session.id, langParam);
-    } catch (error) {
-      console.warn('Failed to save language preference:', error);
     }
+
+    const headers = new Headers();
+    headers.set('Set-Cookie', `i18nextLng=${language}; Path=/; Max-Age=31536000; SameSite=Lax`);
+
+    console.log("--- DEBUG: app.tsx loader finished successfully! ---");
+
+    return json({
+      apiKey: process.env.SHOPIFY_API_KEY || "",
+      shop: session.shop,
+      language,
+      translations,
+      rtl,
+      error: null, // No error
+    }, { headers });
+
+  } catch (error) {
+    // This block catches errors thrown by authenticate.admin
+    if (error instanceof Response && error.status === 410) {
+      // This is our specific, known bug on initial load.
+      console.warn("--- HANDLED: Caught 410 Gone error on initial load. Rendering app shell. ---");
+      // Return dummy data so the app shell can render without crashing.
+      return json({
+        apiKey: process.env.SHOPIFY_API_KEY || "",
+        shop: null, // No shop available
+        language: 'en',
+        translations: {},
+        rtl: false,
+        error: "410_AUTHENTICATION_PENDING", // Send an error flag to the client
+      });
+    }
+    
+    // If it's a different error (e.g., a real redirect), re-throw it.
+    throw error;
   }
-
-  const headers = new Headers();
-  headers.set('Set-Cookie', `i18nextLng=${language}; Path=/; Max-Age=31536000; SameSite=Lax`);
-
-  console.log(`--- DEBUG: app.tsx loader finished. Lang: ${language}`); // Keep one debug log
-
-  return json({
-    apiKey: process.env.SHOPIFY_API_KEY || "",
-    shop: session.shop,
-    language,
-    translations, // Pass full translations
-    rtl,
-  }, { headers });
 };
-// --- END RESTORED LOADER ---
+// --- END FINAL LOADER ---
 
 
-// --- ORIGINAL COMPONENT CODE RESTORED ---
+// --- FINAL COMPONENT WITH GRACEFUL HANDLING ---
 function AppContent() {
-  const { apiKey, shop, language, translations, rtl } = useLoaderData<typeof loader>();
+  const { apiKey, shop, language, translations, rtl, error } = useLoaderData<typeof loader>();
   const [isClientReady, setIsClientReady] = useState(false);
 
-  // Debug log to ensure component renders
-  console.log('--- DEBUG: Original app.tsx component rendering ---');
+  // If we caught the 410, the component might render briefly before App Bridge takes over.
+  // We can show a simple loading state.
+  if (error === "410_AUTHENTICATION_PENDING" || !shop) {
+    // AppProvider still needs an apiKey to initialize App Bridge, which will handle the redirect.
+    return (
+       <AppProvider isEmbeddedApp apiKey={apiKey || ""}>
+         <p>Loading...</p>
+       </AppProvider>
+    );
+  }
 
-  // Initialize client i18n with potentially empty server data (will update client-side)
+  // The rest of your original component logic...
   useEffect(() => {
     if (typeof window !== 'undefined' && apiKey && shop) {
-      sessionStorage.setItem('app-bridge-config', JSON.stringify({
-        apiKey: apiKey,
-        shopOrigin: shop
-      }));
+      sessionStorage.setItem('app-bridge-config', JSON.stringify({ apiKey: apiKey, shopOrigin: shop }));
     }
-
-    // Add potentially empty bundles initially
     Object.entries(translations || {}).forEach(([namespace, bundle]) => {
       clientI18n.addResourceBundle(language, namespace, bundle || {}, true, true);
     });
-
     clientI18n.changeLanguage(language).then(() => {
       document.documentElement.setAttribute('dir', rtl ? 'rtl' : 'ltr');
       document.documentElement.setAttribute('lang', language);
@@ -83,7 +103,7 @@ function AppContent() {
   const getTranslation = (key: string) => {
     if (!isClientReady) {
       const parts = key.split(':');
-      const ns = parts.length > 1 ? parts[0] : 'common'; // Default ns if needed
+      const ns = parts.length > 1 ? parts[0] : 'common';
       const k = parts.length > 1 ? parts[1] : key;
       return (translations as any)?.[ns]?.[k] || k;
     }
@@ -91,14 +111,11 @@ function AppContent() {
   };
 
   return (
-    // No debug background color needed now
     <I18nextProvider i18n={clientI18n}>
       <div style={{ height: '100vh' }} dir={rtl ? 'rtl' : 'ltr'}>
         <AppProvider isEmbeddedApp apiKey={apiKey}>
           <NavMenu>
-            <Link to="/app" rel="home">
-              {getTranslation('navigation:dashboard')}
-            </Link>
+            <Link to="/app" rel="home">{getTranslation('navigation:dashboard')}</Link>
             <Link to="/app/form-designer">{getTranslation('navigation:formDesigner')}</Link>
             <Link to="/app/settings/general">{getTranslation('navigation:settings')}</Link>
           </NavMenu>

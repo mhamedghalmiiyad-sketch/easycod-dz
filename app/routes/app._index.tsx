@@ -14,44 +14,42 @@ import { LanguageSelector } from '../components/LanguageSelector';
 // --- RESTORED i18n SERVER IMPORTS ---
 import { getLanguageFromRequest, getTranslations, isRTL, saveLanguagePreference } from '../utils/i18n.server';
 import clientI18n from '../utils/i18n.client';
-// --- REMOVED AUTHENTICATE IMPORT ---
-// import { authenticate } from "../shopify.server";
+import { authenticate } from "../shopify.server";
 
-// --- LOADER WITHOUT AUTH, BUT WITH i18n ---
+// --- RESTORED ORIGINAL LOADER WITH AUTH AND i18n ---
 export const loader = async (args: LoaderFunctionArgs) => {
-  // Assume parent (app.tsx) has already authenticated.
-  // We need session info for i18n, but how to get it without calling authenticate again?
-  // We can't easily access the parent loader's data here directly.
-  // For now, let's keep it simple and just load translations without user preference saving.
-  // This might break language saving until we find a better way to pass session ID.
+  // Authenticate first
+  const { session } = await authenticate.admin(args);
+  const { request } = args;
 
-  const { request } = args; // Only need request
-
-  // Simplified i18n logic (might not respect user preference saved in DB)
-  const url = new URL(request.url);
-  const langParam = url.searchParams.get('lang');
-  const cookieLang = request.headers.get('Cookie')?.match(/i18nextLng=([a-z]{2})/)?.[1];
-  const language = langParam || cookieLang || 'en'; // Simple detection
+  // Restore i18n logic
+  const language = await getLanguageFromRequest(request, session.id);
   const translations = await getTranslations(language);
   const rtl = isRTL(language);
 
-  // Skip DB saving logic for now
-  // if (langParam && ['en', 'ar', 'fr'].includes(langParam)) { ... }
+  const url = new URL(request.url);
+  const langParam = url.searchParams.get('lang');
+  if (langParam && ['en', 'ar', 'fr'].includes(langParam)) {
+    try {
+      await saveLanguagePreference(session.id, langParam);
+    } catch (error) {
+      console.warn('Failed to save language preference:', error);
+    }
+  }
 
   const headers = new Headers();
   headers.set('Set-Cookie', `i18nextLng=${language}; Path=/; Max-Age=31536000; SameSite=Lax`);
 
-  console.log(`--- DEBUG: app._index.tsx loader finished WITHOUT auth. Lang: ${language}`);
+  console.log(`--- DEBUG: app._index.tsx loader finished. Lang: ${language}`);
 
   return json({
-    // Need shop for theme editor link, but how to get it without auth? Pass dummy for now.
-    shop: "dummy-shop.myshopify.com",
+    shop: session.shop,
     language,
     translations,
     rtl,
   }, { headers });
 };
-// --- END LOADER WITHOUT AUTH ---
+// --- END RESTORED ORIGINAL LOADER ---
 
 
 // --- ORIGINAL COMPONENT CODE RESTORED ---

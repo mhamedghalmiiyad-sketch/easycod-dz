@@ -6,6 +6,7 @@ import {
   type EntryContext,
 } from "@remix-run/node";
 import { isbot } from "isbot";
+import { addDocumentResponseHeaders } from "./shopify.server"; // <-- NEW IMPORT
 
 export const streamTimeout = 5000;
 
@@ -15,16 +16,16 @@ export default async function handleRequest(
   responseHeaders: Headers,
   remixContext: EntryContext
 ) {
-  // ✅ FIXED: Removed the import of addDocumentResponseHeaders
-  // This function doesn't exist in modern Shopify app setups and causes the error:
-  // "TypeError: addDocumentResponseHeaders is not a function"
-  // 
-  // Headers are already being set correctly by Remix and the route loaders
-  // (see app.tsx loader which sets the Set-Cookie header)
   const userAgent = request.headers.get("user-agent");
   const callbackName = isbot(userAgent ?? '')
     ? "onAllReady"
     : "onShellReady";
+
+  // --- THIS IS THE NEWLY ADDED FUNCTION CALL ---
+  // This adds the critical Content-Security-Policy headers that allow
+  // the app to be rendered within the Shopify Admin iframe.
+  addDocumentResponseHeaders(request, responseHeaders, remixContext as any);
+  // --- END OF NEW FUNCTION CALL ---
 
   return new Promise((resolve, reject) => {
     const { pipe, abort } = renderToPipeableStream(

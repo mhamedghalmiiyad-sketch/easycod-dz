@@ -106,3 +106,15 @@ export const getShopify = async () => {
     future: { unstable_newEmbeddedAuthStrategy: true },
   });
 };
+
+// --- THIS IS THE NEWLY ADDED FUNCTION ---
+// We re-export this function so our server entrypoint can use it.
+export const addDocumentResponseHeaders = (
+  request: Request,
+  headers: Headers,
+  context: AppLoadContext
+) => {
+  const shopify = initializeShopifyApp(context);
+  return shopify.addDocumentResponseHeaders(request, headers);
+};
+// --- END OF NEW FUNCTION ---

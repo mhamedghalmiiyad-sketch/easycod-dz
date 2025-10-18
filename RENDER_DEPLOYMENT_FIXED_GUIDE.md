@@ -21,7 +21,7 @@ ShopifyError: Cannot initialize Shopify API Library. Missing values for: apiSecr
 ## Solution Applied
 
 ### 1. Updated `app/shopify.server.ts`
-- Added fallback value for `appUrl`: `"https://easycod-dz.onrender.com"`
+- Added fallback value for `appUrl`: `"https://easycod-dz-1.onrender.com"`
 - Added explicit validation for required environment variables
 - Now throws clear errors if API credentials are missing
 
@@ -50,7 +50,7 @@ ShopifyError: Cannot initialize Shopify API Library. Missing values for: apiSecr
 - `SESSION_SECRET`: A long, random string for session security
 
 ### Optional Variables:
-- `SHOPIFY_APP_URL`: Your app's URL (defaults to `https://easycod-dz.onrender.com`)
+- `SHOPIFY_APP_URL`: Your app's URL (defaults to `https://easycod-dz-1.onrender.com`)
 
 ## Example SCOPES Value:
 ```
@@ -68,11 +68,11 @@ read_draft_orders,read_metaobject_definitions,read_metaobjects,read_online_store
 
 2. **Deploy:**
    - The app will now start successfully even without `SHOPIFY_APP_URL` set
-   - The fallback URL `https://easycod-dz.onrender.com` will be used
+   - The fallback URL `https://easycod-dz-1.onrender.com` will be used
 
 3. **Verify Deployment:**
-   - Check the health endpoint: `https://easycod-dz.onrender.com/health`
-   - Check wilaya data: `https://easycod-dz.onrender.com/health/wilaya`
+   - Check the health endpoint: `https://easycod-dz-1.onrender.com/health`
+   - Check wilaya data: `https://easycod-dz-1.onrender.com/health/wilaya`
 
 ## Testing the Fix
 

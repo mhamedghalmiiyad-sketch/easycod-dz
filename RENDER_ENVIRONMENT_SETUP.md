@@ -16,7 +16,7 @@ This guide will help you properly configure environment variables for your Shopi
 ```
 SHOPIFY_API_KEY=78b3b49a43d2ac2ca7e3abaf380e011d
 SHOPIFY_API_SECRET=cf24bd7dc35faadf8b645cdee12803f3
-SHOPIFY_APP_URL=https://easycod-dz.onrender.com
+SHOPIFY_APP_URL=https://easycod-dz-1.onrender.com
 SCOPES=read_draft_orders,read_metaobject_definitions,read_metaobjects,read_online_store_pages,read_orders,read_products,write_draft_orders,write_metaobject_definitions,write_metaobjects,write_online_store_pages,write_orders,write_products
 ```
 
@@ -66,7 +66,7 @@ NODE_ENV: production
 PORT: 8080
 SHOPIFY_API_KEY: SET
 SHOPIFY_API_SECRET: SET
-SHOPIFY_APP_URL: https://easycod-dz.onrender.com
+SHOPIFY_APP_URL: https://easycod-dz-1.onrender.com
 SCOPES: SET
 =================================
 ✅ All required environment variables are present
@@ -87,7 +87,7 @@ Please check your Render service environment variables configuration.
 |----------|-------------|---------|
 | `SHOPIFY_API_KEY` | Your Shopify app's API key | `78b3b49a43d2ac2ca7e3abaf380e011d` |
 | `SHOPIFY_API_SECRET` | Your Shopify app's API secret | `cf24bd7dc35faadf8b645cdee12803f3` |
-| `SHOPIFY_APP_URL` | Your app's public URL | `https://easycod-dz.onrender.com` |
+| `SHOPIFY_APP_URL` | Your app's public URL | `https://easycod-dz-1.onrender.com` |
 | `SCOPES` | Comma-separated Shopify scopes | `read_orders,write_orders,read_products` |
 | `NODE_ENV` | Environment mode | `production` (set by Render) |
 | `PORT` | Server port | `8080` (set by Render) |

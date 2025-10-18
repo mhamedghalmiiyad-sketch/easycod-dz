@@ -63,7 +63,7 @@ After deployment, check your Render logs for these success messages:
 ```
 --- AUTH CALLBACK START ---
 ENV SESSION_SECRET present? true
-ENV SHOPIFY_APP_URL https://easycod-dz.onrender.com
+ENV SHOPIFY_APP_URL https://easycod-dz-1.onrender.com
 Session created/retrieved: { id: '...', shop: '...', isOnline: false }
 Authentication successful - session persisted
 ```

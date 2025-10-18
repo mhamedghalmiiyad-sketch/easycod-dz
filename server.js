@@ -69,7 +69,7 @@ async function startServer() {
   
   // Check SHOPIFY_APP_URL with fallback
   if (!process.env.SHOPIFY_APP_URL) {
-    console.log("⚠️ SHOPIFY_APP_URL not set, using fallback: https://easycod-dz.onrender.com");
+    console.log("⚠️ SHOPIFY_APP_URL not set, using fallback: https://easycod-dz-1.onrender.com");
   } else {
     console.log(`✅ SHOPIFY_APP_URL is set: ${process.env.SHOPIFY_APP_URL}`);
   }

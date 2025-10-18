@@ -37,7 +37,7 @@ function getShopifyApp() {
       apiSecretKey: apiSecret,
       apiVersion: LATEST_API_VERSION,
       scopes: scopes.split(","),
-      appUrl: process.env.SHOPIFY_APP_URL || "https://easycod-dz.onrender.com",
+      appUrl: process.env.SHOPIFY_APP_URL || "https://easycod-dz-1.onrender.com",
       authPathPrefix: "/auth",
       sessionStorage: new PrismaSessionStorage(db),
       distribution: AppDistribution.AppStore,

@@ -96,7 +96,7 @@ const requiredEnvVars = [
 |----------|-------|-------|
 | `SHOPIFY_API_KEY` | `78b3b49a43d2ac2ca7e3abaf380e011d` | Your existing API key |
 | `SHOPIFY_API_SECRET` | `your_secret_here` | Your existing API secret |
-| `SHOPIFY_APP_URL` | `https://easycod-dz.onrender.com` | Your app URL |
+| `SHOPIFY_APP_URL` | `https://easycod-dz-1.onrender.com` | Your app URL |
 | `SCOPES` | `read_draft_orders,read_metaobject_definitions,read_metaobjects,read_online_store_pages,read_products,read_orders,write_draft_orders,write_metaobject_definitions,write_metaobjects,write_online_store_pages,write_products,write_orders` | Your existing scopes |
 | `DATABASE_URL` | `postgresql://easycod_dz_db_user:9K8hnx0GqxEAfh6pDkjTOufnOhd8iXNk@dpg-d3m1uh7diees73a95f2g-a/easycod_dz_db?sslmode=require` | **MUST include ?sslmode=require** |
 | `SESSION_SECRET` | `generate_new_secret` | **Generate a new secret** |

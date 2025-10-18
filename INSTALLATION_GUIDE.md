@@ -68,7 +68,7 @@ node scripts/debug-sessions.js cod-form-builder-dev.myshopify.com
 - **Try installing in an incognito/private window**
 - **Make sure installation happens in top-level window, not iframe**
 - Check that your app URL is accessible (not returning errors)
-- Verify redirect URL is set to: `https://easycod-dz.onrender.com/auth/callback`
+- Verify redirect URL is set to: `https://easycod-dz-1.onrender.com/auth/callback`
 
 ### 3. Session Issues
 - Sessions expire after a certain time

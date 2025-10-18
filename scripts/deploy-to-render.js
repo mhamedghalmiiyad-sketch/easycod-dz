@@ -33,7 +33,7 @@ async function main() {
   ];
 
   const optionalEnvVars = [
-    'SHOPIFY_APP_URL' // Has fallback to https://easycod-dz.onrender.com
+    'SHOPIFY_APP_URL' // Has fallback to https://easycod-dz-1.onrender.com
   ];
 
   console.log('\n📋 Environment Variables Checklist:');
@@ -52,7 +52,7 @@ async function main() {
   console.log('2. Navigate to your web service');
   console.log('3. Go to Environment tab');
   console.log('4. Add the required environment variables');
-  console.log('5. For SHOPIFY_APP_URL, use: https://easycod-dz.onrender.com');
+  console.log('5. For SHOPIFY_APP_URL, use: https://easycod-dz-1.onrender.com');
   console.log('\n⚠️ IMPORTANT: Make sure to set the actual values, not empty strings!');
   console.log('   - SHOPIFY_API_KEY should be your app\'s API key from Shopify Partners');
   console.log('   - SHOPIFY_API_SECRET should be your app\'s API secret from Shopify Partners');

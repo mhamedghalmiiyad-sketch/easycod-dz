@@ -1,5 +1,5 @@
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
-import { getShopify } from '~/shopify.server';
+import { login } from '~/shopify.server';
 
 /**
  * Login route handler
@@ -10,8 +10,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   
   // If shop parameter exists in URL, initiate login flow
   if (url.searchParams.has('shop')) {
-    const shopify = await getShopify();
-    return shopify.login(request);
+    return login(request);
   }
 
   // Otherwise show the login form
@@ -34,8 +33,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const url = new URL(request.url);
   url.searchParams.set('shop', shop);
   
-  const shopify = await getShopify();
-  return shopify.login(new Request(url.toString(), request));
+  return login(new Request(url.toString(), request));
 };
 
 export default function LoginPage() {

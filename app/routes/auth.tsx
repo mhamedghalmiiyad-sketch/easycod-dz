@@ -1,11 +1,12 @@
 import { redirect, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
-import { authenticate } from '~/shopify.server';
+import { getShopify } from '~/shopify.server';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  await authenticate.admin(request);
-  return redirect('/app');
+  const shopify = await getShopify();
+  return shopify.authenticate.admin(request);
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-  return await authenticate.admin(request);
+  const shopify = await getShopify();
+  return shopify.authenticate.admin(request);
 };

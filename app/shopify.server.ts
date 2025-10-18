@@ -125,9 +125,11 @@ export async function getShopifyInstance(prisma: any) {
 // ✅ Export API version as a constant
 export const apiVersion = "2024-07";
 
-// ✅ Export authenticate function for auth routes
-export async function authenticate(request: Request) {
+// ✅ Export shopify instance for auth routes
+export async function getShopify() {
   const { db } = await import("./db.server");
-  const shopify = await getShopifyInstance(db);
-  return shopify.authenticate;
+  return await getShopifyInstance(db);
 }
+
+// ✅ Export default shopify instance
+export default getShopify;

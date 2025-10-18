@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs, HeadersFunction } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import { Link, Outlet, useLoaderData, useRouteError, isRouteErrorResponse } from "@remix-run/react";
 import { I18nextProvider } from "react-i18next";
 import clientI18n from "../utils/i18n.client";
@@ -14,58 +14,87 @@ import { authenticate } from "../shopify.server";
 
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
-// --- LOADER WITHOUT TRY...CATCH ---
-// Let authenticate.admin throw the 410 error if it occurs.
+// --- FINAL LOADER WITH MANUAL RESPONSE OVERRIDE ---
 export const loader = async (args: LoaderFunctionArgs) => {
-  // Authenticate first. If it throws 410, ErrorBoundary will catch it.
-  const { session } = await authenticate.admin(args);
-  const { request } = args;
+  try {
+    // We attempt to authenticate. If it fails with 410, the catch block handles it.
+    const { session } = await authenticate.admin(args);
+    const { request } = args;
 
-  // If authentication succeeds, proceed with all the real logic.
-  const language = await getLanguageFromRequest(request, session.id);
-  const translations = await getTranslations(language);
-  const rtl = isRTL(language);
+    // If authentication succeeds, we proceed with all the real logic.
+    const language = await getLanguageFromRequest(request, session.id);
+    const translations = await getTranslations(language);
+    const rtl = isRTL(language);
 
-  const url = new URL(request.url);
-  const langParam = url.searchParams.get('lang');
-  if (langParam && ['en', 'ar', 'fr'].includes(langParam)) {
-    await saveLanguagePreference(session.id, langParam);
+    const url = new URL(request.url);
+    const langParam = url.searchParams.get('lang');
+    if (langParam && ['en', 'ar', 'fr'].includes(langParam)) {
+      await saveLanguagePreference(session.id, langParam);
+    }
+
+    const headers = new Headers();
+    headers.set('Set-Cookie', `i18nextLng=${language}; Path=/; Max-Age=31536000; SameSite=Lax`);
+
+    // On success, return a normal JSON response with a 200 OK status.
+    return json({
+      apiKey: process.env.SHOPIFY_API_KEY || "",
+      shop: session.shop,
+      language,
+      translations,
+      rtl,
+    }, { headers });
+
+  } catch (error) {
+    // This block catches errors thrown by authenticate.admin
+    if (error instanceof Response && error.status === 410) {
+      console.warn("--- HANDLED: Caught 410 Gone error. Forcing a 200 OK response with a loading shell. ---");
+
+      // --- CRITICAL FIX: MANUALLY CONSTRUCT A 200 OK RESPONSE ---
+      // This bypasses Remix's status code override. We send a minimal HTML page
+      // that contains just enough to initialize App Bridge.
+      const apiKey = process.env.SHOPIFY_API_KEY || "";
+      const html = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Authenticating...</title>
+            <script src="https://cdn.shopify.com/shopifycloud/app-bridge/edge/index.js"></script>
+            <script>
+              document.addEventListener('DOMContentLoaded', function() {
+                if (window.top === window.self) {
+                  // If the app is not in an iframe, redirect to Shopify Admin
+                  window.location.href = "/auth/login";
+                } else {
+                  // If in an iframe, initialize App Bridge to handle authentication
+                  const app = AppBridge.createApp({ apiKey: "${apiKey}" });
+                  app.dispatch(AppBridge.actions.Redirect.toRemote({ url: window.location.href }));
+                }
+              });
+            </script>
+          </head>
+          <body>
+            <p>Authenticating, please wait...</p>
+          </body>
+        </html>`;
+
+      return new Response(html, {
+        status: 200, // Force the 200 OK status
+        headers: { "Content-Type": "text/html" },
+      });
+      // --- END CRITICAL FIX ---
+    }
+    
+    // If it's a different error (e.g., a real unauthorized redirect), re-throw it.
+    throw error;
   }
-
-  const headers = new Headers();
-  headers.set('Set-Cookie', `i18nextLng=${language}; Path=/; Max-Age=31536000; SameSite=Lax`);
-
-  console.log("--- DEBUG: app.tsx loader finished successfully! ---");
-
-  // Success response
-  return json({
-    apiKey: process.env.SHOPIFY_API_KEY || "",
-    shop: session.shop,
-    language,
-    translations,
-    rtl,
-    // No 'error' field needed here anymore
-  }, { headers });
 };
-// --- END LOADER ---
+// --- END FINAL LOADER ---
 
 
-// --- COMPONENT WITHOUT ERROR CHECK ---
-// Removed the 'error' prop check, ErrorBoundary handles errors now.
+// --- COMPONENT IS NOW ONLY FOR THE SUCCESS STATE ---
 function AppContent() {
   const { apiKey, shop, language, translations, rtl } = useLoaderData<typeof loader>();
   const [isClientReady, setIsClientReady] = useState(false);
-
-  // If shop is missing (should only happen if ErrorBoundary failed, unlikely)
-  // Render minimal AppProvider for App Bridge.
-  if (!shop || !apiKey) {
-      console.warn("--- WARNING: shop or apiKey missing in AppContent, rendering minimal shell ---");
-       return (
-         <AppProvider isEmbeddedApp apiKey={apiKey || ""}>
-           <p>Loading app...</p>
-         </AppProvider>
-      );
-  }
 
   // The rest of your original component logic...
   useEffect(() => {
@@ -112,38 +141,5 @@ export default function App() {
   return <AppContent />;
 }
 
-// --- UPDATED ERROR BOUNDARY ---
-export function ErrorBoundary() {
-  const error = useRouteError();
-  const apiKey = process.env.SHOPIFY_API_KEY || ""; // Get apiKey for AppProvider
-
-  // Check if the error is the specific 410 Response from authentication
-  if (isRouteErrorResponse(error) && error.status === 410) {
-    console.warn("--- HANDLED: Caught 410 error in ErrorBoundary. Rendering loading shell. ---");
-    // Render the loading shell with AppProvider so App Bridge can take over
-    return (
-      <AppProvider isEmbeddedApp apiKey={apiKey}>
-        <p>Authenticating...</p>
-      </AppProvider>
-    );
-  }
-
-  // For all other errors, use the default Shopify boundary handler
-  console.error("--- ERROR: Caught in ErrorBoundary (not 410): ---", error);
-  return boundary.error(error);
-}
-// --- END UPDATED ERROR BOUNDARY ---
-
-// --- RESTORED HEADERS FUNCTION ---
-export const headers: HeadersFunction = (headersArgs) => {
-  // We might still need to check if the error is 410 here and modify headers if needed,
-  // but let's try without modification first. The main goal is rendering the shell.
-  if ((headersArgs as any).error instanceof Response && (headersArgs as any).error.status === 410) {
-      console.warn("--- WARNING: boundary.headers received the 410 error object ---");
-      // Let's return minimal headers in this case, primarily CSP from addDocumentResponseHeaders
-      return headersArgs.parentHeaders; // Pass through headers set by entry.server.tsx
-  }
-  // For normal operation or other errors, use the Shopify boundary
-  return boundary.headers(headersArgs);
-};
-// --- END RESTORED HEADERS FUNCTION ---
+export function ErrorBoundary() { return boundary.error(useRouteError()); }
+export const headers: HeadersFunction = (headersArgs) => { return boundary.headers(headersArgs); };

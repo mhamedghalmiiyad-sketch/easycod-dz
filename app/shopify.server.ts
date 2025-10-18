@@ -1,4 +1,4 @@
-// ✅ FACTORY PATTERN: Use Prisma as context carrier to ensure lazy initialization
+// ✅ ENVIRONMENT VARIABLE INJECTION: Fix Render ESM scoping issues
 let shopifyAppModule: any = null;
 let PrismaSessionStorageModule: any = null;
 let restResourcesModule: any = null;
@@ -6,9 +6,66 @@ let restResourcesModule: any = null;
 // Cache instances by Prisma instance to avoid re-initialization
 const shopifyInstances = new WeakMap();
 
+// Store injected environment variables
+let injectedEnv: any = null;
+
+/**
+ * Inject environment variables into this module
+ * This bypasses Render's ESM scoping issues by passing env vars explicitly
+ * @param envVars - Environment variables object
+ */
+export function injectShopifyEnv(envVars: {
+  apiKey: string;
+  apiSecret: string;
+  appUrl: string;
+  scopes: string;
+  sessionSecret: string;
+  shopCustomDomain?: string;
+}) {
+  injectedEnv = envVars;
+  console.log("✅ Shopify environment variables injected successfully");
+}
+
+/**
+ * Get environment variables from injection, global scope, or fallback to process.env
+ */
+function getEnvVars() {
+  // Try injected environment variables first (for direct injection)
+  if (injectedEnv) {
+    return injectedEnv;
+  }
+  
+  // Try global scope (for Render ESM scoping fix)
+  if (typeof global !== 'undefined' && global.__SHOPIFY_ENV__) {
+    const globalEnv = global.__SHOPIFY_ENV__;
+    return {
+      apiKey: globalEnv.apiKey,
+      apiSecret: globalEnv.apiSecret,
+      appUrl: globalEnv.appUrl || 'https://easycod-dz-1.onrender.com',
+      scopes: globalEnv.scopes,
+      sessionSecret: globalEnv.sessionSecret,
+      shopCustomDomain: process.env.SHOP_CUSTOM_DOMAIN, // Still use process.env for optional vars
+    };
+  }
+  
+  // Fallback to process.env (for local development)
+  const apiKey = process.env.SHOPIFY_API_KEY;
+  const apiSecret = process.env.SHOPIFY_API_SECRET;
+  const appUrl = process.env.SHOPIFY_APP_URL || 'https://easycod-dz-1.onrender.com';
+  const scopes = process.env.SCOPES;
+  const sessionSecret = process.env.SESSION_SECRET;
+  const shopCustomDomain = process.env.SHOP_CUSTOM_DOMAIN;
+  
+  if (!apiKey || !apiSecret || !scopes || !sessionSecret) {
+    throw new Error('Environment variables not available - check injection, global scope, or process.env');
+  }
+  
+  return { apiKey, apiSecret, appUrl, scopes, sessionSecret, shopCustomDomain };
+}
+
 /**
  * Factory function to create Shopify app instance
- * Uses Prisma as a context carrier to ensure environment variables are available
+ * Uses injected environment variables to bypass Render ESM scoping issues
  * @param prisma - Prisma instance for session storage
  * @returns Shopify app instance
  */
@@ -26,31 +83,10 @@ export async function getShopifyInstance(prisma: any) {
     restResourcesModule = await import("@shopify/shopify-api/rest/admin/2024-07");
   }
 
-  // Get environment variables at runtime (not module load time)
-  const apiKey = process.env.SHOPIFY_API_KEY;
-  const apiSecret = process.env.SHOPIFY_API_SECRET;
-  const appUrl = process.env.SHOPIFY_APP_URL || 'https://easycod-dz-1.onrender.com';
-  const scopes = process.env.SCOPES;
-  const sessionSecret = process.env.SESSION_SECRET;
+  // Get environment variables (injected or from process.env)
+  const { apiKey, apiSecret, appUrl, scopes, sessionSecret, shopCustomDomain } = getEnvVars();
 
-  // Validate that all required variables are present
-  if (!apiKey) {
-    throw new Error('SHOPIFY_API_KEY environment variable is required');
-  }
-  if (!apiSecret) {
-    throw new Error('SHOPIFY_API_SECRET environment variable is required');
-  }
-  if (!appUrl) {
-    throw new Error('SHOPIFY_APP_URL environment variable is required');
-  }
-  if (!scopes) {
-    throw new Error('SCOPES environment variable is required');
-  }
-  if (!sessionSecret) {
-    throw new Error('SESSION_SECRET environment variable is required');
-  }
-
-  // Initialize Shopify app with runtime environment variables
+  // Initialize Shopify app with environment variables
   const shopifyApp = shopifyAppModule.shopifyApp({
     apiKey,
     apiSecretKey: apiSecret,
@@ -76,8 +112,8 @@ export async function getShopifyInstance(prisma: any) {
     future: {
       unstable_newEmbeddedAuthStrategy: true,
     },
-    ...(process.env.SHOP_CUSTOM_DOMAIN
-      ? { customShopDomains: [process.env.SHOP_CUSTOM_DOMAIN] }
+    ...(shopCustomDomain
+      ? { customShopDomains: [shopCustomDomain] }
       : {}),
   });
 

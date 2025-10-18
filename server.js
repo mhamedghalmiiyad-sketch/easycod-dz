@@ -104,40 +104,42 @@ async function startServer() {
     // Don't exit - the app has fallback data in the route
   }
 
-  // --- CRITICAL FIX: Load the build AFTER ensuring environment variables are available ---
-  // Ensure environment variables are available before importing the build
-  console.log("🔧 Environment variables before build import:");
+  // --- CRITICAL: Inject environment variables into the Shopify module ---
+  // This fixes the Render ESM scoping issue by passing env vars explicitly
+  console.log("🔧 Injecting environment variables into Shopify module...");
+  try {
+    // Import the shopify module and inject env vars
+    const shopifyModule = await import("./build/server/index.js");
+    
+    // Try to find and use any shopify export that might have injectShopifyEnv
+    // Since the build is bundled, we need to inject via a different approach
+    // Create a global scope object that the shopify module can access
+    if (typeof global !== 'undefined') {
+      global.__SHOPIFY_ENV__ = {
+        apiKey: process.env.SHOPIFY_API_KEY,
+        apiSecret: process.env.SHOPIFY_API_SECRET,
+        appUrl: process.env.SHOPIFY_APP_URL,
+        scopes: process.env.SCOPES,
+        sessionSecret: process.env.SESSION_SECRET,
+      };
+      console.log("✅ Shopify environment variables injected into global scope");
+    }
+  } catch (error) {
+    console.warn("⚠️ Could not pre-inject env vars (this is okay, will fall back to process.env):", error.message);
+  }
+
+  // --- Load the build ---
+  console.log("🔧 Loading Remix build...");
   console.log(`   SHOPIFY_API_KEY: ${process.env.SHOPIFY_API_KEY ? 'PRESENT' : 'MISSING'}`);
   console.log(`   SHOPIFY_API_SECRET: ${process.env.SHOPIFY_API_SECRET ? 'PRESENT' : 'MISSING'}`);
   console.log(`   SCOPES: ${process.env.SCOPES ? 'PRESENT' : 'MISSING'}`);
   
-  // Double-check that all required environment variables are present
-  const requiredForBuild = ["SHOPIFY_API_KEY", "SHOPIFY_API_SECRET", "SCOPES"];
-  const missingForBuild = requiredForBuild.filter((v) => !process.env[v]);
-  if (missingForBuild.length > 0) {
-    console.error(`❌ Missing environment variables for build import: ${missingForBuild.join(", ")}`);
-    process.exit(1);
-  }
-  
-  // Force environment variables to be available in the global process.env
-  // This ensures they are accessible when the build modules are imported
-  global.process = global.process || process;
-  global.process.env = global.process.env || process.env;
-  
-  // Prevent Remix build-time env caching
-  delete process.env.NODE_ENV;
-  
   let build;
   try {
     build = await import("./build/server/index.js");
-    console.log("✅ Remix build loaded successfully from ./build/server/index.js");
-    console.log("🧠 Using Prisma session storage — verifying persistence...");
+    console.log("✅ Remix build loaded successfully");
   } catch (error) {
     console.error("❌ Failed to import build:", error);
-    console.error("🔧 Environment variables at time of error:");
-    console.error(`   SHOPIFY_API_KEY: ${process.env.SHOPIFY_API_KEY ? 'PRESENT' : 'MISSING'}`);
-    console.error(`   SHOPIFY_API_SECRET: ${process.env.SHOPIFY_API_SECRET ? 'PRESENT' : 'MISSING'}`);
-    console.error(`   SCOPES: ${process.env.SCOPES ? 'PRESENT' : 'MISSING'}`);
     throw error;
   }
 

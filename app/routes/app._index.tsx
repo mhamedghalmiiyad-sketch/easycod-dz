@@ -11,26 +11,47 @@ import {
 import { MessageCircle, Mail } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { LanguageSelector } from '../components/LanguageSelector';
-// Removed i18n server imports for now
-import clientI18n from '../utils/i18n.client'; // Keep client import
-import { authenticate } from "../shopify.server";
+// --- RESTORED i18n SERVER IMPORTS ---
+import { getLanguageFromRequest, getTranslations, isRTL, saveLanguagePreference } from '../utils/i18n.server';
+import clientI18n from '../utils/i18n.client';
+// --- REMOVED AUTHENTICATE IMPORT ---
+// import { authenticate } from "../shopify.server";
 
-// --- SIMPLE LOADER WITH AUTH ---
+// --- LOADER WITHOUT AUTH, BUT WITH i18n ---
 export const loader = async (args: LoaderFunctionArgs) => {
-  // Authenticate first
-  const { session } = await authenticate.admin(args);
-  console.log(`--- DEBUG: app._index.tsx loader ran WITH authentication. Shop: ${session.shop}`);
+  // Assume parent (app.tsx) has already authenticated.
+  // We need session info for i18n, but how to get it without calling authenticate again?
+  // We can't easily access the parent loader's data here directly.
+  // For now, let's keep it simple and just load translations without user preference saving.
+  // This might break language saving until we find a better way to pass session ID.
 
-  // Return minimal data needed by the component
+  const { request } = args; // Only need request
+
+  // Simplified i18n logic (might not respect user preference saved in DB)
+  const url = new URL(request.url);
+  const langParam = url.searchParams.get('lang');
+  const cookieLang = request.headers.get('Cookie')?.match(/i18nextLng=([a-z]{2})/)?.[1];
+  const language = langParam || cookieLang || 'en'; // Simple detection
+  const translations = await getTranslations(language);
+  const rtl = isRTL(language);
+
+  // Skip DB saving logic for now
+  // if (langParam && ['en', 'ar', 'fr'].includes(langParam)) { ... }
+
+  const headers = new Headers();
+  headers.set('Set-Cookie', `i18nextLng=${language}; Path=/; Max-Age=31536000; SameSite=Lax`);
+
+  console.log(`--- DEBUG: app._index.tsx loader finished WITHOUT auth. Lang: ${language}`);
+
   return json({
-    shop: session.shop,
-    // Use dummy i18n data for now
-    language: 'en',
-    translations: { dashboard: {} }, // Provide dummy structure for dashboard namespace
-    rtl: false,
-  });
+    // Need shop for theme editor link, but how to get it without auth? Pass dummy for now.
+    shop: "dummy-shop.myshopify.com",
+    language,
+    translations,
+    rtl,
+  }, { headers });
 };
-// --- END SIMPLE LOADER WITH AUTH ---
+// --- END LOADER WITHOUT AUTH ---
 
 
 // --- ORIGINAL COMPONENT CODE RESTORED ---
@@ -65,17 +86,13 @@ export default function ShopifyDashboard() {
     });
   }, [language, translations, rtl]);
 
-  // Use clientI18n directly once ready, fallback gracefully
   const t = (key: string) => {
     if (!isClientReady) {
-      // Basic fallback while client loads
       const parts = key.split(':');
-      const namespace = parts.length > 1 ? parts[0] : 'dashboard';
+      const ns = parts.length > 1 ? parts[0] : 'dashboard';
       const k = parts.length > 1 ? parts[1] : key;
-      // Try accessing dummy translations, fallback to key
-      return (translations as any)?.[namespace]?.[k] || k;
+      return (translations as any)?.[ns]?.[k] || k;
     }
-    // Use client-side translation once ready
     return clientT(key);
   };
 

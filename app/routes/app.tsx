@@ -8,28 +8,47 @@ import { boundary } from "@shopify/shopify-app-remix/server";
 import { AppProvider } from "@shopify/shopify-app-remix/react";
 import { NavMenu } from "@shopify/app-bridge-react";
 import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
-// Removed i18n server imports for now
+// --- RESTORED i18n SERVER IMPORTS ---
+import { getLanguageFromRequest, getTranslations, isRTL, saveLanguagePreference } from "../utils/i18n.server";
 import { authenticate } from "../shopify.server";
 
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
-// --- SIMPLE LOADER WITH AUTH ---
+// --- RESTORED FULL LOADER WITH AUTH AND i18n ---
 export const loader = async (args: LoaderFunctionArgs) => {
-  // Authenticate first
+  // Authenticate first - this protects all child routes too
   const { session } = await authenticate.admin(args);
-  console.log(`--- DEBUG: app.tsx loader ran WITH authentication. Shop: ${session.shop}`);
+  const { request } = args; // Destructure after auth
 
-  // Return minimal data needed by the component's providers
+  // Restore i18n logic
+  const language = await getLanguageFromRequest(request, session.id);
+  const translations = await getTranslations(language);
+  const rtl = isRTL(language);
+
+  const url = new URL(request.url);
+  const langParam = url.searchParams.get('lang');
+  if (langParam && ['en', 'ar', 'fr'].includes(langParam)) {
+    try {
+      await saveLanguagePreference(session.id, langParam);
+    } catch (error) {
+      console.warn('Failed to save language preference:', error);
+    }
+  }
+
+  const headers = new Headers();
+  headers.set('Set-Cookie', `i18nextLng=${language}; Path=/; Max-Age=31536000; SameSite=Lax`);
+
+  console.log(`--- DEBUG: app.tsx loader finished. Lang: ${language}`); // Keep one debug log
+
   return json({
-    apiKey: process.env.SHOPIFY_API_KEY || "", // Needed for AppProvider
-    shop: session.shop,                        // Needed for AppProvider/session storage
-    // Use dummy i18n data for now
-    language: 'en',
-    translations: { navigation: {} }, // Provide dummy structure
-    rtl: false,
-  });
+    apiKey: process.env.SHOPIFY_API_KEY || "",
+    shop: session.shop,
+    language,
+    translations, // Pass full translations
+    rtl,
+  }, { headers });
 };
-// --- END SIMPLE LOADER WITH AUTH ---
+// --- END RESTORED LOADER ---
 
 
 // --- ORIGINAL COMPONENT CODE RESTORED ---
@@ -61,12 +80,12 @@ function AppContent() {
     });
   }, [language, translations, rtl, apiKey, shop]);
 
-  // Use clientI18n directly once ready, fallback gracefully
   const getTranslation = (key: string) => {
     if (!isClientReady) {
-      // Basic fallback while client loads
       const parts = key.split(':');
-      return parts.length > 1 ? parts[1] : key;
+      const ns = parts.length > 1 ? parts[0] : 'common'; // Default ns if needed
+      const k = parts.length > 1 ? parts[1] : key;
+      return (translations as any)?.[ns]?.[k] || k;
     }
     return clientI18n.t(key);
   };

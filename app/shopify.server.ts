@@ -3,20 +3,26 @@ import { shopifyApp } from '@shopify/shopify-app-remix/server';
 import { PrismaSessionStorage } from '@shopify/shopify-app-session-storage-prisma';
 import { restResources } from '@shopify/shopify-api/rest/admin/2024-07';
 import prisma from '~/db.server';
+import { shopifyEnv } from '~/utils/env.server'; // <--- IMPORT THE FIX
 
 let shopifyInstance: ReturnType<typeof shopifyApp> | null = null;
 
 function getShopifyApp() {
   if (!shopifyInstance) {
+    // --- THIS IS THE CHANGE ---
+    // We now use shopifyEnv.required... to get the env vars
+    // This utility (env.server.ts) is smart enough to find the
+    // variables provided by your server.js file.
     shopifyInstance = shopifyApp({
-      apiKey: process.env.SHOPIFY_API_KEY,
-      apiSecret: process.env.SHOPIFY_API_SECRET,
-      scopes: process.env.SCOPES?.split(','),
-      appUrl: process.env.SHOPIFY_APP_URL,
+      apiKey: shopifyEnv.requiredApiKey,
+      apiSecret: shopifyEnv.requiredApiSecret,
+      scopes: shopifyEnv.requiredScopes?.split(','),
+      appUrl: shopifyEnv.requiredAppUrl,
       isEmbeddedApp: true,
       sessionStorage: new PrismaSessionStorage(prisma),
       restResources,
     });
+    // --- END OF CHANGE ---
   }
   return shopifyInstance;
 }

@@ -43,23 +43,25 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
             const shopOrigin = "${shop || ''}";
             
             // Construct a valid config, prioritizing host.
+            // The host parameter is a base64-encoded version of the shop's admin URL.
             const config = { 
               apiKey, 
               host: host || window.btoa(shopOrigin).replace(/=/g, '') 
             };
             console.log('App Bridge Config in login shell:', config);
 
+            // --- THIS IS THE FIX ---
+            // Simply create the app. App Bridge will automatically detect that it's in an
+            // authentication context and will handle redirecting to the OAuth consent screen.
+            // We should NOT dispatch a redirect action ourselves here.
             try {
-                const app = AppBridge.createApp(config);
-                console.log('App Bridge Initialized. Redirecting to app root...');
-
-                // This tells App Bridge to go to the app's root path. 
-                // App Bridge will now handle the full authentication flow.
-                app.dispatch(AppBridge.actions.Redirect.toApp({ path: '/app', newContext: true }));
+                AppBridge.createApp(config);
+                console.log('App Bridge Initialized. App Bridge will now handle the auth redirect.');
             } catch (e) {
                  console.error('Error initializing App Bridge in login shell:', e);
                  document.body.innerHTML = '<p>Error initializing application. Please try again.</p>';
             }
+            // --- END OF FIX ---
           });
         </script>
       </head>

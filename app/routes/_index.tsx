@@ -22,10 +22,7 @@ export const loader = ({ request }: LoaderFunctionArgs) => {
 
   // If there's no shop parameter, render a simple landing page.
   // This is what someone would see if they visit your app's URL directly.
-  return new Response("This is a Shopify app and must be opened from the Shopify Admin.", {
-    status: 200,
-    headers: { "Content-Type": "text/html" },
-  });
+  return null;
 };
 
 // This component will only render if the loader doesn't redirect.

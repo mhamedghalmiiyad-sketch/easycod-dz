@@ -38,7 +38,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
             console.log('App Bridge Shell Loaded. Initializing App Bridge...');
             
             const apiKey = "${apiKey}";
-            // App Bridge v3.1+ prefers the `host` parameter.
+            // App Bridge v3.1 prefers the host parameter.
             const host = "${host || ''}";
             const shopOrigin = "${shop || ''}";
             

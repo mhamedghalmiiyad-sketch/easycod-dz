@@ -46,20 +46,16 @@ export const login = async (args: LoaderFunctionArgs | ActionFunctionArgs) => {
   return await shopify.login(args.request);
 };
 
-// --- THIS IS THE FIXED FUNCTION ---
-// It now includes the 'future' flag in its minimal instance.
+// addDocumentResponseHeaders remains the same (uses global)
 export const addDocumentResponseHeaders = (
   request: Request,
   headers: Headers,
 ) => {
   const env = global.SHOPIFY_ENV_VARS || {};
-
    if (!env.SHOPIFY_API_KEY || !env.SHOPIFY_APP_URL || !env.SHOPIFY_API_SECRET || !env.SCOPES) {
     console.error("Missing Shopify environment variables in global env for setting CSP headers. Headers might be incomplete.");
     return headers;
   }
-
-  // Create a minimal Shopify instance using the global env vars
   const shopify = shopifyApp({
     apiKey: env.SHOPIFY_API_KEY,
     apiSecretKey: env.SHOPIFY_API_SECRET,
@@ -68,31 +64,66 @@ export const addDocumentResponseHeaders = (
     isEmbeddedApp: true,
     sessionStorage: new PrismaSessionStorage(prisma),
     restResources,
-    // --- ADDED FLAGS HERE ---
-    useShopifyManagedInstallations: true, // Keep this consistent
-    future: {
-      unstable_newEmbeddedAuthStrategy: true, // Add the required future flag
-    },
-    // --- END ADDED FLAGS ---
+    useShopifyManagedInstallations: true,
+    future: { unstable_newEmbeddedAuthStrategy: true },
   });
-
   return shopify.addDocumentResponseHeaders(request, headers);
 };
-// --- END OF FIXED FUNCTION ---
 
-
-// Unauthenticated and getShopify helpers remain the same
+// --- THIS IS THE FIXED FUNCTION ---
+// It now reads from global.SHOPIFY_ENV_VARS instead of process.env
 export const unauthenticated = {
   admin: async (shop: string) => {
-    const env = { SHOPIFY_API_KEY: process.env.SHOPIFY_API_KEY, SHOPIFY_API_SECRET: process.env.SHOPIFY_API_SECRET, SCOPES: process.env.SCOPES, SHOPIFY_APP_URL: process.env.SHOPIFY_APP_URL };
-    if (!env.SHOPIFY_API_KEY || !env.SHOPIFY_API_SECRET || !env.SCOPES || !env.SHOPIFY_APP_URL) { throw new Error("Missing Shopify environment variables for unauthenticated admin."); }
-    const shopify = shopifyApp({ apiKey: env.SHOPIFY_API_KEY, apiSecretKey: env.SHOPIFY_API_SECRET, scopes: env.SCOPES.split(","), appUrl: env.SHOPIFY_APP_URL, isEmbeddedApp: true, sessionStorage: new PrismaSessionStorage(prisma), restResources, future: { unstable_newEmbeddedAuthStrategy: true }, });
+    // Read directly from the global variable
+    const env = global.SHOPIFY_ENV_VARS || {}; // Use empty object as fallback
+
+    if (!env.SHOPIFY_API_KEY || !env.SHOPIFY_API_SECRET || !env.SCOPES || !env.SHOPIFY_APP_URL) {
+      console.error("--- ERROR: Missing Shopify env vars in global for unauthenticated.admin ---", {
+          key: !!env.SHOPIFY_API_KEY,
+          secret: !!env.SHOPIFY_API_SECRET,
+          scopes: !!env.SCOPES,
+          url: !!env.SHOPIFY_APP_URL,
+      });
+      throw new Error("Missing Shopify environment variables for unauthenticated admin.");
+    }
+
+    const shopify = shopifyApp({
+      apiKey: env.SHOPIFY_API_KEY,
+      apiSecretKey: env.SHOPIFY_API_SECRET, // Corrected property name
+      scopes: env.SCOPES.split(","),
+      appUrl: env.SHOPIFY_APP_URL,
+      isEmbeddedApp: true,
+      sessionStorage: new PrismaSessionStorage(prisma),
+      restResources,
+      future: { unstable_newEmbeddedAuthStrategy: true },
+    });
+
     return await shopify.unauthenticated.admin(shop);
   }
 };
+// --- END OF FIXED FUNCTION ---
 
+// --- UPDATED HELPER FUNCTION ---
+// Also update getShopify to use the global variable for consistency
 export const getShopify = async () => {
-  const env = { SHOPIFY_API_KEY: process.env.SHOPIFY_API_KEY, SHOPIFY_API_SECRET: process.env.SHOPIFY_API_SECRET, SCOPES: process.env.SCOPES, SHOPIFY_APP_URL: process.env.SHOPIFY_APP_URL };
-  if (!env.SHOPIFY_API_KEY || !env.SHOPIFY_API_SECRET || !env.SCOPES || !env.SHOPIFY_APP_URL) { throw new Error("Missing Shopify environment variables for getShopify."); }
-  return shopifyApp({ apiKey: env.SHOPIFY_API_KEY, apiSecretKey: env.SHOPIFY_API_SECRET, scopes: env.SCOPES.split(","), appUrl: env.SHOPIFY_APP_URL, isEmbeddedApp: true, sessionStorage: new PrismaSessionStorage(prisma), restResources, useShopifyManagedInstallations: true, future: { unstable_newEmbeddedAuthStrategy: true }, });
+  // Read directly from the global variable
+  const env = global.SHOPIFY_ENV_VARS || {}; // Use empty object as fallback
+
+  if (!env.SHOPIFY_API_KEY || !env.SHOPIFY_API_SECRET || !env.SCOPES || !env.SHOPIFY_APP_URL) {
+     console.error("--- ERROR: Missing Shopify env vars in global for getShopify ---");
+     throw new Error("Missing Shopify environment variables for getShopify.");
+  }
+
+  return shopifyApp({
+    apiKey: env.SHOPIFY_API_KEY,
+    apiSecretKey: env.SHOPIFY_API_SECRET, // Corrected property name
+    scopes: env.SCOPES.split(","),
+    appUrl: env.SHOPIFY_APP_URL,
+    isEmbeddedApp: true,
+    sessionStorage: new PrismaSessionStorage(prisma),
+    restResources,
+    useShopifyManagedInstallations: true,
+    future: { unstable_newEmbeddedAuthStrategy: true },
+  });
 };
+// --- END UPDATED HELPER FUNCTION ---

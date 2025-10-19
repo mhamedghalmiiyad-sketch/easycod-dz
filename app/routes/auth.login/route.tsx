@@ -1,27 +1,27 @@
-import type { LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
-import { login } from "~/shopify.server";
+// app/routes/auth.login/route.tsx
+import type { LoaderFunctionArgs } from "@remix-run/node";
+import { login } from "~/shopify.server"; // Use the login function from our shopify.server
 
 /**
- * This route is dedicated to initiating the Shopify login flow.
- * With the new auth strategy, the `login()` function handles everything:
- * 1. It will first attempt a token exchange.
- * 2. If that fails (or isn't applicable), it will fall back to the
- * traditional OAuth redirect flow.
- *
- * This file should NOT call `authenticate.admin`.
+ * This route is dedicated *only* to initiating the Shopify OAuth flow
+ * when App Bridge redirects here because no session exists.
+ * It should handle the GET request from App Bridge.
  */
-
-// This function handles GET requests to /auth/login
 export const loader = async (args: LoaderFunctionArgs) => {
-  // The login function will handle everything: token exchange or OAuth redirect.
-  await login(args);
-  
-  // This return is technically unreachable, but required by Remix.
+  console.log("--- DEBUG: /auth/login loader triggered ---");
+  // The login function (from shopify.server) initializes the app context
+  // and then calls the library's login, which handles extracting the shop
+  // parameter from the URL and initiating the OAuth redirect.
+  try {
+      await login(args);
+  } catch(error) {
+      console.error("--- ERROR in /auth/login loader calling login(args) ---", error);
+      // Re-throw the error so Remix can handle it
+      throw error;
+  }
+
+  // This return is technically unreachable because login() causes a redirect.
   return null;
 };
 
-// This function handles POST requests to /auth/login
-export const action = async (args: ActionFunctionArgs) => {
-  await login(args);
-  return null;
-};
+// Removed the action function as it's not typically used by the App Bridge redirect.

@@ -8,61 +8,60 @@ import { boundary } from "@shopify/shopify-app-remix/server";
 import { AppProvider } from "@shopify/shopify-app-remix/react";
 import { NavMenu } from "@shopify/app-bridge-react";
 import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
+// Import i18n functions BUT NOT authenticate
 import { getLanguageFromRequest, getTranslations, isRTL, saveLanguagePreference } from "../utils/i18n.server";
-import { authenticate } from "../shopify.server";
+// import { authenticate } from "../shopify.server"; // <-- REMOVED
 
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
-// --- FINAL LOADER WITH MANUAL RESPONSE OVERRIDE (in app.tsx) ---
+// --- LOADER WITHOUT AUTHENTICATION ---
 export const loader = async (args: LoaderFunctionArgs) => {
-  try {
-    // Attempt authentication HERE
-    const { session } = await authenticate.admin(args);
-    const { request } = args;
+  const { request } = args;
+  const url = new URL(request.url);
+  // *** CRITICAL: Get shop from URL query param ***
+  const shopParam = url.searchParams.get('shop');
 
-    // If authentication succeeds, proceed with all the real logic.
-    const language = await getLanguageFromRequest(request, session.id);
-    const translations = await getTranslations(language);
-    const rtl = isRTL(language);
-    const url = new URL(request.url);
-    const langParam = url.searchParams.get('lang');
-    if (langParam && ['en', 'ar', 'fr'].includes(langParam)) {
-      await saveLanguagePreference(session.id, langParam);
-    }
-    const headers = new Headers();
-    headers.set('Set-Cookie', `i18nextLng=${language}; Path=/; Max-Age=31536000; SameSite=Lax`);
+  // Basic i18n detection (no session ID available)
+  const langParam = url.searchParams.get('lang');
+  const cookieLang = request.headers.get('Cookie')?.match(/i18nextLng=([a-z]{2})/)?.[1];
+  const language = langParam || cookieLang || 'en';
+  const translations = await getTranslations(language);
+  const rtl = isRTL(language);
 
-    // On success, return a normal JSON response.
-    return json({
-      apiKey: process.env.SHOPIFY_API_KEY || "",
-      shop: session.shop,
-      language,
-      translations,
-      rtl,
-    }, { headers });
+  const headers = new Headers();
+  headers.set('Set-Cookie', `i18nextLng=${language}; Path=/; Max-Age=31536000; SameSite=Lax`);
 
-  } catch (error) {
-    if (error instanceof Response && error.status === 410) {
-      console.warn("--- HANDLED (app.tsx): Caught 410. Forcing 200 OK response with loading shell. ---");
-      const apiKey = process.env.SHOPIFY_API_KEY || "";
-      const html = `<!DOCTYPE html><html><head><title>Authenticating...</title><script src="https://cdn.shopify.com/shopifycloud/app-bridge/edge/index.js"></script><script>document.addEventListener('DOMContentLoaded', function() { if (window.top === window.self) { window.location.href = "/auth/login"; } else { const app = AppBridge.createApp({ apiKey: "${apiKey}" }); app.dispatch(AppBridge.actions.Redirect.toRemote({ url: window.location.href })); } });</script></head><body><p>Authenticating, please wait...</p></body></html>`;
-      return new Response(html, { status: 200, headers: { "Content-Type": "text/html" } });
-    }
-    throw error; // Re-throw other errors
-  }
+  console.log(`--- DEBUG: app.tsx loader ran WITHOUT auth. Lang: ${language}, Shop Param: ${shopParam}`);
+
+  // Return apiKey and shopParam for App Bridge initialization
+  return json({
+    apiKey: process.env.SHOPIFY_API_KEY || "",
+    shop: shopParam, // Pass shop from URL param
+    language,
+    translations,
+    rtl,
+  }, { headers, status: 200 }); // Ensure 200 OK
 };
-// --- END FINAL LOADER ---
+// --- END LOADER ---
 
 
-// Component renders only on success
+// --- COMPONENT ALWAYS RENDERS SHELL ---
 function AppContent() {
   const { apiKey, shop, language, translations, rtl } = useLoaderData<typeof loader>();
   const [isClientReady, setIsClientReady] = useState(false);
 
   useEffect(() => {
+    // Pass apiKey and shopOrigin to App Bridge config IMMEDIATELY
     if (typeof window !== 'undefined' && apiKey && shop) {
       sessionStorage.setItem('app-bridge-config', JSON.stringify({ apiKey: apiKey, shopOrigin: shop }));
+      console.log('--- DEBUG: App Bridge config set:', { apiKey, shop });
+    } else if (typeof window !== 'undefined' && apiKey) {
+        // Fallback if shop param missing (less ideal)
+         sessionStorage.setItem('app-bridge-config', JSON.stringify({ apiKey: apiKey }));
+         console.log('--- DEBUG: App Bridge config set (API Key only):', { apiKey });
     }
+
+    // Initialize i18n
     Object.entries(translations || {}).forEach(([namespace, bundle]) => {
       clientI18n.addResourceBundle(language, namespace, bundle || {}, true, true);
     });
@@ -83,15 +82,18 @@ function AppContent() {
     return clientI18n.t(key);
   };
 
+  // Render the shell containing AppProvider. App Bridge will handle auth state.
   return (
     <I18nextProvider i18n={clientI18n}>
       <div style={{ height: '100vh' }} dir={rtl ? 'rtl' : 'ltr'}>
-        <AppProvider isEmbeddedApp apiKey={apiKey}>
+        {/* AppProvider MUST be rendered for App Bridge to work */}
+        <AppProvider isEmbeddedApp apiKey={apiKey || ""}>
           <NavMenu>
             <Link to="/app" rel="home">{getTranslation('navigation:dashboard')}</Link>
             <Link to="/app/form-designer">{getTranslation('navigation:formDesigner')}</Link>
             <Link to="/app/settings/general">{getTranslation('navigation:settings')}</Link>
           </NavMenu>
+          {/* Outlet renders the child page which WILL authenticate */}
           <Outlet />
         </AppProvider>
       </div>

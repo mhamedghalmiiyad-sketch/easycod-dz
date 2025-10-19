@@ -294,26 +294,39 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             phone: formData.get("phone") as string,
         };
 
-        const userBlocking: UserBlockingSettings = settings.userBlocking
-            ? JSON.parse(settings.userBlocking as string)
-            : {
-                    limitSameCustomerOrders: false,
-                    limitSameCustomerHours: "24",
-                    blockByQuantity: false,
-                    blockQuantityAmount: "5",
-                    blockedEmails: "",
-                    blockedPhoneNumbers: "",
-                    blockedIps: "",
-                    allowedIps: "",
-                    blockedMessage: "Your order could not be processed at this time.",
-                    postalCodeMode: "none",
-                    postalCodeList: "",
-                    enableRiskScoring: false,
-                    autoRejectHighRisk: false,
-                };
+        // --- FIX: Safely parse userBlocking settings ---
+        let userBlocking: Partial<UserBlockingSettings>;
+        try {
+            userBlocking = settings.userBlocking ? JSON.parse(settings.userBlocking) : {};
+        } catch (parseError) {
+            console.error("⚠️ Error parsing userBlocking settings, using defaults:", parseError);
+            userBlocking = {}; // Use empty object if parsing fails
+        }
+
+        // --- FIX: Provide default empty strings for all blocking lists ---
+        const defaultBlockingSettings: UserBlockingSettings = {
+            limitSameCustomerOrders: false,
+            limitSameCustomerHours: "24",
+            blockByQuantity: false,
+            blockQuantityAmount: "5",
+            blockedEmails: "",
+            blockedPhoneNumbers: "",
+            blockedIps: "",
+            allowedIps: "",
+            blockedMessage: "Your order could not be processed at this time.",
+            postalCodeMode: "none",
+            postalCodeList: "",
+            enableRiskScoring: false,
+            autoRejectHighRisk: false,
+        };
+
+        // Merge parsed settings with defaults to ensure all keys exist
+        userBlocking = { ...defaultBlockingSettings, ...userBlocking };
+        // --- END FIX ---
 
         const blockedMessage = userBlocking.blockedMessage || "Your order could not be processed.";
-        const allowedIps = userBlocking.allowedIps.split('\n').map(ip => ip.trim()).filter(Boolean);
+        // --- FIX: Add fallback to empty string before splitting ---
+        const allowedIps = (userBlocking.allowedIps || '').split('\n').map(ip => ip.trim()).filter(Boolean);
         const isIpWhitelisted = allowedIps.length > 0 && allowedIps.includes(customerIp);
 
         if (!isIpWhitelisted) {
@@ -350,7 +363,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                     });
                 }
             }
-            const blockedIps = userBlocking.blockedIps.split('\n').map(ip => ip.trim()).filter(Boolean);
+            // --- FIX: Add fallback to empty string before splitting ---
+            const blockedIps = (userBlocking.blockedIps || '').split('\n').map(ip => ip.trim()).filter(Boolean);
             if (blockedIps.includes(customerIp)) {
                 return json({ success: false, error: blockedMessage }, { 
                     status: 403,
@@ -359,7 +373,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                     }
                 });
             }
-            const blockedEmails = userBlocking.blockedEmails.split('\n').map(e => e.toLowerCase().trim()).filter(Boolean);
+            // --- FIX: Add fallback to empty string before splitting ---
+            const blockedEmails = (userBlocking.blockedEmails || '').split('\n').map(e => e.toLowerCase().trim()).filter(Boolean);
             if (customerEmail && blockedEmails.includes(customerEmail)) {
                 return json({ success: false, error: blockedMessage }, { 
                     status: 403,
@@ -368,7 +383,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                     }
                 });
             }
-            const blockedPhones = userBlocking.blockedPhoneNumbers.split('\n').map(p => p.replace(/\D/g, "")).filter(Boolean);
+            // --- FIX: Add fallback to empty string before splitting ---
+            const blockedPhones = (userBlocking.blockedPhoneNumbers || '').split('\n').map(p => p.replace(/\D/g, "")).filter(Boolean);
             if (customerPhone && blockedPhones.includes(customerPhone)) {
                 return json({ success: false, error: blockedMessage }, { 
                     status: 403,
@@ -378,8 +394,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                 });
             }
             if (userBlocking.blockByQuantity) {
-                const totalQuantity = lineItems.reduce((sum: number, item: any) => sum + item.quantity, 0);
-                if (totalQuantity > parseInt(userBlocking.blockQuantityAmount, 10)) {
+                const totalQuantity = lineItems.reduce((sum: number, item: any) => sum + (item.quantity || 1), 0); // Ensure quantity exists
+                const blockAmount = parseInt(userBlocking.blockQuantityAmount || "999", 10); // Default high if missing
+                if (totalQuantity > blockAmount) {
                     return json({ success: false, error: blockedMessage }, { 
                         status: 403,
                         headers: {
@@ -389,7 +406,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                 }
             }
             if (userBlocking.postalCodeMode !== 'none' && customerPostalCode) {
-                const postalCodeList = userBlocking.postalCodeList.split('\n').map(pc => pc.toUpperCase().trim()).filter(Boolean);
+                // --- FIX: Add fallback to empty string before splitting ---
+                const postalCodeList = (userBlocking.postalCodeList || '').split('\n').map(pc => pc.toUpperCase().trim()).filter(Boolean);
                 if (userBlocking.postalCodeMode === 'exclude' && postalCodeList.includes(customerPostalCode)) {
                     return json({ success: false, error: blockedMessage }, { 
                         status: 403,
@@ -408,26 +426,28 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                 }
             }
             if (userBlocking.limitSameCustomerOrders) {
-                const hours = parseInt(userBlocking.limitSameCustomerHours, 10);
-                const timeLimit = new Date(Date.now() - hours * 60 * 60 * 1000);
-                const recentOrder = await db.orderTracking.findFirst({
-                    where: {
-                        shopId: shop,
-                        createdAt: { gte: timeLimit },
-                        OR: [
-                            { customerIp: customerIp },
-                            { customerEmail: customerEmail },
-                            { customerPhone: customerPhone },
-                        ].filter(condition => Object.values(condition)[0]),
-                    },
-                });
-                if (recentOrder) {
-                    return json({ success: false, error: blockedMessage }, { 
-                        status: 403,
-                        headers: {
-                            "Content-Type": "application/liquid",
-                        }
+                const hours = parseInt(userBlocking.limitSameCustomerHours || "0", 10); // Default 0 if missing
+                if (hours > 0) { // Only query if limit is enabled
+                    const timeLimit = new Date(Date.now() - hours * 60 * 60 * 1000);
+                    const recentOrder = await db.orderTracking.findFirst({
+                        where: {
+                            shopId: shop,
+                            createdAt: { gte: timeLimit },
+                            OR: [
+                                { customerIp: customerIp },
+                                ...(customerEmail ? [{ customerEmail: customerEmail }] : []),
+                                ...(customerPhone ? [{ customerPhone: customerPhone }] : []),
+                            ],
+                        },
                     });
+                    if (recentOrder) {
+                        return json({ success: false, error: blockedMessage }, { 
+                            status: 403,
+                            headers: {
+                                "Content-Type": "application/liquid",
+                            }
+                        });
+                    }
                 }
             }
         }

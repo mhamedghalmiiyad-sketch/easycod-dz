@@ -3,17 +3,11 @@ import type { LoaderFunctionArgs } from "@remix-run/node";
 /**
  * This route exists solely to serve the initial HTML shell needed by App Bridge
  * when it detects no session and redirects the user here client-side.
- * It DOES NOT call the server-side login() function.
  */
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   console.log("--- DEBUG: /auth/login loader serving App Bridge redirect shell ---");
 
-  const url = new URL(request.url);
-  // Shopify provides `shop` and `host` params on this redirect.
-  const shop = url.searchParams.get('shop');
-  const host = url.searchParams.get('host');
-
-  // We need the API Key to initialize App Bridge
+  // We only need the API Key for the client-side script.
   const apiKey = process.env.SHOPIFY_API_KEY || global.SHOPIFY_ENV_VARS?.SHOPIFY_API_KEY || "";
 
   if (!apiKey) {
@@ -21,12 +15,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       return new Response("Application configuration error.", { status: 500 });
   }
 
-  // If App Bridge didn't provide host or shop, we can't proceed.
-  if (!host && !shop) {
-    return new Response("Missing host or shop parameter. Please ensure you are loading the app inside Shopify Admin.", { status: 400 });
-  }
-
-  // This minimal HTML page will run on the client-side inside the iframe.
+  // The client-side script will now handle getting the host parameter itself.
   const html = `
     <!DOCTYPE html>
     <html>
@@ -38,29 +27,44 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
             console.log('App Bridge Shell Loaded. Initializing App Bridge...');
             
             const apiKey = "${apiKey}";
-            // App Bridge v3.1 prefers the host parameter.
-            const host = "${host || ''}";
-            const shopOrigin = "${shop || ''}";
             
-            // Construct a valid config, prioritizing host.
-            // The host parameter is a base64-encoded version of the shop's admin URL.
-            const config = { 
-              apiKey, 
-              host: host || window.btoa(shopOrigin).replace(/=/g, '') 
-            };
-            console.log('App Bridge Config in login shell:', config);
-
             // --- THIS IS THE FIX ---
-            // Simply create the app. App Bridge will automatically detect that it's in an
-            // authentication context and will handle redirecting to the OAuth consent screen.
-            // We should NOT dispatch a redirect action ourselves here.
-            try {
-                AppBridge.createApp(config);
-                console.log('App Bridge Initialized. App Bridge will now handle the auth redirect.');
-            } catch (e) {
-                 console.error('Error initializing App Bridge in login shell:', e);
-                 document.body.innerHTML = '<p>Error initializing application. Please try again.</p>';
+            // This script now gets the host parameter from App Bridge's context on the client side,
+            // which is more reliable than relying on URL parameters during the redirect.
+            async function initializeAndRedirect() {
+              try {
+                // First, create the app instance
+                const app = AppBridge.createApp({ apiKey });
+                console.log('App Bridge instance created.');
+
+                // Use app.getState() to get the current client-side context from Shopify Admin
+                const state = await app.getState();
+                console.log('App Bridge state received:', state);
+
+                const host = state && state.host;
+
+                if (!host) {
+                  console.error('Could not retrieve host from App Bridge state.');
+                  document.body.innerHTML = '<p>Could not retrieve Shopify context. Please ensure you are loading the app inside Shopify Admin.</p>';
+                  return;
+                }
+
+                console.log('Host retrieved from state:', host);
+                
+                // Now that we have the host, we can tell App Bridge to handle the full auth redirect.
+                // App Bridge will now construct the correct OAuth URL.
+                app.dispatch(AppBridge.actions.Redirect.toRemote({
+                  url: \`/auth?host=\${host}\`,
+                }));
+                console.log('Redirect dispatched to App Bridge.');
+
+              } catch (e) {
+                console.error('Error during App Bridge initialization or redirect:', e);
+                document.body.innerHTML = '<p>Error initializing application. Please try again.</p>';
+              }
             }
+
+            initializeAndRedirect();
             // --- END OF FIX ---
           });
         </script>

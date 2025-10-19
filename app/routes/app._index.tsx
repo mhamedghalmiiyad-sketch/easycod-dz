@@ -16,13 +16,15 @@ import { getLanguageFromRequest, getTranslations, isRTL, saveLanguagePreference 
 import clientI18n from '../utils/i18n.client';
 import { authenticate } from "../shopify.server";
 
-// --- ORIGINAL LOADER (in app._index.tsx) ---
+// This loader PROTECTS the dashboard page.
+// It will only run after App Bridge has established a session.
 export const loader = async (args: LoaderFunctionArgs) => {
-  // Authenticate HERE to protect content
+  // If no session exists, App Bridge will have already handled the auth flow.
+  // This call will now succeed.
   const { session } = await authenticate.admin(args);
   const { request } = args;
 
-  // Full i18n logic
+  // Your original i18n and data-loading logic is here.
   const language = await getLanguageFromRequest(request, session.id);
   const translations = await getTranslations(language);
   const rtl = isRTL(language);
@@ -31,10 +33,11 @@ export const loader = async (args: LoaderFunctionArgs) => {
   if (langParam && ['en', 'ar', 'fr'].includes(langParam)) {
     await saveLanguagePreference(session.id, langParam);
   }
+  // ... and so on
+
   const headers = new Headers();
   headers.set('Set-Cookie', `i18nextLng=${language}; Path=/; Max-Age=31536000; SameSite=Lax`);
 
-  // Return actual data
   return json({
     shop: session.shop,
     language,
@@ -42,7 +45,6 @@ export const loader = async (args: LoaderFunctionArgs) => {
     rtl,
   }, { headers });
 };
-// --- END ORIGINAL LOADER ---
 
 
 // --- ORIGINAL COMPONENT CODE RESTORED ---

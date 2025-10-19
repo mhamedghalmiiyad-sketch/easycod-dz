@@ -1,6 +1,7 @@
 import type { LoaderFunctionArgs, ActionFunctionArgs, AppLoadContext } from "@remix-run/node";
 import { shopifyApp } from "@shopify/shopify-app-remix/server";
 import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prisma";
+import { LATEST_API_VERSION } from "@shopify/shopify-api"; // Import LATEST_API_VERSION
 import { restResources } from "@shopify/shopify-api/rest/admin/2024-07";
 import prisma from "~/db.server";
 
@@ -28,7 +29,8 @@ const initializeShopifyApp = (context: AppLoadContext) => {
     appUrl: env.SHOPIFY_APP_URL,
     isEmbeddedApp: true,
     sessionStorage: new PrismaSessionStorage(prisma),
-    restResources,
+    restResources, // Keep using 2024-07 REST resources if needed elsewhere
+    apiVersion: LATEST_API_VERSION, // Explicitly use LATEST version for API calls
     useShopifyManagedInstallations: true,
     future: { unstable_newEmbeddedAuthStrategy: true },
   });
@@ -63,7 +65,8 @@ export const addDocumentResponseHeaders = (
     appUrl: env.SHOPIFY_APP_URL,
     isEmbeddedApp: true,
     sessionStorage: new PrismaSessionStorage(prisma),
-    restResources,
+    restResources, // Keep using 2024-07 REST resources if needed elsewhere
+    apiVersion: LATEST_API_VERSION, // Add here too
     useShopifyManagedInstallations: true,
     future: { unstable_newEmbeddedAuthStrategy: true },
   });
@@ -90,15 +93,25 @@ export const unauthenticated = {
     const shopify = shopifyApp({
       apiKey: env.SHOPIFY_API_KEY,
       apiSecretKey: env.SHOPIFY_API_SECRET, // Corrected property name
-      scopes: env.SCOPES.split(","),
+      scopes: env.SCOPES.split(","), // Scopes might not be strictly needed here, but doesn't hurt
       appUrl: env.SHOPIFY_APP_URL,
-      isEmbeddedApp: true,
+      isEmbeddedApp: true, // Keep true, context matters
       sessionStorage: new PrismaSessionStorage(prisma),
-      restResources,
-      future: { unstable_newEmbeddedAuthStrategy: true },
+      restResources, // Keep using 2024-07 REST resources if needed elsewhere
+      apiVersion: LATEST_API_VERSION, // Explicitly use LATEST version
+      // useShopifyManagedInstallations might not be needed here, but let's keep it consistent
+      useShopifyManagedInstallations: true,
+      future: { unstable_newEmbeddedAuthStrategy: true }, // Keep consistent
     });
 
-    return await shopify.unauthenticated.admin(shop);
+    // This returns { admin: AdminApiContext }, ensure we return that structure if needed elsewhere
+     try {
+       return await shopify.unauthenticated.admin(shop);
+     } catch(e) {
+        console.error("Error getting unauthenticated admin context:", e);
+        // Rethrow or handle appropriately - maybe the session doesn't exist?
+        throw new Error(`Failed to get unauthenticated admin context for ${shop}. Ensure app is installed.`);
+     }
   }
 };
 // --- END OF FIXED FUNCTION ---
@@ -121,7 +134,8 @@ export const getShopify = async () => {
     appUrl: env.SHOPIFY_APP_URL,
     isEmbeddedApp: true,
     sessionStorage: new PrismaSessionStorage(prisma),
-    restResources,
+    restResources, // Keep using 2024-07 REST resources if needed elsewhere
+    apiVersion: LATEST_API_VERSION, // Explicitly use LATEST version
     useShopifyManagedInstallations: true,
     future: { unstable_newEmbeddedAuthStrategy: true },
   });

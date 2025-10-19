@@ -1,7 +1,7 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData, useNavigate } from "@remix-run/react";
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   Page, Layout, Card, Button, Icon, Text, ProgressBar, Collapsible, BlockStack, InlineStack, Box, Divider, Toast, Modal, TextContainer
 } from '@shopify/polaris';
@@ -11,83 +11,43 @@ import {
 import { MessageCircle, Mail } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { LanguageSelector } from '../components/LanguageSelector';
-// --- RESTORED i18n SERVER IMPORTS ---
-import { getLanguageFromRequest, getTranslations, isRTL, saveLanguagePreference } from '../utils/i18n.server';
-import clientI18n from '../utils/i18n.client';
+import { getLanguageFromRequest, saveLanguagePreference } from '../utils/i18n.server';
 import { authenticate } from "../shopify.server";
 
-// This loader PROTECTS the dashboard page.
-// It will only run after App Bridge has established a session.
+// This loader MUST authenticate to protect the page content.
 export const loader = async (args: LoaderFunctionArgs) => {
-  // If no session exists, App Bridge will have already handled the auth flow.
-  // This call will now succeed.
   const { session } = await authenticate.admin(args);
   const { request } = args;
 
-  // Your original i18n and data-loading logic is here.
+  // You can still load page-specific data here.
   const language = await getLanguageFromRequest(request, session.id);
-  const translations = await getTranslations(language);
-  const rtl = isRTL(language);
   const url = new URL(request.url);
   const langParam = url.searchParams.get('lang');
   if (langParam && ['en', 'ar', 'fr'].includes(langParam)) {
     await saveLanguagePreference(session.id, langParam);
   }
-  // ... and so on
-
-  const headers = new Headers();
-  headers.set('Set-Cookie', `i18nextLng=${language}; Path=/; Max-Age=31536000; SameSite=Lax`);
-
+  
   return json({
     shop: session.shop,
     language,
-    translations,
-    rtl,
-  }, { headers });
+  });
 };
 
 
-// --- ORIGINAL COMPONENT CODE RESTORED ---
+// This component now just renders the page content and USES the context from its parent.
 export default function ShopifyDashboard() {
-  const { shop, language, translations, rtl } = useLoaderData<typeof loader>();
+  const { shop, language } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
-  // Use client translation hook
-  const { t: clientT } = useTranslation('dashboard');
-  const [isClientReady, setIsClientReady] = useState(false);
-
-  // Debug log to ensure component renders
-  console.log('--- DEBUG: Original app._index.tsx component rendering ---');
-
-  // ... (Rest of your original component state and hooks)
+  // This hook now works because the I18nextProvider is in the parent component.
+  const { t } = useTranslation('dashboard');
+  
+  // All your original state and hooks...
   const [isSetupExpanded, setIsSetupExpanded] = useState(true);
   const [showToast, setShowToast] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [selectedStep, setSelectedStep] = useState<string | null>(null);
   const [showFAQ, setShowFAQ] = useState(false);
   const [expandedFAQItems, setExpandedFAQItems] = useState<number[]>([]);
-
-  // Initialize client i18n with potentially empty server data (will update client-side)
-  useEffect(() => {
-    Object.entries(translations || {}).forEach(([namespace, bundle]) => {
-      clientI18n.addResourceBundle(language, namespace, bundle || {}, true, true);
-    });
-
-    clientI18n.changeLanguage(language).then(() => {
-      document.documentElement.setAttribute('dir', rtl ? 'rtl' : 'ltr');
-      document.documentElement.setAttribute('lang', language);
-      setIsClientReady(true);
-    });
-  }, [language, translations, rtl]);
-
-  const t = (key: string) => {
-    if (!isClientReady) {
-      const parts = key.split(':');
-      const ns = parts.length > 1 ? parts[0] : 'dashboard';
-      const k = parts.length > 1 ? parts[1] : key;
-      return (translations as any)?.[ns]?.[k] || k;
-    }
-    return clientT(key);
-  };
 
   // ... (Rest of your original component logic: setupData, setupSteps, supportItems, faqItems, handlers, etc.)
   const setupData = { completedSteps: 0, totalSteps: 3, get setupProgress() { return Math.round((this.completedSteps / this.totalSteps) * 100); } };

@@ -5,6 +5,7 @@ import React, { useState, useCallback, useEffect, useRef, Fragment, useMemo } fr
 /* -------------------------------------------------------------------------- */
 import { ActionFunctionArgs, LoaderFunctionArgs, json } from "@remix-run/node";
 import { useLoaderData, useSubmit, useFetcher, useNavigation } from "@remix-run/react";
+import { useAppBridge } from "@shopify/app-bridge-react";
 import { db } from "../db.server";
 import { authenticate } from "../shopify.server";
 import {
@@ -1002,11 +1003,12 @@ export const action = async (args: ActionFunctionArgs) => {
 
     const { request } = args; // Destructure request after auth
 
-    const formData = await request.formData();
+    // Read the JSON body from the authenticatedFetch request
+    const requestBody = await request.json();
 
-    const formFields = formData.get("formFields") as string;
-    const formStyle = formData.get("formStyle") as string;
-    const shippingRates = formData.get("shippingRates") as string;
+    const formFields = requestBody.formFields as string;
+    const formStyle = requestBody.formStyle as string;
+    const shippingRates = requestBody.shippingRates as string;
 
     // Validate required data
     if (!formFields || !formStyle) {
@@ -4488,6 +4490,7 @@ function CODFormDesignerRoot() {
     const { t } = useTranslation('formDesigner');
     const submit = useSubmit();
     const navigation = useNavigation();
+    const app = useAppBridge();
 
     const [isEditingPopupButton, setIsEditingPopupButton] = useState(false);
     const [isEditingLogistics, setIsEditingLogistics] = useState(false);
@@ -4649,21 +4652,17 @@ const handleSave = useCallback(async () => {
     isSaving
   });
 
-  // Prevent multiple simultaneous saves
   if (isSaving) {
     console.log('⚠️ [handleSave] - Already saving, ignoring call');
     return;
   }
 
+  // Manually set saving state (since we're not using useNavigation)
+  // We can use the wasSaving ref to track this.
+  wasSaving.current = true; 
+  // You might want to add a new state like setIsSaving(true) if wasSaving isn't enough
+
   try {
-    // Validate data before saving
-    if (!formFields || !formStyle) {
-      throw new Error('Invalid form data');
-    }
-
-    const formData = new FormData();
-
-    // Safely stringify data with error handling
     const formFieldsJson = JSON.stringify(formFields);
     const formStyleJson = JSON.stringify(formStyle);
     const shippingRatesJson = JSON.stringify(shippingRates);
@@ -4674,23 +4673,46 @@ const handleSave = useCallback(async () => {
       shippingRatesSize: shippingRatesJson.length
     });
 
-    formData.append("formFields", formFieldsJson);
-    formData.append("formStyle", formStyleJson);
-    formData.append("shippingRates", shippingRatesJson);
-    
-    console.log('🔄 [handleSave] - Submitting form data...');
-    
-    // Use submit with error handling
-    submit(formData, { 
-      method: "post"
+    console.log('🔄 [handleSave] - Submitting data with authenticatedFetch...');
+
+    // Use authenticatedFetch to make the POST request
+    const response = await app.authenticatedFetch("/app/form-designer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        formFields: formFieldsJson,
+        formStyle: formStyleJson,
+        shippingRates: shippingRatesJson,
+      }),
     });
 
-    console.log('✅ [handleSave] - Submit call completed');
+    wasSaving.current = false;
+    // You might want to add setIsSaving(false) here
+
+    if (response.ok) {
+      const result = await response.json();
+      if (result.success) {
+        console.log('✅ [handleSave] - Submit call completed, response OK.', result);
+        showSnack('success', 'Saved', 'Your changes have been saved successfully.');
+        setHasUnsavedChanges(false);
+      } else {
+        // Handle server-side errors (e.g., verification failed)
+        console.error('❌ [handleSave] - Server returned an error:', result.error);
+        showSnack('error', 'Save Failed', result.error || 'An unknown error occurred on the server.');
+      }
+    } else {
+      // Handle network errors (e.g., 500, 404)
+      console.error('❌ [handleSave] - Network error:', response.status, response.statusText);
+      showSnack('error', 'Save Failed', `Network Error: ${response.statusText}`);
+    }
+
   } catch (error) {
-    console.error('❌ [handleSave] - Save failed:', error);
-    showSnack('error', 'Save Failed', 'There was an error saving your changes. Please try again.');
+    wasSaving.current = false;
+    // You might want to add setIsSaving(false) here
+    console.error('❌ [handleSave] - Client-side save failed:', error);
+    showSnack('error', 'Save Failed', 'An error occurred while sending your changes.');
   }
-}, [formFields, formStyle, shippingRates, submit, isSaving, hasUnsavedChanges, showSnack]);
+}, [formFields, formStyle, shippingRates, app, isSaving, hasUnsavedChanges, showSnack]); // <-- Add 'app' to dependency array
 
     const handleDiscard = useCallback(() => {
         setFormFields(loadedFormFields);

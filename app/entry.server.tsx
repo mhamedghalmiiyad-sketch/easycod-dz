@@ -116,21 +116,27 @@ function handleBrowserRequest(
           const body = new PassThrough();
           const stream = createReadableStreamFromReadable(body);
           
-          // --- REVISED LOGIC START ---
+          // --- REVISED LOGIC v3 ---
           const currentContentType = responseHeaders.get("Content-Type");
+          const url = new URL(request.url); // Get the URL to check the path
 
-          // For page loads (GET requests), ALWAYS set text/html
-          // For other requests (like POST actions), only set text/html if NOTHING is set yet.
           if (request.method === "GET") {
-            console.log("--- DEBUG: GET request detected. Forcing Content-Type to text/html. (Was:", currentContentType, ") ---");
-            responseHeaders.set("Content-Type", "text/html");
+            if (url.pathname === "/auth/session-token") {
+              // This is a special GET request that MUST return JSON.
+              // Trust whatever Remix/Shopify auth set.
+              console.log("--- DEBUG: GET /auth/session-token detected. Preserving Content-Type:", currentContentType, "---");
+            } else {
+              // This is a normal page load GET request. Force text/html.
+              console.log("--- DEBUG: Standard GET request detected. Forcing Content-Type to text/html. (Was:", currentContentType, ") ---");
+              responseHeaders.set("Content-Type", "text/html");
+            }
           } else if (!currentContentType) {
-            // For non-GET requests (like POST), only set if Remix didn't set one.
-            console.log("--- DEBUG: Non-GET request and Content-Type not set by Remix. Setting to text/html ---");
+            // For non-GET requests (like POST) where nothing is set
+            console.log("--- DEBUG: Non-GET request and Content-Type not set. Setting to text/html ---");
             responseHeaders.set("Content-Type", "text/html");
           } else {
-            // For non-GET requests where Remix already set it (e.g., application/json from action)
-            console.log("--- DEBUG: Non-GET request and Content-Type already set by Remix:", currentContentType, ". Preserving it. ---");
+            // For non-GET requests (like POST) where it's already set (e.g., application/json)
+            console.log("--- DEBUG: Non-GET request and Content-Type already set:", currentContentType, ". Preserving it. ---");
           }
           // --- REVISED LOGIC END ---
           

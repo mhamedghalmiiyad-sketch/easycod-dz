@@ -113,7 +113,13 @@ function handleBrowserRequest(
           const body = new PassThrough();
           const stream = createReadableStreamFromReadable(body);
           
-          responseHeaders.set("Content-Type", "text/html");
+          // Only set Content-Type if Remix hasn't already set it (e.g., from an action returning json)
+          if (!responseHeaders.has("Content-Type")) {
+            console.log("--- DEBUG: Content-Type not set by Remix, setting to text/html ---");
+            responseHeaders.set("Content-Type", "text/html");
+          } else {
+            console.log("--- DEBUG: Content-Type already set by Remix:", responseHeaders.get("Content-Type"), "---");
+          }
           
           console.log("--- DEBUG: Resolving response with status:", responseStatusCode, "---");
           resolve(

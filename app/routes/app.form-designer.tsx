@@ -4679,7 +4679,7 @@ const handleSave = useCallback(() => {
       },
       {
         method: "POST",
-        encType: "application/json",
+        // ❌ REMOVE encType - it's causing the issue
       }
     );
 

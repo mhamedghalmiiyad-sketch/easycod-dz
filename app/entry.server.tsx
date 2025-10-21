@@ -21,7 +21,7 @@ export default function handleRequest(
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.shopify.com https://cdnjs.cloudflare.com",
     "style-src 'self' 'unsafe-inline' https://cdn.shopify.com",
     "img-src 'self' data: https: blob:",
-    "font-src 'self' data: https://fonts.gstatic.com",
+    "font-src 'self' data: https://fonts.gstatic.com https://cdn.shopify.com",
     "connect-src 'self' https://*.shopify.com https://*.shopifycloud.com wss://*.shopifycloud.com https://monorail-edge.shopifysvc.com https://error-analytics-sessions-production.shopifysvc.com",
     "frame-src 'self' https://*.shopify.com https://admin.shopify.com",
     "frame-ancestors https://*.shopify.com https://admin.shopify.com",

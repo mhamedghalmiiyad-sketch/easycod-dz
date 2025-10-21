@@ -4680,12 +4680,23 @@ const handleSave = useCallback(async () => {
     
     console.log('🔄 [handleSave] - Submitting form data...');
     
-    // Use submit with error handling
-    submit(formData, { 
-      method: "post"
+    // --- DEBUG: Temporarily commented out to prevent reload ---
+    // submit(formData, { 
+    //   method: "post"
+    // });
+    
+    // Log the data that *would* be sent
+    console.log('--- DEBUG: SUBMIT PAUSED ---');
+    console.log({
+      formFields: formData.get("formFields"),
+      formStyle: formData.get("formStyle"),
     });
+    
+    // Show a snackbar to prove the function ran
+    showSnack('info', 'Debug: Submit Paused', 'Save was clicked, but submit was stopped. Check console.');
+    // --- END DEBUG ---
 
-    console.log('✅ [handleSave] - Submit call completed');
+    console.log('✅ [handleSave] - Submit call completed (but was paused)');
   } catch (error) {
     console.error('❌ [handleSave] - Save failed:', error);
     showSnack('error', 'Save Failed', 'There was an error saving your changes. Please try again.');

@@ -1040,6 +1040,19 @@ export const action = async (args: ActionFunctionArgs) => {
     });
     console.log("Step 3 SUCCESS: Database upsert complete.");
 
+    // ✅ VERIFICATION: Check if database save actually worked
+    console.log("Step 3.1: Verifying database save...");
+    const savedRecord = await db.shopSettings.findUnique({
+      where: { shopId: session.shop }
+    });
+    
+    if (!savedRecord) {
+      console.error("❌ VERIFICATION FAILED: Database record not found after upsert");
+      return json({ success: false, error: "Database save verification failed" }, { status: 500 });
+    }
+    
+    console.log("✅ VERIFICATION SUCCESS: Database record confirmed saved");
+
     console.log("Step 4: Fetching shop GID via GraphQL...");
     const shopIdQueryResponse = await admin.graphql("query { shop { id } }");
     const shopIdQueryResult = await shopIdQueryResponse.json();
@@ -1087,15 +1100,35 @@ export const action = async (args: ActionFunctionArgs) => {
       return json({ success: false, error: userErrors.map((e: any) => e.message).join(", ") }, { status: 400 });
     }
 
+    // ✅ VERIFICATION: Check if metafield save actually worked
+    console.log("Step 5.1: Verifying metafield save...");
+    const savedMetafield = result.data?.metafieldsSet?.metafields?.[0];
+    
+    if (!savedMetafield) {
+      console.error("❌ VERIFICATION FAILED: Metafield not found in response");
+      console.error("Full metafield response:", JSON.stringify(result, null, 2));
+      return json({ success: false, error: "Metafield save verification failed" }, { status: 500 });
+    }
+    
+    console.log("✅ VERIFICATION SUCCESS: Metafield confirmed saved with ID:", savedMetafield.id);
+
     console.log("✅ [ACTION] - Successfully completed and sending response.");
     return json({
       success: true,
-      metafield: result.data?.metafieldsSet?.metafields?.[0] ?? null,
+      metafield: savedMetafield,
     });
 
   } catch (error) {
-    console.error("❌ ACTION FAILED (Catch Block):", error);
-    return json({ success: false, error: String(error) }, { status: 500 });
+    console.error("❌ ACTION FAILED UNEXPECTEDLY (Catch Block)");
+    console.error("Error type:", typeof error);
+    console.error("Error message:", error instanceof Error ? error.message : String(error));
+    console.error("Error stack:", error instanceof Error ? error.stack : 'No stack trace available');
+    console.error("Full error object:", error);
+    return json({ 
+      success: false, 
+      error: error instanceof Error ? error.message : String(error),
+      details: "An unexpected error occurred during save operation"
+    }, { status: 500 });
   }
 };
 

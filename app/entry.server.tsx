@@ -97,6 +97,9 @@ function handleBrowserRequest(
   remixContext: EntryContext
 ) {
   console.log("--- DEBUG: Handling browser request ---");
+  // Log the initial content type passed into this function
+  console.log("--- DEBUG: Initial Content-Type Header:", responseHeaders.get("Content-Type"));
+  console.log("--- DEBUG: Request Method:", request.method);
   
   return new Promise((resolve, reject) => {
     let shellRendered = false;
@@ -113,15 +116,25 @@ function handleBrowserRequest(
           const body = new PassThrough();
           const stream = createReadableStreamFromReadable(body);
           
-          // Only set Content-Type if Remix hasn't already set it (e.g., from an action returning json)
-          if (!responseHeaders.has("Content-Type")) {
-            console.log("--- DEBUG: Content-Type not set by Remix, setting to text/html ---");
+          // --- REVISED LOGIC START ---
+          const currentContentType = responseHeaders.get("Content-Type");
+
+          // For page loads (GET requests), ALWAYS set text/html
+          // For other requests (like POST actions), only set text/html if NOTHING is set yet.
+          if (request.method === "GET") {
+            console.log("--- DEBUG: GET request detected. Forcing Content-Type to text/html. (Was:", currentContentType, ") ---");
+            responseHeaders.set("Content-Type", "text/html");
+          } else if (!currentContentType) {
+            // For non-GET requests (like POST), only set if Remix didn't set one.
+            console.log("--- DEBUG: Non-GET request and Content-Type not set by Remix. Setting to text/html ---");
             responseHeaders.set("Content-Type", "text/html");
           } else {
-            console.log("--- DEBUG: Content-Type already set by Remix:", responseHeaders.get("Content-Type"), "---");
+            // For non-GET requests where Remix already set it (e.g., application/json from action)
+            console.log("--- DEBUG: Non-GET request and Content-Type already set by Remix:", currentContentType, ". Preserving it. ---");
           }
+          // --- REVISED LOGIC END ---
           
-          console.log("--- DEBUG: Resolving response with status:", responseStatusCode, "---");
+          console.log("--- DEBUG: Resolving response with final Content-Type:", responseHeaders.get("Content-Type"), "and status:", responseStatusCode, "---");
           resolve(
             new Response(stream, {
               headers: responseHeaders,

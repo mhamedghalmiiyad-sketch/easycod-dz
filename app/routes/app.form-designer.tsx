@@ -5,7 +5,7 @@ import React, { useState, useCallback, useEffect, useRef, Fragment, useMemo } fr
 /* -------------------------------------------------------------------------- */
 import { ActionFunctionArgs, LoaderFunctionArgs, json } from "@remix-run/node";
 import { useLoaderData, useSubmit, useFetcher, useNavigation } from "@remix-run/react";
-// Using standard fetch instead of authenticated fetch hook
+// useAuthenticatedFetch is no longer needed in App Bridge v4+ - use standard fetch
 import { db } from "../db.server";
 import { authenticate } from "../shopify.server";
 import {
@@ -4490,7 +4490,7 @@ function CODFormDesignerRoot() {
     const { t } = useTranslation('formDesigner');
     const submit = useSubmit();
     const navigation = useNavigation();
-    // Using standard fetch instead of App Bridge authenticated fetch
+    // App Bridge v4+ automatically handles authentication with standard fetch
 
     const [isEditingPopupButton, setIsEditingPopupButton] = useState(false);
     const [isEditingLogistics, setIsEditingLogistics] = useState(false);

@@ -1,90 +1,151 @@
 import { PassThrough } from "stream";
-import { renderToPipeableStream } from "react-dom/server";
+import type { AppLoadContext, EntryContext } from "@remix-run/node";
+import { createReadableStreamFromReadable } from "@remix-run/node";
 import { RemixServer } from "@remix-run/react";
-import {
-  createReadableStreamFromReadable,
-  type EntryContext,
-} from "@remix-run/node";
 import { isbot } from "isbot";
-import { addDocumentResponseHeaders } from "./shopify.server";
+import { renderToPipeableStream } from "react-dom/server";
+
+// --- ADD THESE TWO IMPORTS ---
 import { I18nextProvider } from "react-i18next";
-import i18n from "./utils/i18n.client";
+import i18n from "./utils/i18n.client"; // Use the same client instance as root.tsx
 
-export const streamTimeout = 5000;
+const ABORT_DELAY = 5000;
 
-export default async function handleRequest(
+export default function handleRequest(
+  request: Request,
+  responseStatusCode: number,
+  responseHeaders: Headers,
+  remixContext: EntryContext,
+  loadContext: AppLoadContext
+) {
+  console.log("--- DEBUG: Starting handleRequest in entry.server.tsx ---");
+
+  // This is your CSP policy, which is correct
+  const cspDirectives = [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.shopify.com https://cdnjs.cloudflare.com",
+    "style-src 'self' 'unsafe-inline' https://cdn.shopify.com",
+    "img-src 'self' data: https: blob:",
+    "font-src 'self' data: https://fonts.gstatic.com",
+    "connect-src 'self' https://*.shopify.com https://*.shopifycloud.com wss://*.shopifycloud.com https://monorail-edge.shopifysvc.com https://error-analytics-sessions-production.shopifysvc.com",
+    "frame-src 'self' https://*.shopify.com https://admin.shopify.com",
+    "frame-ancestors https://*.shopify.com https://admin.shopify.com",
+  ].join("; ");
+
+  responseHeaders.set("Content-Security-Policy", cspDirectives);
+  responseHeaders.set("X-Content-Type-Options", "nosniff");
+  responseHeaders.set("X-Frame-Options", "ALLOW-FROM https://admin.shopify.com");
+  
+  console.log("--- DEBUG: CSP Headers added successfully in entry.server.tsx ---");
+
+  return isbot(request.headers.get("user-agent") || "")
+    ? handleBotRequest(request, responseStatusCode, responseHeaders, remixContext)
+    : handleBrowserRequest(request, responseStatusCode, responseHeaders, remixContext);
+}
+
+function handleBotRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
   remixContext: EntryContext
 ) {
-  const userAgent = request.headers.get("user-agent");
-  const callbackName = isbot(userAgent ?? '')
-    ? "onAllReady"
-    : "onShellReady";
-
-  // Add CSP headers (this part is now correct)
-  try {
-    addDocumentResponseHeaders(request, responseHeaders);
-    console.log("--- DEBUG: CSP Headers added successfully in entry.server.tsx ---");
-  } catch (headerError) {
-    console.error("--- FATAL ERROR setting CSP headers in entry.server.tsx ---:", headerError);
-    // Continue attempting to render, but log the critical header failure
-  }
-
+  console.log("--- DEBUG: Handling bot request ---");
+  
   return new Promise((resolve, reject) => {
-    let didError = false; // Flag to track if an error occurred
-
-    console.log(`--- DEBUG: Starting renderToPipeableStream with callback: ${callbackName} ---`);
-
+    let shellRendered = false;
+    
     const { pipe, abort } = renderToPipeableStream(
+      // --- THIS IS THE FIX ---
       <I18nextProvider i18n={i18n}>
-        <RemixServer
-          context={remixContext}
-          url={request.url}
-          abortDelay={streamTimeout} // Use abortDelay
-        />
+        <RemixServer context={remixContext} url={request.url} abortDelay={ABORT_DELAY} />
       </I18nextProvider>,
+      // -----------------------
       {
-        [callbackName]: () => {
-          console.log(`--- DEBUG: ${callbackName} callback triggered. Status: ${didError ? 'Error' : 'Success'} ---`);
+        onAllReady() {
+          console.log("--- DEBUG: onAllReady callback triggered for bot. Status: Success ---");
+          shellRendered = true;
           const body = new PassThrough();
           const stream = createReadableStreamFromReadable(body);
-
+          
           responseHeaders.set("Content-Type", "text/html");
-          console.log(`--- DEBUG: Resolving response with status: ${responseStatusCode} ---`);
+          
           resolve(
             new Response(stream, {
               headers: responseHeaders,
-              status: didError ? 500 : responseStatusCode, // Use 500 if error occurred
+              status: responseStatusCode,
             })
           );
+          
           pipe(body);
         },
-        onShellError: (error: unknown) => {
-          didError = true;
-          console.error("--- FATAL ERROR: onShellError in renderToPipeableStream ---");
-          console.error(error); // Log the actual error object
-          reject(error); // Reject the promise to indicate failure
+        onShellError(error: unknown) {
+          console.error("--- ERROR: onShellError triggered for bot ---", error);
+          reject(error);
         },
-        onError: (error: unknown) => {
-          didError = true;
-          // Log the error, but don't necessarily reject - onShellError usually handles fatal errors
-          // This might catch hydration errors or errors within suspense boundaries
-          console.error("--- ERROR: onError in renderToPipeableStream ---");
-          console.error(error); // Log the actual error object
-          // Update status code if it wasn't already set by a loader error
-          if (responseStatusCode === 200) {
-              responseStatusCode = 500;
+        onError(error: unknown) {
+          console.error("--- ERROR: Streaming error for bot ---", error);
+          responseStatusCode = 500;
+          if (shellRendered) {
+            console.error(error);
           }
         },
       }
     );
 
-    // Keep the timeout, but log if it triggers
-    setTimeout(() => {
-        console.warn("--- WARNING: SSR Stream timeout reached. Aborting render. ---");
-        abort();
-    }, streamTimeout + 1000);
+    setTimeout(abort, ABORT_DELAY);
+  });
+}
+
+function handleBrowserRequest(
+  request: Request,
+  responseStatusCode: number,
+  responseHeaders: Headers,
+  remixContext: EntryContext
+) {
+  console.log("--- DEBUG: Handling browser request ---");
+  
+  return new Promise((resolve, reject) => {
+    let shellRendered = false;
+    
+    const { pipe, abort } = renderToPipeableStream(
+      // --- THIS IS THE FIX ---
+      <I18nextProvider i18n={i18n}>
+        <RemixServer context={remixContext} url={request.url} abortDelay={ABORT_DELAY} />
+      </I18nextProvider>,
+      // -----------------------
+      {
+        onShellReady() {
+          console.log("--- DEBUG: onShellReady callback triggered. Status: Success ---");
+          shellRendered = true;
+          const body = new PassThrough();
+          const stream = createReadableStreamFromReadable(body);
+          
+          responseHeaders.set("Content-Type", "text/html");
+          
+          console.log("--- DEBUG: Resolving response with status:", responseStatusCode, "---");
+          resolve(
+            new Response(stream, {
+              headers: responseHeaders,
+              status: responseStatusCode,
+            })
+          );
+          
+          pipe(body);
+        },
+        onShellError(error: unknown) {
+          console.error("--- ERROR: onShellError triggered ---", error);
+          reject(error);
+        },
+        onError(error: unknown) {
+          console.error("--- ERROR: Streaming error ---", error);
+          responseStatusCode = 500;
+          if (shellRendered) {
+            console.error(error);
+          }
+        },
+      }
+    );
+
+    setTimeout(abort, ABORT_DELAY);
   });
 }

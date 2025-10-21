@@ -5,7 +5,7 @@ import React, { useState, useCallback, useEffect, useRef, Fragment, useMemo } fr
 /* -------------------------------------------------------------------------- */
 import { ActionFunctionArgs, LoaderFunctionArgs, json } from "@remix-run/node";
 import { useLoaderData, useSubmit, useFetcher, useNavigation } from "@remix-run/react";
-// import { useAppBridge } from "@shopify/app-bridge-react"; // Not needed for standard fetch
+// Using standard fetch instead of authenticated fetch hook
 import { db } from "../db.server";
 import { authenticate } from "../shopify.server";
 import {
@@ -4712,7 +4712,7 @@ const handleSave = useCallback(async () => {
     console.error('❌ [handleSave] - Client-side save failed:', error);
     showSnack('error', 'Save Failed', 'An error occurred while sending your changes.');
   }
-}, [formFields, formStyle, shippingRates, isSaving, hasUnsavedChanges, showSnack]); // <-- Remove 'app' from dependency array
+}, [formFields, formStyle, shippingRates, isSaving, hasUnsavedChanges, showSnack]);
 
     const handleDiscard = useCallback(() => {
         setFormFields(loadedFormFields);

@@ -141,3 +141,16 @@ export const getShopify = async () => {
   });
 };
 // --- END UPDATED HELPER FUNCTION ---
+
+// Export shopify instance for use in auth routes
+export const shopify = {
+  authenticate: {
+    public: {
+      sessionToken: async ({ request }: { request: Request }) => {
+        const shopifyApp = await getShopify();
+        // Use the correct method for session token validation
+        return await shopifyApp.authenticate.public.appProxy(request);
+      }
+    }
+  }
+};

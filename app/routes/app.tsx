@@ -50,14 +50,11 @@ export default function App() {
 
   return (
     <>
-      <script
-        src="https://cdn.shopify.com/shopifycloud/app-bridge.js"
-        data-api-key={apiKey}
-        type="text/javascript"
-        defer={false}
-      ></script>
-      
-      {/* This provider gives the translation context to all child pages */}
+      {/*
+        FIX: The manual <script> tag for App Bridge has been removed.
+        The <AppProvider> component from @shopify/shopify-app-remix/react
+        handles injecting this script for you. Including it manually can cause conflicts.
+      */}
       <I18nextProvider i18n={clientI18n}>
         <div style={{ height: '100vh' }} dir={rtl ? 'rtl' : 'ltr'}>
           <AppProvider isEmbeddedApp apiKey={apiKey} host={host}>
@@ -66,7 +63,6 @@ export default function App() {
               <Link to="/app/form-designer">Form Designer</Link>
               <Link to="/app/settings/general">Settings</Link>
             </NavMenu>
-            {/* The Outlet renders the child page (e.g., the dashboard) */}
             <Outlet />
           </AppProvider>
         </div>

@@ -69,8 +69,14 @@ async function startServer() {
   const app = express();
   app.set("trust proxy", 1);
 
-  // ADD EARLY REQUEST LOGGING TO TRACK ALL INCOMING REQUESTS
+  // ADD EARLY REQUEST LOGGING TO TRACK ALL INCOMING REQUESTS (excluding health checks)
   app.use((req, res, next) => {
+    // Skip logging for health check requests to reduce noise
+    if (req.originalUrl === '/health') {
+      next();
+      return;
+    }
+    
     console.log(`---> SERVER.JS HIT: ${req.method} ${req.originalUrl}`);
     console.log(`     User-Agent: ${req.headers['user-agent'] || 'N/A'}`);
     console.log(`     Content-Type: ${req.headers['content-type'] || 'N/A'}`);

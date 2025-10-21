@@ -1,7 +1,7 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData, useNavigate } from "@remix-run/react";
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   Page,
   Layout,
@@ -29,7 +29,8 @@ import {
 import { MessageCircle, Mail } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { LanguageSelector } from '../components/LanguageSelector';
-import { getLanguageFromRequest, saveLanguagePreference } from '../utils/i18n.server';
+import { getLanguageFromRequest, getTranslations, isRTL, saveLanguagePreference } from '../utils/i18n.server';
+import clientI18n from '../utils/i18n.client';
 import { authenticate } from "../shopify.server";
 
 // This loader MUST authenticate to protect the page content.
@@ -37,8 +38,11 @@ export const loader = async (args: LoaderFunctionArgs) => {
   const { session } = await authenticate.admin(args);
   const { request } = args;
 
-  // Load page-specific data, including language preferences.
+  // Load page-specific data, including translations.
   const language = await getLanguageFromRequest(request, session.id);
+  const translations = await getTranslations(language); // This was missing
+  const rtl = isRTL(language); // This was missing
+
   const url = new URL(request.url);
   const langParam = url.searchParams.get('lang');
   if (langParam && ['en', 'ar', 'fr'].includes(langParam)) {
@@ -48,20 +52,44 @@ export const loader = async (args: LoaderFunctionArgs) => {
       console.warn('Failed to save language preference:', error);
     }
   }
-  
+
   return json({
     shop: session.shop,
     language,
+    translations, // Pass translations
+    rtl, // Pass RTL setting
   });
 };
 
 
 // This component renders the full dashboard UI and uses context from its parent (app.tsx).
 export default function ShopifyDashboard() {
-  const { shop, language } = useLoaderData<typeof loader>();
+  const { shop, language, translations, rtl } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
-  // This hook now works because the I18nextProvider is in the parent component.
-  const { t } = useTranslation('dashboard');
+  // This hook now works because the I18nextProvider is in the parent app.tsx
+  const { t: clientT } = useTranslation('dashboard');
+  const [isClientReady, setIsClientReady] = useState(false);
+
+  // This useEffect correctly initializes i18n
+  useEffect(() => {
+    Object.entries(translations || {}).forEach(([namespace, bundle]) => {
+      clientI18n.addResourceBundle(language, namespace, bundle || {}, true, true);
+    });
+    clientI18n.changeLanguage(language).then(() => {
+      document.documentElement.setAttribute('dir', rtl ? 'rtl' : 'ltr');
+      document.documentElement.setAttribute('lang', language);
+      setIsClientReady(true);
+    });
+  }, [language, translations, rtl]);
+
+  // This t() function correctly handles server/client rendering
+  const t = (key: string) => {
+    if (!isClientReady) {
+      // Use server-side translation during initial render
+      return (translations as any)?.dashboard?.[key] || key;
+    }
+    return clientT(key); // Use client-side hook after hydration
+  };
   
   // All your original state and hooks...
   const [isSetupExpanded, setIsSetupExpanded] = useState(true);

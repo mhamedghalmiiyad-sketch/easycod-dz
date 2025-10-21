@@ -6103,35 +6103,7 @@ const getLogoKey = (name: string): LogoKey | null => {
     );
 }
 
-const CODFormDesigner: React.FC = () => {
-    const polarisTranslations = {
-        Polaris: {
-            Common: {
-                checkbox: 'checkbox',
-            },
-            ResourceList: {
-                sortingLabel: 'Sort by',
-                showing: 'Showing {itemsCount} items',
-                defaultItemSingular: 'item',
-                defaultItemPlural: 'items',
-            },
-            Select: {
-                placeholder: 'Select',
-            },
-            TextField: {
-                characterCount: '{count} characters',
-            },
-        },
-    };
+// REMOVE the old CODFormDesigner component that wrapped everything in <AppProvider>
 
-    return (
-        <AppProvider i18n={polarisTranslations}>
-            <ThemeProvider theme={muiTheme}>
-                <CssBaseline />
-                <CODFormDesignerRoot />
-            </ThemeProvider>
-        </AppProvider>
-    );
-};
-
-export default CODFormDesigner;
+// EXPORT CODFormDesignerRoot as the default
+export default CODFormDesignerRoot;

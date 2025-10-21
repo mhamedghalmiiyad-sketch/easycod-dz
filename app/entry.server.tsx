@@ -20,7 +20,6 @@ export default function handleRequest(
 ) {
   console.log("--- DEBUG: Starting handleRequest in entry.server.tsx ---");
 
-  // This is your CSP policy, which is correct
   const cspDirectives = [
     "default-src 'self'",
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.shopify.com https://cdnjs.cloudflare.com",

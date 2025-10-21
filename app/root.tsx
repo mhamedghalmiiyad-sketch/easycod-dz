@@ -7,8 +7,10 @@ import {
 } from "@remix-run/react";
 import { I18nextProvider } from "react-i18next";
 import i18n from "./utils/i18n.client";
-import "./tailwind.css"; // <-- This import is necessary
-import "./rtl.css";       // <-- This import is necessary
+
+// --- ADD THESE CSS IMPORTS ---
+import "./tailwind.css";
+import "./rtl.css";
 
 export default function App() {
   return (
@@ -17,9 +19,7 @@ export default function App() {
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
         
-        {/* THIS IS THE FIX:
-          Load the correct App Bridge script FIRST.
-        */}
+        {/* --- THIS IS THE CORRECT SCRIPT TAG --- */}
         <script
           src="https://cdn.shopify.com/shopifycloud/app-bridge.js"
           type="text/javascript"
@@ -40,7 +40,7 @@ export default function App() {
   );
 }
 
-// Keep your existing ErrorBoundary function
+// Keep your existing ErrorBoundary
 export function ErrorBoundary() {
   return (
     <html lang="en">

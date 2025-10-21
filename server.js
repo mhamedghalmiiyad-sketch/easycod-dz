@@ -8,6 +8,12 @@ import { config } from "dotenv";
 // Load .env file FIRST
 config();
 
+// --- VERSION LOG: This proves the new code is deployed ---
+console.log("--- RUNNING VERSION: 1.0.1 - ALL FIXES APPLIED ---");
+console.log("--- AUTH SESSION TOKEN FIX: Loader function added ---");
+console.log("--- TRANSLATION FIX: i18next instance properly initialized ---");
+// --- END VERSION LOG ---
+
 // --- CRITICAL FIX: Set global variable AT THE TOP ---
 // This ensures it's available even during early module loads like entry.server.tsx
 global.SHOPIFY_ENV_VARS = {

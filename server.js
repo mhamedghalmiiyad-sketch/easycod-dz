@@ -69,6 +69,15 @@ async function startServer() {
   const app = express();
   app.set("trust proxy", 1);
 
+  // ADD EARLY REQUEST LOGGING TO TRACK ALL INCOMING REQUESTS
+  app.use((req, res, next) => {
+    console.log(`---> SERVER.JS HIT: ${req.method} ${req.originalUrl}`);
+    console.log(`     User-Agent: ${req.headers['user-agent'] || 'N/A'}`);
+    console.log(`     Content-Type: ${req.headers['content-type'] || 'N/A'}`);
+    console.log(`     Content-Length: ${req.headers['content-length'] || 'N/A'}`);
+    next(); // Pass the request along
+  });
+
   app.use(express.static("build/client", { immutable: true, maxAge: "1y" }));
   app.use(express.static("public", { maxAge: "1h" }));
 

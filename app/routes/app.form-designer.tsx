@@ -996,6 +996,7 @@ export const action = async (args: ActionFunctionArgs) => {
 
   try {
     // 1. Authenticate using the full 'args' object
+    console.log("Step 1: Attempting authentication...");
     const { session, admin } = await authenticate.admin(args);
     console.log("Step 1 SUCCESS: Admin authenticated for shop:", session.shop);
 

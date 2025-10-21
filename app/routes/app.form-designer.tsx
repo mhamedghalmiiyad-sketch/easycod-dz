@@ -6,6 +6,7 @@ import React, { useState, useCallback, useEffect, useRef, Fragment, useMemo } fr
 import { ActionFunctionArgs, LoaderFunctionArgs, json } from "@remix-run/node";
 import { useLoaderData, useSubmit, useFetcher, useNavigation } from "@remix-run/react";
 import { db } from "../db.server";
+import { authenticate } from "../shopify.server";
 import {
     getShopSettings,
     updateShopSettings,
@@ -912,11 +913,12 @@ const initialShippingRates: ShippingRate[] = [{ id: `rate-${Date.now()}`, name: 
 
 
 // ADD The Loader
-export const loader = async ({ request }: LoaderFunctionArgs) => {
-    const { getAuthenticate } = await import("../lib/shopify.lazy.server");
-    const authenticate = await getAuthenticate();
-    const { session } = await authenticate.admin(request);
-    const language = await getLanguageFromRequest(request);
+export const loader = async (args: LoaderFunctionArgs) => {
+    // This now passes the full 'args' object which includes the context
+    const { session } = await authenticate.admin(args);
+    const { request } = args; // Destructure request after auth
+
+    const language = await getLanguageFromRequest(request, session.id); // Pass session.id
     const translations = await getTranslations(language);
     const rtl = isRTL(language);
     
@@ -989,13 +991,15 @@ function safeParse(value: string | null | undefined, fallback: any) {
 } 
 // in app/routes/app.form-designer.tsx
 
-export const action = async ({ request }: ActionFunctionArgs) => {
+export const action = async (args: ActionFunctionArgs) => {
   console.log("✅ [ACTION] - Received a request.");
 
   try {
-    // 1. Authenticate *before* the try...catch block to ensure secure access.
-    const { session, admin } = await authenticate.admin(request);
+    // 1. Authenticate using the full 'args' object
+    const { session, admin } = await authenticate.admin(args);
     console.log("Step 1 SUCCESS: Admin authenticated for shop:", session.shop);
+
+    const { request } = args; // Destructure request after auth
 
     const formData = await request.formData();
 

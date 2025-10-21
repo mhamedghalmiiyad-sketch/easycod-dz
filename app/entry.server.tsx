@@ -7,6 +7,8 @@ import {
 } from "@remix-run/node";
 import { isbot } from "isbot";
 import { addDocumentResponseHeaders } from "./shopify.server";
+import { I18nextProvider } from "react-i18next";
+import i18n from "./utils/i18n.client";
 
 export const streamTimeout = 5000;
 
@@ -36,11 +38,13 @@ export default async function handleRequest(
     console.log(`--- DEBUG: Starting renderToPipeableStream with callback: ${callbackName} ---`);
 
     const { pipe, abort } = renderToPipeableStream(
-      <RemixServer
-        context={remixContext}
-        url={request.url}
-        abortDelay={streamTimeout} // Use abortDelay
-      />,
+      <I18nextProvider i18n={i18n}>
+        <RemixServer
+          context={remixContext}
+          url={request.url}
+          abortDelay={streamTimeout} // Use abortDelay
+        />
+      </I18nextProvider>,
       {
         [callbackName]: () => {
           console.log(`--- DEBUG: ${callbackName} callback triggered. Status: ${didError ? 'Error' : 'Success'} ---`);

@@ -1003,12 +1003,12 @@ export const action = async (args: ActionFunctionArgs) => {
 
     const { request } = args; // Destructure request after auth
 
-    // Read the JSON body from the authenticatedFetch request
-    const requestBody = await request.json();
+    // Read from FormData (Remix's submit() sends FormData)
+    const formData = await request.formData();
 
-    const formFields = requestBody.formFields as string;
-    const formStyle = requestBody.formStyle as string;
-    const shippingRates = requestBody.shippingRates as string;
+    const formFields = formData.get("formFields") as string;
+    const formStyle = formData.get("formStyle") as string;
+    const shippingRates = formData.get("shippingRates") as string;
 
     // Validate required data
     if (!formFields || !formStyle) {
@@ -4642,7 +4642,7 @@ const newTotalText = formatCurrency(250, currency);
     }, [formFields, formStyle, shippingRates, loadedFormFields, loadedFormStyle, loadedShippingRates]);
 
 
-const handleSave = useCallback(async () => {
+const handleSave = useCallback(() => {
   console.log('🔄 [handleSave] - Function called');
   console.log('🔄 [handleSave] - Current state:', {
     formFields: formFields.length,
@@ -4657,11 +4657,6 @@ const handleSave = useCallback(async () => {
     return;
   }
 
-  // Manually set saving state (since we're not using useNavigation)
-  // We can use the wasSaving ref to track this.
-  wasSaving.current = true; 
-  // You might want to add a new state like setIsSaving(true) if wasSaving isn't enough
-
   try {
     const formFieldsJson = JSON.stringify(formFields);
     const formStyleJson = JSON.stringify(formStyle);
@@ -4673,46 +4668,28 @@ const handleSave = useCallback(async () => {
       shippingRatesSize: shippingRatesJson.length
     });
 
-    console.log('🔄 [handleSave] - Submitting data with authenticatedFetch...');
+    console.log('🔄 [handleSave] - Submitting data...');
 
-    // Use authenticatedFetch to make the POST request
-    const response = await fetch("/app/form-designer", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    // ✅ USE REMIX'S submit() INSTEAD OF fetch()
+    submit(
+      {
         formFields: formFieldsJson,
         formStyle: formStyleJson,
         shippingRates: shippingRatesJson,
-      }),
-    });
-
-    wasSaving.current = false;
-    // You might want to add setIsSaving(false) here
-
-    if (response.ok) {
-      const result = await response.json();
-      if (result.success) {
-        console.log('✅ [handleSave] - Submit call completed, response OK.', result);
-        showSnack('success', 'Saved', 'Your changes have been saved successfully.');
-        setHasUnsavedChanges(false);
-      } else {
-        // Handle server-side errors (e.g., verification failed)
-        console.error('❌ [handleSave] - Server returned an error:', result.error);
-        showSnack('error', 'Save Failed', result.error || 'An unknown error occurred on the server.');
+      },
+      {
+        method: "POST",
+        encType: "application/json",
       }
-    } else {
-      // Handle network errors (e.g., 500, 404)
-      console.error('❌ [handleSave] - Network error:', response.status, response.statusText);
-      showSnack('error', 'Save Failed', `Network Error: ${response.statusText}`);
-    }
+    );
+
+    console.log('✅ [handleSave] - Submit call completed');
 
   } catch (error) {
-    wasSaving.current = false;
-    // You might want to add setIsSaving(false) here
     console.error('❌ [handleSave] - Client-side save failed:', error);
-    showSnack('error', 'Save Failed', 'An error occurred while sending your changes.');
+    showSnack('error', 'Save Failed', 'An error occurred while preparing your changes.');
   }
-}, [formFields, formStyle, shippingRates, isSaving, hasUnsavedChanges, showSnack]);
+}, [formFields, formStyle, shippingRates, submit, isSaving, hasUnsavedChanges, showSnack]);
 
     const handleDiscard = useCallback(() => {
         setFormFields(loadedFormFields);

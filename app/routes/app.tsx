@@ -51,8 +51,10 @@ export default function App() {
   return (
     <>
       <script
-        src="https://cdn.shopify.com/shopifycloud/app-bridge/edge/index.js"
+        src="https://cdn.shopify.com/shopifycloud/app-bridge.js"
         data-api-key={apiKey}
+        type="text/javascript"
+        defer={false}
       ></script>
       
       {/* This provider gives the translation context to all child pages */}

@@ -21,7 +21,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     <html>
       <head>
         <title>Authenticating...</title>
-        <script src="https://cdn.shopify.com/shopifycloud/app-bridge/edge/index.js"></script>
+        <script 
+          src="https://cdn.shopify.com/shopifycloud/app-bridge.js"
+          type="text/javascript"
+          defer={false}
+        ></script>
         <script>
           document.addEventListener('DOMContentLoaded', function() {
             console.log('App Bridge Shell Loaded. Initializing App Bridge...');

@@ -9,10 +9,11 @@ import { config } from "dotenv";
 config();
 
 // --- VERSION LOG: This proves the new code is deployed ---
-console.log("--- RUNNING VERSION: 1.0.2 - FORCING CACHE CLEAR ---");
+console.log("--- RUNNING VERSION: 1.0.3 - FINAL SCRIPT FIX ---");
 console.log("--- AUTH SESSION TOKEN FIX: Loader function added ---");
 console.log("--- TRANSLATION FIX: i18next instance properly initialized ---");
 console.log("--- SERVER-SIDE I18N FIX: I18nextProvider added to entry.server.tsx ---");
+console.log("--- APP BRIDGE SCRIPT FIX: Corrected script URLs ---");
 // --- END VERSION LOG ---
 
 // --- CRITICAL FIX: Set global variable AT THE TOP ---

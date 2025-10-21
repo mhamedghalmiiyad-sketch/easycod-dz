@@ -4,10 +4,8 @@ import { createReadableStreamFromReadable } from "@remix-run/node";
 import { RemixServer } from "@remix-run/react";
 import { isbot } from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
-
-// --- ADD THESE TWO IMPORTS ---
 import { I18nextProvider } from "react-i18next";
-import i18n from "./utils/i18n.client"; // Use the same client instance as root.tsx
+import i18n from "./utils/i18n.client";
 
 const ABORT_DELAY = 5000;
 
@@ -18,8 +16,6 @@ export default function handleRequest(
   remixContext: EntryContext,
   loadContext: AppLoadContext
 ) {
-  console.log("--- DEBUG: Starting handleRequest in entry.server.tsx ---");
-
   const cspDirectives = [
     "default-src 'self'",
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.shopify.com https://cdnjs.cloudflare.com",
@@ -54,11 +50,10 @@ function handleBotRequest(
     let shellRendered = false;
     
     const { pipe, abort } = renderToPipeableStream(
-      // --- THIS IS THE FIX ---
+      // This wrapper provides the i18n instance during server-side rendering for bots.
       <I18nextProvider i18n={i18n}>
         <RemixServer context={remixContext} url={request.url} abortDelay={ABORT_DELAY} />
       </I18nextProvider>,
-      // -----------------------
       {
         onAllReady() {
           console.log("--- DEBUG: onAllReady callback triggered for bot. Status: Success ---");
@@ -107,11 +102,10 @@ function handleBrowserRequest(
     let shellRendered = false;
     
     const { pipe, abort } = renderToPipeableStream(
-      // --- THIS IS THE FIX ---
+      // This wrapper provides the i18n instance during server-side rendering for browsers.
       <I18nextProvider i18n={i18n}>
         <RemixServer context={remixContext} url={request.url} abortDelay={ABORT_DELAY} />
       </I18nextProvider>,
-      // -----------------------
       {
         onShellReady() {
           console.log("--- DEBUG: onShellReady callback triggered. Status: Success ---");

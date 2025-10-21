@@ -9,7 +9,7 @@ import { config } from "dotenv";
 config();
 
 // --- VERSION LOG: This proves the new code is deployed ---
-console.log("--- RUNNING VERSION: 1.0.5 - FINAL I18N AND ROOT FIX ---");
+console.log("--- RUNNING VERSION: 1.0.6 - FINAL I18N WRAPPER FIX ---");
 console.log("--- AUTH SESSION TOKEN FIX: Loader function added ---");
 console.log("--- TRANSLATION FIX: i18next instance properly initialized ---");
 console.log("--- SERVER-SIDE I18N FIX: I18nextProvider added to entry.server.tsx ---");

@@ -5,7 +5,7 @@ import React, { useState, useCallback, useEffect, useRef, Fragment, useMemo } fr
 /* -------------------------------------------------------------------------- */
 import { ActionFunctionArgs, LoaderFunctionArgs, json } from "@remix-run/node";
 import { useLoaderData, useSubmit, useFetcher, useNavigation } from "@remix-run/react";
-import { useAppBridge } from "@shopify/app-bridge-react";
+import { useAuthenticatedFetch } from "@shopify/app-bridge-react";
 import { db } from "../db.server";
 import { authenticate } from "../shopify.server";
 import {
@@ -4490,7 +4490,7 @@ function CODFormDesignerRoot() {
     const { t } = useTranslation('formDesigner');
     const submit = useSubmit();
     const navigation = useNavigation();
-    const app = useAppBridge();
+    const fetch = useAuthenticatedFetch();
 
     const [isEditingPopupButton, setIsEditingPopupButton] = useState(false);
     const [isEditingLogistics, setIsEditingLogistics] = useState(false);
@@ -4676,7 +4676,7 @@ const handleSave = useCallback(async () => {
     console.log('🔄 [handleSave] - Submitting data with authenticatedFetch...');
 
     // Use authenticatedFetch to make the POST request
-    const response = await app.authenticatedFetch("/app/form-designer", {
+    const response = await fetch("/app/form-designer", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -4712,7 +4712,7 @@ const handleSave = useCallback(async () => {
     console.error('❌ [handleSave] - Client-side save failed:', error);
     showSnack('error', 'Save Failed', 'An error occurred while sending your changes.');
   }
-}, [formFields, formStyle, shippingRates, app, isSaving, hasUnsavedChanges, showSnack]); // <-- Add 'app' to dependency array
+}, [formFields, formStyle, shippingRates, fetch, isSaving, hasUnsavedChanges, showSnack]); // <-- Add 'fetch' to dependency array
 
     const handleDiscard = useCallback(() => {
         setFormFields(loadedFormFields);

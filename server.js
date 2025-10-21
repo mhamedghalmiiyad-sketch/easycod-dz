@@ -89,6 +89,44 @@ async function startServer() {
 
   app.get("/health", (req, res) => res.status(200).send("ok"));
 
+  // Handle /auth/session-token route directly without going through Remix renderer
+  app.all("/auth/session-token", async (req, res) => {
+    console.log("--- DEBUG: Direct /auth/session-token handler triggered ---");
+    
+    try {
+      // Import the authenticate function directly
+      const { authenticate } = await import("./app/shopify.server.js");
+      
+      // Create a mock args object
+      const args = {
+        request: req,
+        params: {},
+        context: { shopify: SHOPIFY_ENV_FOR_CONTEXT }
+      };
+      
+      // Call authenticate.admin directly
+      const { session } = await authenticate.admin(args);
+      
+      // Return success response
+      res.status(200);
+      res.set("Content-Type", "application/json");
+      res.json({ 
+        success: true,
+        message: "Session token validated successfully",
+        shop: session.shop
+      });
+    } catch (error) {
+      console.error("Session token validation failed (Direct):", error);
+      
+      res.status(401);
+      res.set("Content-Type", "application/json");
+      res.json({ 
+        success: false, 
+        error: "Invalid session token" 
+      });
+    }
+  });
+
   app.all(
     "*",
     createRequestHandler({

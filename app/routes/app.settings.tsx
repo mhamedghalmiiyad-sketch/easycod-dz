@@ -50,16 +50,27 @@ export default function SettingsLayout() {
 
   // Initialize client i18n with server data
   useEffect(() => {
-    // Safety check: ensure clientI18n is initialized before using it
-    if (!clientI18n || typeof clientI18n.addResourceBundle !== 'function') {
-      console.warn('Client i18n not initialized yet');
+    // Wait for i18n to be ready
+    if (!clientI18n || !clientI18n.isInitialized) {
+      console.warn('Client i18n not initialized yet, skipping translation loading');
       return;
     }
     
+    // Safety check: ensure clientI18n methods are available
+    if (typeof clientI18n.addResourceBundle !== 'function') {
+      console.warn('Client i18n methods not available');
+      return;
+    }
+    
+    // Add translations to the instance
     Object.entries(translations).forEach(([namespace, bundle]) => {
       clientI18n.addResourceBundle(language, namespace, bundle, true, true);
     });
-    clientI18n.changeLanguage(language);
+    
+    // Change language if needed
+    if (clientI18n.language !== language) {
+      clientI18n.changeLanguage(language);
+    }
     
     // Set document direction and language
     document.documentElement.setAttribute('dir', rtl ? 'rtl' : 'ltr');

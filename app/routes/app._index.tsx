@@ -52,20 +52,11 @@ export const loader = async (args: LoaderFunctionArgs) => {
   const language = await getLanguageFromRequest(request, session.id);
   const translations = await getTranslations(language);
   const rtl = isRTL(language);
-
-  // 2. Pre-populate the i18n instance on the server
-  Object.entries(translations).forEach(([namespace, bundle]) => {
-    if (!clientI18n.hasResourceBundle(language, namespace)) {
-      clientI18n.addResourceBundle(language, namespace, bundle, true, true);
-    }
-  });
-  // 3. Set the language for the server-side render
-  await clientI18n.changeLanguage(language);
   
   return json({ 
     shop: session.shop,
     language,
-    translations, // Still pass translations for client-side hydration
+    translations, // Pass translations for client-side hydration
     rtl,
   });
 };
@@ -86,7 +77,13 @@ const ShopifyDashboard = () => {
 
   // Initialize client i18n with server data
   useEffect(() => {
-    // This logic is safer now because the server has already loaded the bundles
+    // Safety check: ensure clientI18n is initialized before using it
+    if (!clientI18n || typeof clientI18n.hasResourceBundle !== 'function') {
+      console.warn('Client i18n not initialized yet');
+      return;
+    }
+    
+    // Check if we need to add resource bundles
     if (!clientI18n.hasResourceBundle(language, 'common')) {
         Object.entries(translations).forEach(([namespace, bundle]) => {
           clientI18n.addResourceBundle(language, namespace, bundle, true, true);

@@ -50,6 +50,12 @@ export default function SettingsLayout() {
 
   // Initialize client i18n with server data
   useEffect(() => {
+    // Safety check: ensure clientI18n is initialized before using it
+    if (!clientI18n || typeof clientI18n.addResourceBundle !== 'function') {
+      console.warn('Client i18n not initialized yet');
+      return;
+    }
+    
     Object.entries(translations).forEach(([namespace, bundle]) => {
       clientI18n.addResourceBundle(language, namespace, bundle, true, true);
     });

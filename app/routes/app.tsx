@@ -42,6 +42,12 @@ export default function App() {
 
   // This useEffect initializes the client-side i18n instance ONCE.
   useEffect(() => {
+    // Safety check: ensure clientI18n is initialized before using it
+    if (!clientI18n || typeof clientI18n.addResourceBundle !== 'function') {
+      console.warn('Client i18n not initialized yet');
+      return;
+    }
+    
     Object.entries(translations || {}).forEach(([namespace, bundle]) => {
       clientI18n.addResourceBundle(language, namespace, bundle || {}, true, true);
     });
@@ -57,7 +63,7 @@ export default function App() {
       */}
       <I18nextProvider i18n={clientI18n}>
         <div style={{ height: '100vh' }} dir={rtl ? 'rtl' : 'ltr'}>
-          <AppProvider isEmbeddedApp apiKey={apiKey} host={host}>
+          <AppProvider isEmbeddedApp apiKey={apiKey}>
             <NavMenu>
               <Link to="/app" rel="home">Dashboard</Link>
               <Link to="/app/form-designer">Form Designer</Link>

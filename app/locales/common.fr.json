@@ -39,5 +39,20 @@
   "public": "Public",
   "private": "Privé",
   "draft": "Brouillon",
-  "published": "Publié"
+  "published": "Publié",
+  "faq": {
+    "title": "Questions Fréquemment Posées",
+    "q1": "Comment configurer le formulaire de paiement à la livraison ?",
+    "a1": "Accédez au Concepteur de formulaires depuis le menu principal, personnalisez vos champs de formulaire et enregistrez vos modifications. Le formulaire apparaîtra automatiquement sur votre page de paiement.",
+    "q2": "Puis-je personnaliser les champs du formulaire ?",
+    "a2": "Oui ! Vous pouvez ajouter, supprimer et personnaliser les champs du formulaire dans le Concepteur de formulaires. Vous pouvez également modifier les étiquettes, les espaces réservés et rendre les champs obligatoires ou facultatifs.",
+    "q3": "Comment intégrer avec Google Sheets ?",
+    "a3": "Allez dans Paramètres > Intégrations > Google Sheets. Suivez le flux d'authentification pour connecter votre compte Google, puis sélectionnez la feuille vers laquelle vous souhaitez synchroniser vos commandes.",
+    "q4": "Quels modes de paiement sont pris en charge ?",
+    "a4": "Cette application est spécifiquement conçue pour les commandes de paiement à la livraison (COD). Les clients paieront à la réception de leur commande.",
+    "q5": "Comment puis-je suivre les paniers abandonnés ?",
+    "a5": "L'application suit automatiquement lorsque les clients commencent à remplir le formulaire mais ne complètent pas leur commande. Vous pouvez les visualiser dans votre tableau de bord et les contacter via WhatsApp ou email.",
+    "q6": "Puis-je ajouter des règles de validation personnalisées ?",
+    "a6": "Oui, vous pouvez configurer des règles de validation dans la section Paramètres > Protection. Vous pouvez définir des règles pour les numéros de téléphone, les adresses et d'autres champs."
+  }
 }

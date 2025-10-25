@@ -39,5 +39,20 @@
   "public": "Public",
   "private": "Private",
   "draft": "Draft",
-  "published": "Published"
+  "published": "Published",
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "q1": "How do I set up the COD form?",
+    "a1": "Navigate to the Form Designer from the main menu, customize your form fields, and save your changes. The form will automatically appear on your checkout page.",
+    "q2": "Can I customize the form fields?",
+    "a2": "Yes! You can add, remove, and customize form fields in the Form Designer. You can also change labels, placeholders, and make fields required or optional.",
+    "q3": "How do I integrate with Google Sheets?",
+    "a3": "Go to Settings > Integrations > Google Sheets. Follow the authentication flow to connect your Google account, then select which sheet you want to sync your orders to.",
+    "q4": "What payment methods are supported?",
+    "a4": "This app is specifically designed for Cash on Delivery (COD) orders. Customers will pay when they receive their order.",
+    "q5": "How can I track abandoned carts?",
+    "a5": "The app automatically tracks when customers start filling out the form but don't complete their order. You can view these in your dashboard and reach out to them via WhatsApp or email.",
+    "q6": "Can I add custom validation rules?",
+    "a6": "Yes, you can configure validation rules in the Settings > Protection section. You can set rules for phone numbers, addresses, and other fields."
+  }
 }

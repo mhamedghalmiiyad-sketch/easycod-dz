@@ -4,8 +4,6 @@ import { createReadableStreamFromReadable } from "@remix-run/node";
 import { RemixServer } from "@remix-run/react";
 import { isbot } from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
-import { I18nextProvider } from "react-i18next";
-import i18n from "./utils/i18n.client";
 
 const ABORT_DELAY = 5000;
 
@@ -50,10 +48,7 @@ function handleBotRequest(
     let shellRendered = false;
     
     const { pipe, abort } = renderToPipeableStream(
-      // This wrapper provides the i18n instance during server-side rendering for bots.
-      <I18nextProvider i18n={i18n}>
-        <RemixServer context={remixContext} url={request.url} abortDelay={ABORT_DELAY} />
-      </I18nextProvider>,
+      <RemixServer context={remixContext} url={request.url} abortDelay={ABORT_DELAY} />,
       {
         onAllReady() {
           console.log("--- DEBUG: onAllReady callback triggered for bot. Status: Success ---");
@@ -105,10 +100,7 @@ function handleBrowserRequest(
     let shellRendered = false;
     
     const { pipe, abort } = renderToPipeableStream(
-      // This wrapper provides the i18n instance during server-side rendering for browsers.
-      <I18nextProvider i18n={i18n}>
-        <RemixServer context={remixContext} url={request.url} abortDelay={ABORT_DELAY} />
-      </I18nextProvider>,
+      <RemixServer context={remixContext} url={request.url} abortDelay={ABORT_DELAY} />,
       {
         onShellReady() {
           console.log("--- DEBUG: onShellReady callback triggered. Status: Success ---");
